@@ -1,4 +1,4 @@
-;; (load "/home/pjb/works/gsharp/src/loader.lisp")
+;; (load "/home/pjb/works/gsharp/src/abnotation/loader.lisp")
 (in-package "COMMON-LISP-USER")
 
 #+ccl (setf ccl:*default-external-format*           :unix
@@ -27,8 +27,8 @@
 (load-logical-pathname-translations "GSHARP")
 
 
-#+ccl       (ccl::cd (truename #P"GSHARP:src;"))
-#+clisp     (ext:cd  (truename #P"GSHARP:SRC;"))
+#+ccl       (ccl::cd (truename #P"GSHARP:src;abnotation;"))
+#+clisp     (ext:cd  (truename #P"GSHARP:SRC;ABNOTATION;"))
 
 
 (dolist (dir (find-asdf-subdirectories  '(#P"GSHARP:")))
@@ -37,8 +37,8 @@
 
 (ql:quickload :gsharp)
 
-(load #+(or allegro ccl) #P"GSHARP:src;gsharp-init.lisp"
-      #-(or allegro ccl) #P"GSHARP:SRC;GSHARP-INIT.LISP")
+(load #+(or allegro ccl) #P"GSHARP:src;abnotation;gsharp-init.lisp"
+      #-(or allegro ccl) #P"GSHARP:SRC;ABNOTATION;GSHARP-INIT.LISP")
 
 (gsharp:gsharp :new-process t)
 
