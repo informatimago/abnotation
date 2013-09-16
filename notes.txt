@@ -1,0 +1,130 @@
+.. comment: -*- mode:rst;coding:utf-8 -*-
+
+
+Gsharp
+================================================================================
+
+Dictionary: ::
+
+    staff (stave)          = portée
+
+    clef                   = clef
+    key signature          = armure
+    time signature         = 
+
+    treble clef            = clef de sol
+    alto clef (viola clef) = clef d'ut
+    tenor clef             = clef d'ut
+    bass clef              = clef de fa
+
+    bar                    = mesure
+
+
+
+Schematic class diagram: ::
+
+
+                                                                       key-signature                              
+                                                                            |                                     
+                                    +-----------------------------1 clef    |         time-signature       
+                                    |                                |      |               |                     
+                                    |                                +------+---------------+                     
+                                    |                                       v                                     
+                         fiveline-staff 1--------------------------* staffwise-element                            
+                               |                                            |                                     
+                               v                                            |                                     
+       +-------------------* staff                                          |                                     
+       |                       *                                            |                                     
+       |                       |                                            v                                     
+    buffer 1--* segment 1--* layer 1--3 slice 1--* bar 1---------------* element                                  
+                               |                    |                      ^                                      
+                               |                    |                      |                                      
+                               |                    |               rhythmic-element                              
+                               |                    |                      ^                                      
+                               |                    |                      |                                      
+                          melody-layer         melody-bar             melody-element                              
+                                                                           ^                                      
+                                                                           +-----------+                          
+                                                                           |           |                          
+                                                                        cluster       rest                        
+                                                                           |                                      
+                                                                           *                                      
+                                                                          note                                    
+
+
+              tuning 
+                ^   
+                +---------+
+                |         |
+              12-edo   regular-temperament
+
+
+Class hierarchy:
+
+    gsharp-object ()
+    name-mixin ()
+    rhythmic-element (element)
+    buffer (gsharp-object esa-buffer-mixin drei:undo-mixin)
+    layer (gsharp-object name-mixin)
+    staff (gsharp-object name-mixin)
+    bar (gsharp-object)
+    element (gsharp-object)
+    segment (gsharp-object)
+    slice (gsharp-object)
+
+    melody-bar (bar)
+    staffwise-element (element)
+    note (gsharp-object)
+    tuning (gsharp-object)
+    melody-layer (layer)
+    cluster (melody-element)
+    rest (melody-element)
+    melody-element (rhythmic-element)
+    fiveline-staff (staff)
+    clef (staffwise-element gsharp-object name-mixin)
+    key-signature (staffwise-element)
+    time-signature (staffwise-element)
+    12-edo (tuning)
+    regular-temperament (tuning)
+
+    lyrics-bar (bar)    
+    lyrics-layer (layer)    
+    lyrics-element (rhythmic-element)
+    lyrics-staff (staff)
+
+    measure-cost-method (cost-method)
+    timeline (flexichain:element-rank-mixin)
+    ranked-flexichain (flexichain:standard-flexichain flexichain:flexirank-mixin)
+    measure (obseq-elem)
+    measure-seq-cost (seq-cost)
+    measure-total-cost (total-cost)
+
+    x-y-width-mixin ()
+
+
+
+
+Miscellaneous 
+================================================================================
+
+Conversion cvs mcclim repository to git
+--------------------------------------------------------------------------------
+
+cd src 
+flex cvsclone.l && gcc -Wall -O2 lex.yy.c -o cvsclone
+./cvsclone -d  :pserver:anonymous@common-lisp.net:/project/mcclim/cvsroot mcclim-CVS
+
+
+mkdir mcclim-git  ; cd  mcclim-git  ; git init ; echo '*~' > .gitignore ; git add .gitignore ; git commit -a -m 'Added ".gitignore".'
+git --bare cvsimport -d:local:/home/pjb/works/gsharp/src/mcclim -v -k -m -i -o master .
+
+
+https://github.com/$u/mcclim
+
+
+
+.. comment: 
+   ---------------------------------------------------------------
+                            -------------
+                                  -
+                                  .
