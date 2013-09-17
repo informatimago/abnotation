@@ -226,6 +226,12 @@ A confirmer:
   (cependant, on peut avoir 1-3 portées pour les instruments à large gamme).
 
 
+- fichier midi typique (pas musique métrée).
+
+
+- 
+
+
 Miscellaneous 
 ================================================================================
 
