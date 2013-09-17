@@ -46,15 +46,18 @@ sdl
 
 score-pane
 
-    drawing *****
+    drawing partition elements
+
 
 buffer
 
     definition of parition structure objects, from buffers down to the notes (elements).
 
+
 melody
 
     musical elements in the buffers.
+
 
 lyrics
 
@@ -85,7 +88,13 @@ beaming
 
 elasticity
 
+    Elasticity function (used by drawing).
+
+
 drawing
+
+    compute and draw the partition
+
 
 cursor
 
@@ -126,7 +135,8 @@ Schematic class diagram
                                                                             |                                     
                                     +-----------------------------1 clef    |         time-signature       
                                     |                                |      |               |                     
-                                    |                                +------+---------------+                     
+                                    |                                +------+---------------+              
+                                    |                                       |       
                                     |                                       v                                     
                          fiveline-staff 1--------------------------* staffwise-element                            
                                |                                            |                                     
@@ -142,6 +152,7 @@ Schematic class diagram
                                |                    |                      |                                      
                           melody-layer         melody-bar             melody-element                              
                                                                            ^                                      
+                                                                           |
                                                                            +-----------+                          
                                                                            |           |                          
                                                                         cluster       rest                        
@@ -152,6 +163,7 @@ Schematic class diagram
 
               tuning 
                 ^   
+                |
                 +---------+
                 |         |
               12-edo   regular-temperament
