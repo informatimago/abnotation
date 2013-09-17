@@ -1,5 +1,5 @@
 #!/bin/bash
-BASE="$(cd "$(dirname "$0")/../.." ; pwd)"
+BASE="$(cd $(dirname "$0") ; cd "$(pwd -P)/../.." ; pwd -P)"
 . "$(dirname "$0")/gdirs"
 for dir in "${gdirs[@]}" ; do
     (
