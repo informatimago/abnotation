@@ -1,19 +1,87 @@
 .. comment: -*- mode:rst;coding:utf-8 -*-
 
 
-Gsharp
+
+Abnotation
+################################################################################
+
+Spécifications
 ================================================================================
 
-Dictionary
---------------------------------------------------------------------------------
+
+Principales fonctionalités
+
+- lecture d'une séquence Midi représentant un morceau de musique.
+- affichage de la partition correspondante selon la notation AB en mode prévisualisation.
+- impression de la partition (sur feuilles A4 ou A3).
+
+- l'utilisateur peut ajuster la mise en page de la partition.
+- l'utilisateur peut éditer la partition, en particulier:
+    - transposition d'une note ou d'un groupe de notes.
+
+
+Notation AB
+================================================================================
+
+
+Éléments graphiques:
+
+- Numéro de page en haut à gauche dans un cercle (de 1 à N).
+- Numéro de système de portées dans la page à gauche de la première portée dans un carré (de 1 à N).
+- Numéro de mesure dans la portée au dessus de la marque de début de mesure (de 1 à N).
+
+
+
+Impression
+
+- Mise en page en format A4 ou A5, paysage ou portrait.
+
+
+
+
+Réglage longueur mesure:
+
+1- par défaut, minimum selon M = (note dieze note) = 6/100 seconde
+
+2- a- durée de mesure en x 1/100 seconde (minimum 6/100 seconde)
+      =>  si < M  alors
+             soit mesure(s) affectée(s) rallongées en fonction de M, 
+             sopit toutes les mesures rallongées en fonction de M, 
+          sinon longueurs identiques 
+
+   b- facultatif: réglage de la longueur de toutes les mesures en mm
+      (sur page imprimée) ou par ajustement graphiqe d'une mesure
+      quelconque, longueur d'une ou de plusieurs mesures
+      sélectionneées en mm ou par ajustement graphique.
+
+- Pour tous les réglages d'espace: soit en mm, soit par ajustement
+  graphique d'un élément sélectionné (ou ensemble d'éléments)
+  affectant l'ensemble, ou l'élément sélectionné.
+
+- Réglage des tailles et polices des chiffres
+
+- Insertion texte et image
+
+- Clés: 
+
+
+
+Gsharp
+################################################################################
+
+Dictionaire
+================================================================================
 
 ::
+
+
+                             système de portées : ensemble de portées liées par des accolades.
 
     staff (stave)          = portée
 
     clef                   = clef
     key signature          = armure
-    time signature         = 
+    time signature         = chiffrage
 
     treble clef            = clef de sol
     alto clef (viola clef) = clef d'ut
@@ -23,8 +91,12 @@ Dictionary
     bar                    = mesure
 
 
+octaviation: 8va = +octave ; 8va bassa = -octave
+
+
+
 Files
---------------------------------------------------------------------------------
+================================================================================
 
 packages
  
@@ -68,6 +140,8 @@ numbering
 
     gives the number of each kind of element. 
     
+
+--
 
 Obseq/obseq
 
@@ -126,7 +200,7 @@ Mxml/commands
 
 
 Schematic class diagram
---------------------------------------------------------------------------------
+================================================================================
 
 ::
 
@@ -170,7 +244,7 @@ Schematic class diagram
 
 
 Class hierarchy
---------------------------------------------------------------------------------
+================================================================================
 ::
 
     gsharp-object ()
@@ -216,7 +290,7 @@ Class hierarchy
 
 
 Questions
-================================================================================
+################################################################################
 
 
 A confirmer:
@@ -226,17 +300,23 @@ A confirmer:
   (cependant, on peut avoir 1-3 portées pour les instruments à large gamme).
 
 
+
+- 6/100 seconde pour un M, environ 5 mm, ça fait (* (/ 180.0 5) 0.06) -> 2.16 seconde par ligne.
+  Moins si on rallonge les mesures.
+
 - fichier midi typique (pas musique métrée).
 
 
-- 
+
+- note portée (avec un trait horizontal dessus)?
+
 
 
 Miscellaneous 
-================================================================================
+################################################################################
 
 Conversion cvs mcclim repository to git
---------------------------------------------------------------------------------
+================================================================================
 
 cd src 
 flex cvsclone.l && gcc -Wall -O2 lex.yy.c -o cvsclone
