@@ -1,6 +1,11 @@
 ;; (load "/home/pjb/works/gsharp/src/abnotation/loader.lisp")
 (in-package "COMMON-LISP-USER")
 
+(import 'ccl:getenv)
+(defsetf getenv ccl:setenv)
+
+
+
 #+ccl (setf ccl:*default-external-format*           :unix
             ccl:*default-file-character-encoding*   :utf-8
             ccl:*default-line-termination*          :unix
@@ -40,7 +45,17 @@
 (load #+(or allegro ccl) #P"GSHARP:src;abnotation;gsharp-init.lisp"
       #-(or allegro ccl) #P"GSHARP:SRC;ABNOTATION;GSHARP-INIT.LISP")
 
-(gsharp:gsharp :new-process t)
+
+
+(defun run-on-display (&optional (display (getenv "DISPLAY")))
+  (setf (getenv "DISPLAY") display)
+  (gsharp:gsharp :new-process t))
+
+#||
+(run-on-display ":0.0")
+(run-on-display "kuiper.lan.informatimago.com")
+||#
+
 
 ;; (mapcar (function pathname-name) (directory #P"GSHARP:**;*.asd"))
 ;; ("gsharp" "functional-geometry" "scigraph" "automaton" "esa" "mcclim-freetype" "mcclim-truetype" "mcclim-tree-with-cross-edges" "conditional-commands" "clim-examples" "clim-listener" "clouseau" "mcclim-gif-bitmaps" "mcclim-jpeg-bitmaps" "mcclim-png-bitmaps" "mcclim-tiff-bitmaps" "mcclim")

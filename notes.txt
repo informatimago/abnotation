@@ -12,12 +12,20 @@ Spécifications
 Principales fonctionalités
 
 - lecture d'une séquence Midi représentant un morceau de musique.
+
 - affichage de la partition correspondante selon la notation AB en mode prévisualisation.
+
 - impression de la partition (sur feuilles A4 ou A3).
 
+- affichage de la séquence Midi sous forme textuelle comme liste de
+  nombres/valeurs : (hauteur duration (h1 h2…) duration …).
+
 - l'utilisateur peut ajuster la mise en page de la partition.
+
 - l'utilisateur peut éditer la partition, en particulier:
+
     - transposition d'une note ou d'un groupe de notes.
+
 
 
 Notation AB
@@ -39,20 +47,31 @@ Impression
 
 
 
-Réglage longueur mesure:
+- option: variation de longueur des mesures pour une même durée de
+  référence.
 
-1- par défaut, minimum selon M = (note dieze note) = 6/100 seconde
 
-2- a- durée de mesure en x 1/100 seconde (minimum 6/100 seconde)
-      =>  si < M  alors
-             soit mesure(s) affectée(s) rallongées en fonction de M, 
-             sopit toutes les mesures rallongées en fonction de M, 
-          sinon longueurs identiques 
 
-   b- facultatif: réglage de la longueur de toutes les mesures en mm
-      (sur page imprimée) ou par ajustement graphiqe d'une mesure
-      quelconque, longueur d'une ou de plusieurs mesures
-      sélectionneées en mm ou par ajustement graphique.
+- Réglage longueur mesure: ::
+
+        1      2      3      4      5
+        ┌──────┬──────┬──────┬──────┬───────┐
+
+  1. par défaut, minimum selon M = 𝅘𝅥♯𝅘𝅥 (note dieze note) = 6/100 seconde
+
+  2. longeur des mesures:
+
+     a. durée de mesure en x 1/100 seconde (minimum 6/100 seconde) ::
+
+            si < M  alors
+               soit mesure(s) affectée(s) rallongées en fonction de M, 
+               soit toutes les mesures rallongées en fonction de M, 
+            sinon longueurs identiques 
+
+     b. facultatif: réglage de la longueur de toutes les mesures en mm
+        (sur page imprimée) ou par ajustement graphiqe d'une mesure
+        quelconque, longueur d'une ou de plusieurs mesures
+        sélectionneées en mm ou par ajustement graphique.
 
 - Pour tous les réglages d'espace: soit en mm, soit par ajustement
   graphique d'un élément sélectionné (ou ensemble d'éléments)
@@ -62,7 +81,49 @@ Réglage longueur mesure:
 
 - Insertion texte et image
 
-- Clés: 
+- choix du nombre de portées par ligne, avec les clefs: (𝄞 𝄢 𝄞𝄢 𝄟𝄞𝄢 𝄞𝄢𝄤 𝄟𝄞𝄢𝄤)
+  (sol fa sol+fa sol8+sol+fa sol+fa+fa8va sol8+sol+fa+fa8va) 
+
+- hauteur d'une portée: 3, 5 ou 7 mm (imprimée).
+
+- le début temporel d'une note est dénoté par la bordure gauche de la hampe.
+
+- armature: ♯ pour do et fa, ♭ pour les autres; pas de ♮ bécare.
+  Mais option pour: ♭𝅘𝅥♮𝅘𝅥  ou  ♯𝅘𝅥♮𝅘𝅥
+
+- dans le cas de modificateurs préfixes sur la première note d'une
+  mesure, ces modificateurs peuvent déborder sur la mesure précédente.
+  Si nécessaire, alonger la mesure précédente.
+
+
+- intensités: symboles avec choix entre continu ou discontinu: ::
+
+        𝆏𝆏𝆏 𝆏𝆏 𝆏  𝆐𝆑  𝆐𝆑  𝆑  𝆑𝆑  𝆑𝆑𝆑        𝆒   𝆓
+        1  2  3  4   5  6  7  8      si progression 
+                                    linéaire détectée
+
+  Quand l'intensité ne change pas, pas de signe.
+
+- polyphonie: notation des agrégats par cluster.
+
+- notation d'une note ou ensemble de notes se prolongeant au delà des
+  suivantes.  Première note tenue : ::
+
+        𝅘𝅥  𝅘𝅥   𝅘𝅥 
+        └ ─ ─ ─ ┘
+
+  toutes les notes tenues : ::
+
+        𝅘𝅥  𝅘𝅥   𝅘𝅥 
+        └───────┘
+
+
+
+.. comment
+    (coerce (mapcar 'cdr (remove-if-not (lambda (x) (prefixp "MUSICAL" (car x))) (ucs-names)))
+            'string)
+
+      "🎼🎹🎵𝇝𝇜𝇛𝇚𝇙𝇘𝇗𝇖𝇕𝇔𝇓𝇒𝇑𝇐𝇏𝇎𝇍𝇌𝇋𝇊𝇉𝇈𝇇𝇆𝇅𝇄𝇃𝇂𝇁𝆺𝅥𝅯𝆹𝅥𝅯𝆺𝅥𝅮𝆹𝅥𝅮𝆺𝅥𝆹𝅥𝆺𝆹𝆸𝆷𝆶𝆵𝆴𝆳𝆲𝆱𝆰𝆯𝆮𝆭𝆬𝆫𝆪𝆩𝆨𝆧𝆦𝆥𝆤𝆣𝆢𝆡𝆠𝆟𝆞𝆝𝆜𝆛𝆚𝆙𝆘𝆗𝆖𝆕𝆔𝆓𝆒𝆑𝆐𝆏𝆎𝆍𝆌𝆋𝆊𝆉𝆈𝆇𝆆𝆅𝆄𝆃𝆂𝆁𝆀𝅿𝅾𝅽𝅼𝅻𝅺𝅹𝅸𝅷𝅶𝅵𝅴𝅳𝅲𝅱𝅰𝅯𝅮𝅭𝅬𝅫𝅪𝅩𝅨𝅧𝅦𝅥𝅘𝅥𝅲𝅘𝅥𝅱𝅘𝅥𝅰𝅘𝅥𝅯𝅘𝅥𝅮𝅘𝅥𝅗𝅥𝅝𝅜𝅛𝅚𝅙𝅘𝅗𝅖𝅕𝅔𝅓𝅒𝅑𝅐𝅏𝅎𝅍𝅌𝅋𝅊𝅉𝅈𝅇𝅆𝅅𝅄𝅃𝅂𝅁𝅀𝄿𝄾𝄽𝄼𝄻𝄺𝄹𝄸𝄷𝄶𝄵𝄴𝄳𝄲𝄱𝄰𝄯𝄮𝄭𝄬𝄫𝄪𝄩𝄦𝄥𝄤𝄣𝄢𝄡𝄠𝄟𝄞𝄝𝄜𝄛𝄚𝄙𝄘𝄗𝄖𝄕𝄔𝄓𝄒𝄑𝄐𝄏𝄎𝄍𝄌𝄋𝄊𝄉𝄈𝄇𝄆𝄅𝄄𝄃𝄂𝄁𝄀"
 
 
 
@@ -288,27 +349,30 @@ Class hierarchy
     x-y-width-mixin ()
 
 
+.. comment:
 
-Questions
-################################################################################
-
-
-A confirmer:
-
-- pas de 'measures' (set of parallel 'bars').
-
-  (cependant, on peut avoir 1-3 portées pour les instruments à large gamme).
+    Questions
+    ################################################################################
 
 
+    A confirmer:
 
-- 6/100 seconde pour un M, environ 5 mm, ça fait (* (/ 180.0 5) 0.06) -> 2.16 seconde par ligne.
-  Moins si on rallonge les mesures.
+    - pas de 'measures' (set of parallel 'bars').
 
-- fichier midi typique (pas musique métrée).
-
+      (cependant, on peut avoir 1-3 portées pour les instruments à large gamme).
 
 
-- note portée (avec un trait horizontal dessus)?
+    - 6/100 seconde pour un M, environ 5 mm, ça fait (* (/ 180.0 5) 0.06) -> 2.16 seconde par ligne.
+      Moins si on rallonge les mesures.
+
+
+    - fichier midi typique (pas musique métrée)?
+
+
+
+    - note portée (avec un trait horizontal dessus)?
+
+
 
 
 
@@ -318,18 +382,21 @@ Miscellaneous
 Conversion cvs mcclim repository to git
 ================================================================================
 
-cd src 
-flex cvsclone.l && gcc -Wall -O2 lex.yy.c -o cvsclone
-./cvsclone -d  :pserver:anonymous@common-lisp.net:/project/mcclim/cvsroot mcclim-CVS
+:: 
+
+    cd src 
+    flex cvsclone.l && gcc -Wall -O2 lex.yy.c -o cvsclone
+    ./cvsclone -d  :pserver:anonymous@common-lisp.net:/project/mcclim/cvsroot mcclim-CVS
 
 
-mkdir mcclim-git  ; cd  mcclim-git  ; git init ; echo '*~' > .gitignore ; git add .gitignore ; git commit -a -m 'Added ".gitignore".'
-git --bare cvsimport -d:local:/home/pjb/works/gsharp/src/mcclim -v -k -m -i -o master .
+    mkdir mcclim-git  ; cd  mcclim-git  ; git init ; echo '\*~' > .gitignore ; git add .gitignore ; git commit -a -m 'Added ".gitignore".'
+    git --bare cvsimport -d:local:/home/pjb/works/gsharp/src/mcclim -v -k -m -i -o master .
 
 
-https://github.com/$u/mcclim
+    https://github.com/$u/mcclim
 
 
+Finally, we're using a clone of https://github.com/jmorrison/mcclim.git
 
 .. comment: 
    ---------------------------------------------------------------
