@@ -398,6 +398,45 @@ Conversion cvs mcclim repository to git
 
 Finally, we're using a clone of https://github.com/jmorrison/mcclim.git
 
+
+
+Warnings
+================================================================================
+
+
+::
+
+    ;Compiler warnings for "home:works;gsharp;src;gsharp;gui.lisp.newest" :
+    ;   In (esa-buffer:frame-make-buffer-from-stream (gsharp:gsharp t)) inside an anonymous lambda form: Undefined function gsharp-midi-load:midi-stream-p
+    ;   In (esa-buffer:frame-make-buffer-from-stream (gsharp:gsharp t)) inside an anonymous lambda form: Undefined function gsharp-midi-load:read-buffer-from-midi-stream
+    ;Compiler warnings for "home:works;gsharp;src;gsharp;drawing.lisp.newest" :
+    ;   In gsharp-drawing::final-absolute-dot-xoffset: Undefined function gsharp-measure:final-relative-dot-xoffset
+    ;Compiler warnings for "home:works;gsharp;src;gsharp;buffer.lisp.newest" :
+    ;   In gsharp-buffer::add-new-selection: Undefined function (setf gsharp-buffer::buffer-back-selection)
+    ;   In gsharp-buffer::add-new-selection: Undefined function gsharp-buffer::buffer-back-selection
+    ;   In gsharp-buffer::add-new-selection: Undefined function (setf gsharp-buffer::buffer-back-selection)
+    ;   In gsharp-buffer::add-new-selection: Undefined function gsharp-buffer::buffer-back-selection
+    ;   In gsharp-buffer::add-new-selection: Undefined function gsharp-buffer::buffer-forward-selection
+    ;   In gsharp-buffer::selection-browse-forward: Undefined function gsharp-buffer::buffer-forward-selection
+    ;   In gsharp-buffer::selection-browse-forward: Undefined function (setf gsharp-buffer::buffer-forward-selection)
+    ;   In gsharp-buffer::selection-browse-forward: Undefined function (setf gsharp-buffer::buffer-back-selection)
+    ;   In gsharp-buffer::selection-browse-forward: Undefined function gsharp-buffer::buffer-back-selection
+    ;   In gsharp-buffer::selection-browse-forward: Undefined function gsharp-buffer::buffer-forward-selection
+    ;   In gsharp-buffer::selection-browse-forward: Undefined function gsharp-buffer::buffer-forward-selection
+    ;   In gsharp-buffer::selection-browse-backward: Undefined function gsharp-buffer::buffer-back-selection
+    ;   In gsharp-buffer::selection-browse-backward: Undefined function (setf gsharp-buffer::buffer-back-selection)
+    ;   In gsharp-buffer::selection-browse-backward: Undefined function (setf gsharp-buffer::buffer-forward-selection)
+    ;   In gsharp-buffer::selection-browse-backward: Undefined function gsharp-buffer::buffer-forward-selection
+    ;   In gsharp-buffer::selection-browse-backward: Undefined function gsharp-buffer::buffer-back-selection
+    ;   In gsharp-buffer::selection-browse-backward: Undefined function gsharp-buffer::buffer-back-selection
+    ;   In gsharp-buffer::buffer-selection: Undefined function gsharp-buffer::buffer-back-selection
+    ;   In gsharp-buffer::buffer-selection: Undefined function gsharp-buffer::buffer-back-selection
+    ;Compiler warnings for "home:works;gsharp;src;mcclim;Drei;syntax.lisp.newest" :
+    ;   In (drei-syntax:update-lex (drei-syntax:incremental-lexer t t)) inside an anonymous lambda form: Undefined function drei-syntax::low-mark
+
+
+
+
 .. comment: 
    ---------------------------------------------------------------
                             -------------
