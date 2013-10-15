@@ -28,37 +28,53 @@
 
 (defun staves/treble ()
   ;; 𝄞
-  )
+  (list (make-fiveline-staff :name "treble"
+                             :clef (clef/treble))))
 
 (defun staves/bass ()
   ;; 𝄢
-  )
+  (list (make-fiveline-staff :name "bass"
+                             :clef (clef/bass))))
 
 (defun staves/treble+bass ()
   ;; 𝄞𝄢
-  )
+  (list (make-fiveline-staff :name "treble"
+                             :clef (clef/treble))
+        (make-fiveline-staff :name "bass"
+                             :clef (clef/bass))))
 
-(defun staves/treble8+treble+bass ()
+(defun staves/treble8va+treble+bass ()
   ;; 𝄟𝄞𝄢
-  )
+  (list (make-fiveline-staff :name "treble 8va"
+                             :clef (clef/treble8va))
+        (make-fiveline-staff :name "treble"
+                             :clef (clef/treble))
+        (make-fiveline-staff :name "bass"
+                             :clef (clef/bass))))
 
-(defun staves/treble+bass+bass8va ()
+(defun staves/treble+bass+bass8vb ()
   ;; 𝄞𝄢𝄤
-  )
+  (list (make-fiveline-staff :name "treble"
+                             :clef (clef/treble))
+        (make-fiveline-staff :name "bass"
+                             :clef (clef/bass))
+        (make-fiveline-staff :name "bass 8vb"
+                             :clef (clef/bass8vb))))
 
-(defun staves/treble8+treble+bass+bass8vb ()
+(defun staves/treble8va+treble+bass+bass8vb ()
   ;; 𝄟𝄞𝄢𝄤
   (list (make-fiveline-staff :name "treble 8va"
-                             :clef (clef/treble8)
-                             :keysig)
+                             :clef (clef/treble8va))
         (make-fiveline-staff :name "treble"
-                             :clef (clef/treble)
-                             :keysig)
+                             :clef (clef/treble))
         (make-fiveline-staff :name "bass"
-                             :clef (clef/bass)
-                             :keysig)
+                             :clef (clef/bass))
         (make-fiveline-staff :name "bass 8vb"
-                             :clef (clef/bass8vb)
-                             :keysig))  
-  )
+                             :clef (clef/bass8vb))))
 
+(defvar *abnotation/staves* '(staves/trebble
+                              staves/bass
+                              staves/treble+bass
+                              staves/treble8va+treble+bass
+                              staves/treble+bass+bass8vb
+                              staves/treble8va+treble+bass+bass8vb))

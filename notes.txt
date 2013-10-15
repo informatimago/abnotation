@@ -399,6 +399,15 @@ Conversion cvs mcclim repository to git
 Finally, we're using a clone of https://github.com/jmorrison/mcclim.git
 
 
+References
+================================================================================
+
+:: 
+
+    midi standard        http://www.midi.org/techspecs/
+    midi status          http://www.midimountain.com/midi/midi_status.htm
+    midi control change  http://nickfever.com/402/production-tips-and-resources/midi-cc-list/
+
 
 Warnings
 ================================================================================
