@@ -1,9 +1,8 @@
 .. comment: -*- mode:rst;coding:utf-8 -*-
 
-
-
-Abnotation
+ABNotation Design Notes
 ################################################################################
+
 
 Spécifications
 ================================================================================
@@ -27,7 +26,97 @@ Principales fonctionalités
     - transposition d'une note ou d'un groupe de notes.
 
 
+Midi Reader
+================================================================================
 
+TODO: see multi-track.
+
+midi track -> sequence of CLUSTER-*note | rest
+
+note-on (channel note velocity≠0)
+note-off (channel note velocity), or note-on (channel note velocity=0)
+polyphonic-aftertouch (channel note pressure)
+program-change (channel program-number)
+channel-aftertouch (channel pressure)
+pitch-wheel-change (channel value)
+control/mode-change
+
+
+note-on / note-off --> sequence of (cluster-*note | rest)
+
+velocity changes   --> 𝆒   𝆓
+
+velocity intervals -->  𝆏𝆏𝆏 𝆏𝆏 𝆏  𝆐𝆑  𝆐𝆑  𝆑  𝆑𝆑  𝆑𝆑𝆑        𝆒   𝆓
+                         1  2  3  4   5  6  7  8      si progression
+                                                     linéaire détectée
+
+polyphonic-aftertouch ) --> <>  𝆒   𝆓 ; or ~~~?
+channel-aftertouch    )
+
+pitch-wheel-change --> ~~~ or some other?  eg. 𝄳 𝄲 𝄱 𝄰 𝄯 𝄮 𝄭 𝄬 𝄫 
+
+
+
+
+
+
+gsharp note pitch is (integer 0 127)
+
+- accidentals (member :natural :flat :double-flat :sharp :double-sharp)
+
+gsharp note durations are defined as:
+
+- head (or null (member :long :breve :whole :half :filled))
+
+- dots (or null (integer 0 3))
+
+Notice: gsharp note is subclass of gsharp-objects, not of
+        melodic-element or rhythmic-element.  A note is inside a
+        cluster, which is a melodic-element which is a
+        rhythmic-element.
+
+
+ +----------+-------------------+-----------+---------------+---------------------+
+ | English  | French            | duration  | rest          | notehead            |
+ +==========+===================+===========+===============+=====================+
+ |  :maxima |                   | 8         |               |                     |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :long   | longue            | 4         | :long-rest    | :breve-notehead     |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :breve  | carrée            | 2         | :breve-rest   | :breve-notehead     |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :whole  | ronde             | 1         | :whole-rest   | :whole-notehead     |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :half   | blanche           | 1/2       | :half-rest    | :half-notehead      |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :filled | noire             | 1/4       | :quarter-rest | :filled-notehead    |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :8th    | croche            | 1/8       | :8th-rest     | :filled-notehead    |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :16th   | double-croche     | 1/16      | :16th-rest    | :filled-notehead    |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :32th   | triple-croche     | 1/32      | :32nd-rest    | :filled-notehead    |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :64th   | quadruple-croche  | 1/64      | :64th-rest    | :filled-notehead    |
+ +----------+-------------------+-----------+---------------+---------------------+
+ |  :128th  | quintuple-croche  | 1/128     |               |                     |
+ +----------+-------------------+-----------+---------------+---------------------+
+
+
+
+We should define our own class of notes or cluster (as subclass of
+gsharp:cluster).
+
+AB notation notes should be defined as pitch/duration/force.
+
+The duration is defined on the superclass rhythmic-element.
+(undotted-duration rhythmic-element)
+(duration rhythmic-element)
+
+We can override those methods to have specific durations.
+
+
+        
 Notation AB
 ================================================================================
 
@@ -170,140 +259,7 @@ Impression
 
 
 
-Gsharp
-################################################################################
-
-Dictionaire
-================================================================================
-
-::
-
-
-                             système de portées : ensemble de portées liées par des accolades.
-
-    staff (stave)          = portée
-
-    clef                   = clef
-    key signature          = armure
-    time signature         = chiffrage
-
-    treble clef            = clef de sol
-    alto clef (viola clef) = clef d'ut
-    tenor clef             = clef d'ut
-    bass clef              = clef de fa
-
-    bar                    = mesure
-
-
-octaviation: 8va = +octave ; 8va bassa = -octave
-
-
-
-Files
-================================================================================
-
-packages
-
-    definition of the packages.
-
-utilities
-
-    stealth class mixin &c.
-
-mf
-
-    meta-font
-
-
-sdl
-
-    drawing fonts
-
-
-score-pane
-
-    drawing partition elements
-
-
-buffer
-
-    definition of parition structure objects, from buffers down to the notes (elements).
-
-
-melody
-
-    musical elements in the buffers.
-
-
-lyrics
-
-    lyric elements in the buffers
-
-
-numbering
-
-    gives the number of each kind of element.
-
-
---
-
-Obseq/obseq
-
-    Object sequences, subdivided in groups by optimization of a cost function.
-
-
-measure
-
-    measure = set of parallel bars, and obelem.  This file provides
-    the cost functions to spread the measures nicely over the lines of
-    the partition.
-
-
-beaming
-
-    Computes position and direction of beams.
-
-
-elasticity
-
-    Elasticity function (used by drawing).
-
-
-drawing
-
-    compute and draw the partition
-
-
-cursor
-
-input-state
-
-modes
-
-play
-
-    Midi play.
-
-
-clim-utils
-
-gui
-
-undo
-
-fontview
-
-
-Mxml/sequence
-Mxml/mxml
-Mxml/commands
-
-    Music XML file format.
-
-
-
-
-Schematic class diagram
+Gsharp Schematic class diagram
 ================================================================================
 
 ::
@@ -346,147 +302,6 @@ Schematic class diagram
                 |         |                                                   
               12-edo   regular-temperament                                    
                                                                               
-
-Class hierarchy
-================================================================================
-::
-
-    gsharp-object ()
-    name-mixin ()
-    rhythmic-element (element)
-    buffer (gsharp-object esa-buffer-mixin drei:undo-mixin)
-    layer (gsharp-object name-mixin)
-    staff (gsharp-object name-mixin)
-    bar (gsharp-object)
-    element (gsharp-object)
-    segment (gsharp-object)
-    slice (gsharp-object)
-
-    melody-bar (bar)
-    staffwise-element (element)
-    note (gsharp-object)
-    tuning (gsharp-object)
-    melody-layer (layer)
-    cluster (melody-element)
-    rest (melody-element)
-    melody-element (rhythmic-element)
-    fiveline-staff (staff)
-    clef (staffwise-element gsharp-object name-mixin)
-    key-signature (staffwise-element)
-    time-signature (staffwise-element)
-    12-edo (tuning)
-    regular-temperament (tuning)
-
-    lyrics-bar (bar)
-    lyrics-layer (layer)
-    lyrics-element (rhythmic-element)
-    lyrics-staff (staff)
-
-    measure-cost-method (cost-method)
-    timeline (flexichain:element-rank-mixin)
-    ranked-flexichain (flexichain:standard-flexichain flexichain:flexirank-mixin)
-    measure (obseq-elem)
-    measure-seq-cost (seq-cost)
-    measure-total-cost (total-cost)
-
-    x-y-width-mixin ()
-
-
-.. comment:
-
-    Questions
-    ################################################################################
-
-
-    A confirmer:
-
-    - pas de 'measures' (set of parallel 'bars').
-
-      (cependant, on peut avoir 1-3 portées pour les instruments à large gamme).
-
-
-    - 6/100 seconde pour un M, environ 5 mm, ça fait (* (/ 180.0 5) 0.06) -> 2.16 seconde par ligne.
-      Moins si on rallonge les mesures.
-
-
-    - fichier midi typique (pas musique métrée)?
-
-
-
-    - note portée (avec un trait horizontal dessus)?
-
-
-
-
-
-Miscellaneous
-################################################################################
-
-Conversion cvs mcclim repository to git
-================================================================================
-
-::
-
-    cd src
-    flex cvsclone.l && gcc -Wall -O2 lex.yy.c -o cvsclone
-    ./cvsclone -d  :pserver:anonymous@common-lisp.net:/project/mcclim/cvsroot mcclim-CVS
-
-
-    mkdir mcclim-git  ; cd  mcclim-git  ; git init ; echo '\*~' > .gitignore ; git add .gitignore ; git commit -a -m 'Added ".gitignore".'
-    git --bare cvsimport -d:local:/home/pjb/works/gsharp/src/mcclim -v -k -m -i -o master .
-
-
-    https://github.com/$u/mcclim
-
-
-Finally, we're using a clone of https://github.com/jmorrison/mcclim.git
-
-
-References
-================================================================================
-
-::
-
-    midi standard        http://www.midi.org/techspecs/
-    midi status          http://www.midimountain.com/midi/midi_status.htm
-    midi control change  http://nickfever.com/402/production-tips-and-resources/midi-cc-list/
-
-
-Warnings
-================================================================================
-
-
-::
-
-    ;Compiler warnings for "home:works;gsharp;src;gsharp;gui.lisp.newest" :
-    ;   In (esa-buffer:frame-make-buffer-from-stream (gsharp:gsharp t)) inside an anonymous lambda form: Undefined function gsharp-midi-load:midi-stream-p
-    ;   In (esa-buffer:frame-make-buffer-from-stream (gsharp:gsharp t)) inside an anonymous lambda form: Undefined function gsharp-midi-load:read-buffer-from-midi-stream
-    ;Compiler warnings for "home:works;gsharp;src;gsharp;drawing.lisp.newest" :
-    ;   In gsharp-drawing::final-absolute-dot-xoffset: Undefined function gsharp-measure:final-relative-dot-xoffset
-    ;Compiler warnings for "home:works;gsharp;src;gsharp;buffer.lisp.newest" :
-    ;   In gsharp-buffer::add-new-selection: Undefined function (setf gsharp-buffer::buffer-back-selection)
-    ;   In gsharp-buffer::add-new-selection: Undefined function gsharp-buffer::buffer-back-selection
-    ;   In gsharp-buffer::add-new-selection: Undefined function (setf gsharp-buffer::buffer-back-selection)
-    ;   In gsharp-buffer::add-new-selection: Undefined function gsharp-buffer::buffer-back-selection
-    ;   In gsharp-buffer::add-new-selection: Undefined function gsharp-buffer::buffer-forward-selection
-    ;   In gsharp-buffer::selection-browse-forward: Undefined function gsharp-buffer::buffer-forward-selection
-    ;   In gsharp-buffer::selection-browse-forward: Undefined function (setf gsharp-buffer::buffer-forward-selection)
-    ;   In gsharp-buffer::selection-browse-forward: Undefined function (setf gsharp-buffer::buffer-back-selection)
-    ;   In gsharp-buffer::selection-browse-forward: Undefined function gsharp-buffer::buffer-back-selection
-    ;   In gsharp-buffer::selection-browse-forward: Undefined function gsharp-buffer::buffer-forward-selection
-    ;   In gsharp-buffer::selection-browse-forward: Undefined function gsharp-buffer::buffer-forward-selection
-    ;   In gsharp-buffer::selection-browse-backward: Undefined function gsharp-buffer::buffer-back-selection
-    ;   In gsharp-buffer::selection-browse-backward: Undefined function (setf gsharp-buffer::buffer-back-selection)
-    ;   In gsharp-buffer::selection-browse-backward: Undefined function (setf gsharp-buffer::buffer-forward-selection)
-    ;   In gsharp-buffer::selection-browse-backward: Undefined function gsharp-buffer::buffer-forward-selection
-    ;   In gsharp-buffer::selection-browse-backward: Undefined function gsharp-buffer::buffer-back-selection
-    ;   In gsharp-buffer::selection-browse-backward: Undefined function gsharp-buffer::buffer-back-selection
-    ;   In gsharp-buffer::buffer-selection: Undefined function gsharp-buffer::buffer-back-selection
-    ;   In gsharp-buffer::buffer-selection: Undefined function gsharp-buffer::buffer-back-selection
-    ;Compiler warnings for "home:works;gsharp;src;mcclim;Drei;syntax.lisp.newest" :
-    ;   In (drei-syntax:update-lex (drei-syntax:incremental-lexer t t)) inside an anonymous lambda form: Undefined function drei-syntax::low-mark
-
-
 
 
 .. comment:
