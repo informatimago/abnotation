@@ -31,16 +31,21 @@
 
 (load-logical-pathname-translations "GSHARP")
 
+(defparameter *src*
+  #+ccl   #P"GSHARP:src;"
+  #+clisp #P"GSHARP:SRC;")
 
 #+ccl       (ccl::cd (truename #P"GSHARP:src;abnotation;"))
 #+clisp     (ext:cd  (truename #P"GSHARP:SRC;ABNOTATION;"))
+#-(or ccl clisp) (error "(cd #P\"GSHARP:SRC;ABNOTATION;\")")
 
 
-(dolist (dir (find-asdf-subdirectories  '(#P"GSHARP:")))
+(dolist (dir (find-asdf-subdirectories  (list *src*)))
   (unless (member "old" (pathname-directory dir) :test (function string=))
     (pushnew dir asdf:*central-registry* :test (function equalp))))
 
 (ql:quickload :gsharp)
+(ql:quickload :abnotation)
 
 (load #+(or allegro ccl) #P"GSHARP:src;abnotation;gsharp-init.lisp"
       #-(or allegro ccl) #P"GSHARP:SRC;ABNOTATION;GSHARP-INIT.LISP")

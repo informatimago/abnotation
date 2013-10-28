@@ -59,7 +59,7 @@ Impression
 
   1. par défaut, minimum selon M = 𝅘𝅥♯𝅘𝅥 (note dieze note) = 6/100 seconde
 
-  2. longeur des mesures:
+  2. longueur des mesures:
 
      a. durée de mesure en x 1/100 seconde (minimum 6/100 seconde) ::
 
@@ -81,51 +81,9 @@ Impression
 
 - Insertion texte et image
 
-- choix du nombre de portées par ligne, avec les clefs: (𝄞 𝄢 𝄞𝄢 𝄟𝄞𝄢 𝄞𝄢𝄤 𝄟𝄞𝄢𝄤)
-  (sol fa sol+fa sol8+sol+fa sol+fa+fa8va sol8+sol+fa+fa8va)  ::
- 
-                                   --sol-5--
-                      -------------fa-------------------------
-                                  mi        
-                      -----------re---------------------------
-                                do          
-                      ---------si-----------------------------
-                              la            
-                  sol ---o--sol---------4--------------------- clé de sol 8va
-    -------------fa-----------fa------------
-                mi    ---------mi-----------------------------
-    -----------re---------------re----------
-              do                --do--      
-    ---------si-----------------------------
-            la                              
-    ---o--sol--- ------------------------3-- clé de sol
-            fa                              
-    ---------mi-----------------------------
-              re                            
-             --do--                         
-            si                              
-    -------la-------------------------------
-          sol                            2  
-    ---)-fa--------------------------------- clé de fa
-          mi                              
-    -------re-------------------------------
-            do                            
-    ---------si-----------------------------
-              la    -------la-------------------------------
-    -----------sol--------sol------------1--
-                fa  ---)-fa--------------------------------- clé de fa 8vb
-                          mi              
-                    -------re-------------------------------
-                            do            
-                    ---------si-----------------------------
-                              la          
-                    -----------sol-------0------------------
-                                fa        
-                                --mi--                                          
-                                    do   0
-
-
-
+- choix du nombre de portées par ligne, avec les clefs: (𝄞 𝄢 𝄞𝄢 𝄞𝄸𝄞𝄢 𝄞𝄢𝄢𝄹 𝄞𝄸𝄞𝄢𝄢𝄹)
+  (sol fa sol+fa sol15ma+sol+fa sol+fa+fa15mb sol15ma+sol+fa+fa15mb)  ::
+  La note la plus basse est do1.
 
 - hauteur d'une portée: 3, 5 ou 7 mm (imprimée).
 
@@ -431,10 +389,8 @@ Conversion cvs mcclim repository to git
     flex cvsclone.l && gcc -Wall -O2 lex.yy.c -o cvsclone
     ./cvsclone -d  :pserver:anonymous@common-lisp.net:/project/mcclim/cvsroot mcclim-CVS
 
-
     mkdir mcclim-git  ; cd  mcclim-git  ; git init ; echo '\*~' > .gitignore ; git add .gitignore ; git commit -a -m 'Added ".gitignore".'
     git --bare cvsimport -d:local:/home/pjb/works/gsharp/src/mcclim -v -k -m -i -o master .
-
 
     https://github.com/$u/mcclim
 
@@ -450,7 +406,8 @@ References
     midi standard        http://www.midi.org/techspecs/
     midi status          http://www.midimountain.com/midi/midi_status.htm
     midi control change  http://nickfever.com/402/production-tips-and-resources/midi-cc-list/
-
+    Unicode:             http://www.marathon-studios.com/unicode/categories/So/Other_Symbol
+                         http://www.unicode.org/charts/PDF/U1D100.pdf
 
 Warnings
 ================================================================================

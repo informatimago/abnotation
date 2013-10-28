@@ -17,64 +17,71 @@
 (defun clef/bass            () (make-clef :bass   :lineno 4))
 (defun clef/subbass         () (make-clef :bass   :lineno 5))
 
+(defun clef/treble15ma      () (make-clef :treble15ma :lineno 2))
+(defun clef/treble8va       () (make-clef :treble8va  :lineno 2))
+(defun clef/treble8vb       () (make-clef :treble8vb  :lineno 2))
+(defun clef/treble15mb      () (make-clef :treble15mb :lineno 2))
 
-(defun clef/treble8va       () (make-clef :treble8va :lineno 2))
-(defun clef/bass8vb         () (make-clef :bass8vb   :lineno 2))
+(defun clef/bass15ma        () (make-clef :bass15ma   :lineno 2))
+(defun clef/bass8va         () (make-clef :bass8va    :lineno 2))
+(defun clef/bass8vb         () (make-clef :bass8vb    :lineno 2))
+(defun clef/bass15mb        () (make-clef :bass15mb   :lineno 2))
 
-;; - choix du nombre de portées par ligne, avec les clefs: (𝄞 𝄢 𝄞𝄢 𝄟𝄞𝄢 𝄞𝄢𝄤 𝄟𝄞𝄢𝄤)
-;;   (sol fa sol+fa sol8+sol+fa sol+fa+fa8va sol8+sol+fa+fa8va) 
+
+;; - choix du nombre de portées par ligne, avec les clefs: (𝄞 𝄢 𝄞𝄢 𝄞𝄸𝄞𝄢 𝄞𝄢𝄢𝄹 𝄞𝄸𝄞𝄢𝄢𝄹)
+;;   (sol fa sol+fa sol15ma+sol+fa sol+fa+fa15mb sol15ma+sol+fa+fa15mb)  ::
 
 
 
 (defun staves/treble ()
-  ;; 𝄞
+  ;; "𝄞"
   (list (make-fiveline-staff :name "treble"
                              :clef (clef/treble))))
 
 (defun staves/bass ()
-  ;; 𝄢
+  ;; "𝄢"
   (list (make-fiveline-staff :name "bass"
                              :clef (clef/bass))))
 
 (defun staves/treble+bass ()
-  ;; 𝄞𝄢
+  ;; "𝄞 𝄢"
   (list (make-fiveline-staff :name "treble"
                              :clef (clef/treble))
         (make-fiveline-staff :name "bass"
                              :clef (clef/bass))))
 
-(defun staves/treble8va+treble+bass ()
-  ;; 𝄟𝄞𝄢
-  (list (make-fiveline-staff :name "treble 8va"
-                             :clef (clef/treble8va))
+(defun staves/treble15ma+treble+bass ()
+  ;; "𝄞𝄸 𝄞 𝄢" 
+  (list (make-fiveline-staff :name "treble 15ma"
+                             :clef (clef/treble15ma))
         (make-fiveline-staff :name "treble"
                              :clef (clef/treble))
         (make-fiveline-staff :name "bass"
                              :clef (clef/bass))))
 
-(defun staves/treble+bass+bass8vb ()
-  ;; 𝄞𝄢𝄤
+(defun staves/treble+bass+bass15mb ()
+  ;;  "𝄞 𝄢 𝄢𝄹"
   (list (make-fiveline-staff :name "treble"
                              :clef (clef/treble))
         (make-fiveline-staff :name "bass"
                              :clef (clef/bass))
-        (make-fiveline-staff :name "bass 8vb"
-                             :clef (clef/bass8vb))))
+        (make-fiveline-staff :name "bass 15mb"
+                             :clef (clef/bass15mb))))
 
-(defun staves/treble8va+treble+bass+bass8vb ()
-  ;; 𝄟𝄞𝄢𝄤
-  (list (make-fiveline-staff :name "treble 8va"
-                             :clef (clef/treble8va))
+(defun staves/treble15ma+treble+bass+bass15mb ()
+  ;; "𝄞𝄸 𝄞 𝄢 𝄢𝄹"
+  (list (make-fiveline-staff :name "treble 15ma"
+                             :clef (clef/treble15ma))
         (make-fiveline-staff :name "treble"
                              :clef (clef/treble))
         (make-fiveline-staff :name "bass"
                              :clef (clef/bass))
-        (make-fiveline-staff :name "bass 8vb"
-                             :clef (clef/bass8vb))))
+        (make-fiveline-staff :name "bass 15mb"
+                             :clef (clef/bass15mb))))
 
-(defvar *abnotation/staves* '(staves/trebble
-                              staves/bass
-                              staves/treble+bass
-                              staves/treble8va+treble+bass
-                              staves/treble+bass+bass8vb
-                              staves/treble8va+treble+bass+bass8vb))
+(defparameter *abnotation/staves* '(staves/trebble
+                                    staves/bass
+                                    staves/treble+bass
+                                    staves/treble15ma+treble+bass
+                                    staves/treble+bass+bass15mb
+                                    staves/treble15ma+treble+bass+bass15mb))
