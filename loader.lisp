@@ -78,7 +78,7 @@
   (unless (member "old" (pathname-directory dir) :test (function string=))
     (pushnew dir asdf:*central-registry* :test (function equalp))))
 
-(ql:quickload :gsharp)
+;; (ql:quickload :gsharp)
 (ql:quickload :abnotation)
 
 (load #+(or allegro ccl) #P"GSHARP:src;abnotation;gsharp-init.lisp"

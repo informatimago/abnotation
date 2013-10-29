@@ -12,7 +12,6 @@
 
 
 
-
 (define-gsharp-command (com-pjb :name t)
     ((argument 't :prompt "prefix"))
   (format *trace-output* "~S argument = ~S~%" 'com-pjb argument))
