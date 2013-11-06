@@ -90,6 +90,19 @@
   (setf (getenv "DISPLAY") display)
   (gsharp:gsharp :new-process t))
 
+(defun gsharp-buffer ()
+  (gsharp::buffer (first (gsharp::views (first gsharp::*gsharp-instances*)))))
+
+(defmacro in-gsharp (&body body)
+  `(let ((gsharp::*application-frame*  (first gsharp::*gsharp-instances*))
+         (gsharp::*esa-instance*       (first gsharp::*gsharp-instances*)))
+     (multiple-value-prog1 (progn ,@body)
+       (let ((sheet (clim:frame-top-level-sheet (first gsharp::*gsharp-instances*))))
+        (clim:repaint-sheet sheet (clim:sheet-region sheet)))
+       ;; (gsharp::redisplay-frame-panes (first gsharp::*gsharp-instances*) :force-p t)
+       )))
+
+
 #||
 (run-on-display ":0.0")
 (run-on-display "kuiper.lan.informatimago.com")
@@ -132,3 +145,4 @@
 #P"/home/pjb/works/gsharp/src/loader.lisp"
 cl-user> 
 |#
+
