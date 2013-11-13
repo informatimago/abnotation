@@ -97,10 +97,9 @@
   `(let ((gsharp::*application-frame*  (first gsharp::*gsharp-instances*))
          (gsharp::*esa-instance*       (first gsharp::*gsharp-instances*)))
      (multiple-value-prog1 (progn ,@body)
-       (let ((sheet (clim:frame-top-level-sheet (first gsharp::*gsharp-instances*))))
-        (clim:repaint-sheet sheet (clim:sheet-region sheet)))
        ;; (gsharp::redisplay-frame-panes (first gsharp::*gsharp-instances*) :force-p t)
-       )))
+       (let ((sheet (clim:frame-top-level-sheet (first gsharp::*gsharp-instances*))))
+        (clim:repaint-sheet sheet (clim:sheet-region sheet))))))
 
 
 #||

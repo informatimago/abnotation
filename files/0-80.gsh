@@ -21,7 +21,7 @@ G#V4
                              :ANNOTATIONS COMMON-LISP:NIL
                              :LEFT-PAD 0
                              :RIGHT-PAD 0
-                             :STAFF #1#
+                             :STAFF (1 COMMON-LISP:T . #1#)
                              :ALTERATIONS #(:NATURAL
                                             :NATURAL
                                             :NATURAL
@@ -31,6 +31,18 @@ G#V4
                                             :NATURAL) ] ])
    :SEGMENTS ([GSHARP-BUFFER:SEGMENT
                  :LAYERS ([GSHARP-BUFFER:MELODY-LAYER
+                             :NAME "above"
+                             :STAVES (#1#)
+                             :HEAD [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ]
+                             :BODY [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ]
+                             :TAIL [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ] ]
+                          [GSHARP-BUFFER:MELODY-LAYER
                              :NAME "default layer"
                              :STAVES (#1#)
                              :HEAD [GSHARP-BUFFER:SLICE
@@ -39,6 +51,60 @@ G#V4
                              :BODY [GSHARP-BUFFER:SLICE
                                     :BARS ([GSHARP-BUFFER:MELODY-BAR
                                             :ELEMENTS ([GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 0
+                                                        :LBEAMS 0
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 0
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :FLAT
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 0
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 0
+                                                        :LBEAMS 0
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 1
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :FLAT
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
                                                         :XOFFSET 0
                                                         :ANNOTATIONS COMMON-LISP:NIL
                                                         :LEFT-PAD 0
@@ -62,8 +128,26 @@ G#V4
                                                         :LEFT-PAD 0
                                                         :RIGHT-PAD 0
                                                         :NOTEHEAD :FILLED
-                                                        :RBEAMS 0
-                                                        :LBEAMS 0
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 2
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :FLAT
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
                                                         :DOTS 0
                                                         :STEM-DIRECTION :AUTO
                                                         :NOTES ([GSHARP-BUFFER:NOTE
@@ -93,6 +177,43 @@ G#V4
                                                                  :TIE-RIGHT COMMON-LISP:NIL
                                                                  :TIE-LEFT COMMON-LISP:NIL ]) ]
                                                        [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 3
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :SHARP
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 4
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :FLAT
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]) ]
+                                           [GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS ([GSHARP-BUFFER:CLUSTER
                                                         :XOFFSET 0
                                                         :ANNOTATIONS COMMON-LISP:NIL
                                                         :LEFT-PAD 0
@@ -140,6 +261,24 @@ G#V4
                                                         :STEM-DIRECTION :AUTO
                                                         :NOTES ([GSHARP-BUFFER:NOTE
                                                                  :PITCH 6
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 0
+                                                        :LBEAMS 0
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 7
                                                                  :STAFF #1#
                                                                  :HEAD :FILLED
                                                                  :ACCIDENTALS :NATURAL
@@ -235,8 +374,9 @@ G#V4
                                                                  :ACCIDENTALS :NATURAL
                                                                  :DOTS 0
                                                                  :TIE-RIGHT COMMON-LISP:NIL
-                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
-                                                       [GSHARP-BUFFER:CLUSTER
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]) ]
+                                           [GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS ([GSHARP-BUFFER:CLUSTER
                                                         :XOFFSET 0
                                                         :ANNOTATIONS COMMON-LISP:NIL
                                                         :LEFT-PAD 0
@@ -379,8 +519,9 @@ G#V4
                                                                  :ACCIDENTALS :NATURAL
                                                                  :DOTS 0
                                                                  :TIE-RIGHT COMMON-LISP:NIL
-                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
-                                                       [GSHARP-BUFFER:CLUSTER
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]) ]
+                                           [GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS ([GSHARP-BUFFER:CLUSTER
                                                         :XOFFSET 0
                                                         :ANNOTATIONS COMMON-LISP:NIL
                                                         :LEFT-PAD 0
@@ -523,8 +664,9 @@ G#V4
                                                                  :ACCIDENTALS :NATURAL
                                                                  :DOTS 0
                                                                  :TIE-RIGHT COMMON-LISP:NIL
-                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
-                                                       [GSHARP-BUFFER:CLUSTER
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]) ]
+                                           [GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS ([GSHARP-BUFFER:CLUSTER
                                                         :XOFFSET 0
                                                         :ANNOTATIONS COMMON-LISP:NIL
                                                         :LEFT-PAD 0
@@ -667,8 +809,9 @@ G#V4
                                                                  :ACCIDENTALS :NATURAL
                                                                  :DOTS 0
                                                                  :TIE-RIGHT COMMON-LISP:NIL
-                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
-                                                       [GSHARP-BUFFER:CLUSTER
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]) ]
+                                           [GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS ([GSHARP-BUFFER:CLUSTER
                                                         :XOFFSET 0
                                                         :ANNOTATIONS COMMON-LISP:NIL
                                                         :LEFT-PAD 0
@@ -811,8 +954,9 @@ G#V4
                                                                  :ACCIDENTALS :NATURAL
                                                                  :DOTS 0
                                                                  :TIE-RIGHT COMMON-LISP:NIL
-                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
-                                                       [GSHARP-BUFFER:CLUSTER
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]) ]
+                                           [GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS ([GSHARP-BUFFER:CLUSTER
                                                         :XOFFSET 0
                                                         :ANNOTATIONS COMMON-LISP:NIL
                                                         :LEFT-PAD 0
@@ -955,8 +1099,9 @@ G#V4
                                                                  :ACCIDENTALS :NATURAL
                                                                  :DOTS 0
                                                                  :TIE-RIGHT COMMON-LISP:NIL
-                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
-                                                       [GSHARP-BUFFER:CLUSTER
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]) ]
+                                           [GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS ([GSHARP-BUFFER:CLUSTER
                                                         :XOFFSET 0
                                                         :ANNOTATIONS COMMON-LISP:NIL
                                                         :LEFT-PAD 0
@@ -1075,7 +1220,411 @@ G#V4
                                                         :DOTS 0
                                                         :STEM-DIRECTION :AUTO
                                                         :NOTES ([GSHARP-BUFFER:NOTE
-                                                                 :PITCH 59
+                                                                 :PITCH 127
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 0
+                                                        :LBEAMS 0
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES COMMON-LISP:NIL ]) ]
+                                           [GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ]
+                             :TAIL [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ] ])
+                 :TEMPO 128
+                 :TUNING [GSHARP-BUFFER:12-EDO
+                            :MASTER-PITCH-NOTE [GSHARP-BUFFER:NOTE
+                                                :PITCH 33
+                                                :STAFF [GSHARP-BUFFER:STAFF
+                                                        :NAME #2# ]
+                                                :HEAD COMMON-LISP:NIL
+                                                :ACCIDENTALS :NATURAL
+                                                :DOTS COMMON-LISP:NIL
+                                                :TIE-RIGHT COMMON-LISP:NIL
+                                                :TIE-LEFT COMMON-LISP:NIL ]
+                            :MASTER-PITCH-FREQ 440 ] ]
+              [GSHARP-BUFFER:SEGMENT
+                 :LAYERS ([GSHARP-BUFFER:MELODY-LAYER
+                             :NAME #3="default layer"
+                             :STAVES (#1#)
+                             :HEAD [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ]
+                             :BODY [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ]
+                             :TAIL [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ] ])
+                 :TEMPO 128
+                 :TUNING [GSHARP-BUFFER:12-EDO
+                            :MASTER-PITCH-NOTE [GSHARP-BUFFER:NOTE
+                                                :PITCH 33
+                                                :STAFF [GSHARP-BUFFER:STAFF
+                                                        :NAME #4="default staff" ]
+                                                :HEAD COMMON-LISP:NIL
+                                                :ACCIDENTALS :NATURAL
+                                                :DOTS COMMON-LISP:NIL
+                                                :TIE-RIGHT COMMON-LISP:NIL
+                                                :TIE-LEFT COMMON-LISP:NIL ]
+                            :MASTER-PITCH-FREQ 440 ] ]
+              [GSHARP-BUFFER:SEGMENT
+                 :LAYERS ([GSHARP-BUFFER:MELODY-LAYER
+                             :NAME #3#
+                             :STAVES (#1#)
+                             :HEAD [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS COMMON-LISP:NIL ]) ]
+                             :BODY [GSHARP-BUFFER:SLICE
+                                    :BARS ([GSHARP-BUFFER:MELODY-BAR
+                                            :ELEMENTS ([GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 0
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 33
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 2
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 34
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 0
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 35
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 0
+                                                        :LBEAMS 0
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 36
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :HALF
+                                                        :RBEAMS 0
+                                                        :LBEAMS 0
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 37
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 40
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 41
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 42
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 43
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 44
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 1
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 45
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 2
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 40
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 41
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 42
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 43
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 44
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 1
+                                                        :LBEAMS 1
+                                                        :DOTS 1
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 45
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 0
+                                                        :LBEAMS 2
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 38
+                                                                 :STAFF #1#
+                                                                 :HEAD :FILLED
+                                                                 :ACCIDENTALS :NATURAL
+                                                                 :DOTS 0
+                                                                 :TIE-RIGHT COMMON-LISP:NIL
+                                                                 :TIE-LEFT COMMON-LISP:NIL ]) ]
+                                                       [GSHARP-BUFFER:CLUSTER
+                                                        :XOFFSET 0
+                                                        :ANNOTATIONS COMMON-LISP:NIL
+                                                        :LEFT-PAD 0
+                                                        :RIGHT-PAD 0
+                                                        :NOTEHEAD :FILLED
+                                                        :RBEAMS 0
+                                                        :LBEAMS 0
+                                                        :DOTS 0
+                                                        :STEM-DIRECTION :AUTO
+                                                        :NOTES ([GSHARP-BUFFER:NOTE
+                                                                 :PITCH 39
                                                                  :STAFF #1#
                                                                  :HEAD :FILLED
                                                                  :ACCIDENTALS :NATURAL
@@ -1090,7 +1639,7 @@ G#V4
                             :MASTER-PITCH-NOTE [GSHARP-BUFFER:NOTE
                                                 :PITCH 33
                                                 :STAFF [GSHARP-BUFFER:STAFF
-                                                        :NAME #2# ]
+                                                        :NAME #4# ]
                                                 :HEAD COMMON-LISP:NIL
                                                 :ACCIDENTALS :NATURAL
                                                 :DOTS COMMON-LISP:NIL
