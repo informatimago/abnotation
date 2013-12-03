@@ -398,6 +398,8 @@ Conversion cvs mcclim repository to git
 
 Finally, we're using a clone of https://github.com/jmorrison/mcclim.git
 
+::
+   (ql:quickload :clim-examples)
 
 References
 ================================================================================
