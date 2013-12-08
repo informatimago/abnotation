@@ -74,7 +74,9 @@ according to the Alexis Bosch's synchrone musical notation.
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
                  
-                 (:file "clef" :pathname "src/clef"   :depends-on ())
+                 (:file "clef"               :depends-on ())
+                 (:file "gsharp-additions"   :depends-on ("clef"))
+                 (:file "commands"           :depends-on ("gsharp-additions"))
 
                  ))
 
