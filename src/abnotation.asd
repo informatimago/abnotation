@@ -32,11 +32,6 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-
-#+clisp
-(unless custom:*ansi*
-  (warn "clisp should be used with -ansi or (setf custom:*ansi* t) in ~/.clisprc"))
-
 (asdf:defsystem :abnotation
 
     ;; system attributes:
@@ -70,13 +65,20 @@ according to the Alexis Bosch's synchrone musical notation.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
-    :depends-on (:gsharp :mcclim)
+    :depends-on (:cocoa)
+    ;; :depends-on (:gsharp :mcclim)
+    
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
+                 (:file "package")
+
+
                  
-                 (:file "clef"               :depends-on ())
-                 (:file "gsharp-additions"   :depends-on ("clef"))
-                 (:file "commands"           :depends-on ("gsharp-additions"))
+                 (:file "abview" :depends-on ("package"))
+                 
+                 ;; (:file "clef"               :depends-on ())
+                 ;; (:file "gsharp-additions"   :depends-on ("clef"))
+                 ;; (:file "commands"           :depends-on ("gsharp-additions"))
 
                  ))
 
