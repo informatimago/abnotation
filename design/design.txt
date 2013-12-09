@@ -25,6 +25,30 @@ Principales fonctionalités
 
     - transposition d'une note ou d'un groupe de notes.
 
+Éditions
+--------------------------------------------------------------------------------
+
+- sélections graphique (simple clic)
+  + annotation (texte ou image)
+  + note
+    * head
+    * accidental
+    * beam
+    * dynamic
+    * tenue
+  + cluster
+    idem note
+  + measure
+  + line
+  + page
+  + partition
+
+- sur l'objet sélectionné, ajout
+
+- insertion d'une note
+- suppression de notes
+- 
+
 
 Midi Reader
 ================================================================================
