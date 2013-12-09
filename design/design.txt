@@ -28,7 +28,7 @@ Principales fonctionalités
 Éditions
 --------------------------------------------------------------------------------
 
-- sélections graphique (simple clic)
+- sélections graphique (simple clic, shift-click, command-click):
   + annotation (texte ou image)
   + note
     * head
@@ -43,11 +43,114 @@ Principales fonctionalités
   + page
   + partition
 
-- sur l'objet sélectionné, ajout
+- sur la partitions (paramètres globaux):
+  + changement de la taille du papier et orientation. [menu]
+  + changement de la hauteur des portées (3 mm, 5 mm, 7 mm). [menu]
+  + changement du nombre de portées par ligne et clefs. [menu]
+  + changement de la police des numéros de page. [menu]
+  + changement de la police des numéros de ligne. [menu]
+  + changement de la police des numéros de mesure. [menu]
+  + édition des métadonnées (titre, auteur, annotation).
 
-- insertion d'une note
-- suppression de notes
-- 
+- sur l'objet sélectionné:
+  + ajout d'une annotation (image ou texte) (tous sauf annotations elles mêmes) [menu].
+  + suppression de l'annotation [menu].
+  + ajustement de la position (line, ledger, staff, clef, sound, beam,
+    dynamic, tenue, head, accidental, annotation) [click-and-drag, ou saisie offset (+/-9.99 mm)]
+  + cut de l'objet [menu].
+  + copy de l'objet [menu].
+  + delete de l'objet [menu].
+  + paste of an object -> insertion [menu].
+  + paste of an image or text -> add/replace the annotation [menu].
+
+- sur measure(s) sélectionnée(s):
+  + ajustement de la largeur (measure) [click-and-drag on corner, ou saisie durée (9.99 s)].
+  + changement du tempo second/measure (ajustement de la largeur automatique).
+  + ajustement de la position du numéro.
+
+- édition de notes:
+
+  + click-and-drag on the head to change the pitch and start of the
+    note. (if multiple selection, transpose or offset all the
+    selection). This may add or remove accidentals.
+
+  + click-and-drag on the right part of the beam to change the duration of the note.
+    (variation to shift the following notes or not). This may add or remove a tenue.
+
+  + add a dynamic [popup-menu]
+
+  + click-and-drag on the dynamic to change it.
+
+- insertion d'une page
+- insertion d'une ligne
+- insertiotn d'une mesure
+- insertion d'une note (en cluster ou en séquence)
+
+- selection of an image annotation
+- cut/copy/paste/delete of the image annotation
+- selection of a text annotation
+- edition of rich text annotation (font).
+
+Other features
+--------------------------------------------------------------------------------
+
+- get a histogram of the dynamics
+- specify the ranges for the various dynamics annotations: 𝆏𝆏𝆏 𝆏𝆏 𝆏 𝆐𝆑 𝆐𝆑 𝆑 𝆑𝆑 𝆑𝆑𝆑
+- selection of digits or letters to annotate the dynamics.
+- identification of ranges of monotone dynamics changes.   𝆒   𝆓
+
+- representation of the partition as an editable, textual, lispy structure.
+
+
+
+Bindings
+--------------------------------------------------------------------------------
+
+
+→ ←   C-f/C-b forward/backward note/cluster
+⌘→ ⌘← M-f/M-b forward/backward measure
+↓ ↑     C-n/C-p forward/backward line
+⌘↓ ⌘↑   C-v/M-v forward/backward page
+
+⇧→ ⇧←   S-C-f/S-C-b selecting forward/backward note/cluster
+⇧⌘→ ⇧⌘← S-M-f/S-M-b selecting forward/backward measure
+⇧↓ ⇧↑     S-C-n/S-C-p selecting forward/backward line
+⇧⌘↓ ⇧⌘↑   S-C-v/S-M-v selecting forward/backward page
+
+
+
+
+
+
+
+⌘ – &#x2318; – &#8984; – the Command Key symbol
+⌥ – &#x2325; – &#8997; – the Option Key symbol
+⇧ – &#x21E7; – &#8679; – the Shift Key symbol
+⎋ – &#x238B; – &#9099; – the ESC Key symbol
+⇪ – &#x21ea; – &#8682; – the Capslock symbol
+⏎ – &#x23ce; – &#9166; – the Return symbol
+⌫ – &#x232b; – &#9003; – the Delete / Backspace symbol
+
+
+Model
+--------------------------------------------------------------------------------
+
+
+                     element 1------------------o annotation
+                        ^                             ^                             
+                        |                             |
+                        |                     +-------+--------+
+     +------------------|----* tempo 1----+   |                |
+     |                  |                 | image             text
+     |  +------------+--+-----+---------+ |
+     |  |            |        |         | *
+    partition 1--* page 1--* line 1--* measure 1---* sound
+                              | \                      ^
+                              *  *                     |
+                          staff  ledger        +-------+-------+
+                          |   o    o           |               |
+                          |   |    |           |               |
+                        clef  +----========* note *-------o cluster
 
 
 Midi Reader
@@ -303,6 +406,76 @@ Impression
             'string)
 
       "🎼🎹🎵𝇝𝇜𝇛𝇚𝇙𝇘𝇗𝇖𝇕𝇔𝇓𝇒𝇑𝇐𝇏𝇎𝇍𝇌𝇋𝇊𝇉𝇈𝇇𝇆𝇅𝇄𝇃𝇂𝇁𝆺𝅥𝅯𝆹𝅥𝅯𝆺𝅥𝅮𝆹𝅥𝅮𝆺𝅥𝆹𝅥𝆺𝆹𝆸𝆷𝆶𝆵𝆴𝆳𝆲𝆱𝆰𝆯𝆮𝆭𝆬𝆫𝆪𝆩𝆨𝆧𝆦𝆥𝆤𝆣𝆢𝆡𝆠𝆟𝆞𝆝𝆜𝆛𝆚𝆙𝆘𝆗𝆖𝆕𝆔𝆓𝆒𝆑𝆐𝆏𝆎𝆍𝆌𝆋𝆊𝆉𝆈𝆇𝆆𝆅𝆄𝆃𝆂𝆁𝆀𝅿𝅾𝅽𝅼𝅻𝅺𝅹𝅸𝅷𝅶𝅵𝅴𝅳𝅲𝅱𝅰𝅯𝅮𝅭𝅬𝅫𝅪𝅩𝅨𝅧𝅦𝅥𝅘𝅥𝅲𝅘𝅥𝅱𝅘𝅥𝅰𝅘𝅥𝅯𝅘𝅥𝅮𝅘𝅥𝅗𝅥𝅝𝅜𝅛𝅚𝅙𝅘𝅗𝅖𝅕𝅔𝅓𝅒𝅑𝅐𝅏𝅎𝅍𝅌𝅋𝅊𝅉𝅈𝅇𝅆𝅅𝅄𝅃𝅂𝅁𝅀𝄿𝄾𝄽𝄼𝄻𝄺𝄹𝄸𝄷𝄶𝄵𝄴𝄳𝄲𝄱𝄰𝄯𝄮𝄭𝄬𝄫𝄪𝄩𝄦𝄥𝄤𝄣𝄢𝄡𝄠𝄟𝄞𝄝𝄜𝄛𝄚𝄙𝄘𝄗𝄖𝄕𝄔𝄓𝄒𝄑𝄐𝄏𝄎𝄍𝄌𝄋𝄊𝄉𝄈𝄇𝄆𝄅𝄄𝄃𝄂𝄁𝄀"
+
+Architecture
+================================================================================
+
+
+A set of model class to represent the partition in an abstract way.
+
+A set of abstract graphic objects to compute the partition layout.
+
+The user interface us implemented separately in Cocoa or iOS or
+anything else, independently of the model and abstract graphic
+objects.
+
+Reading MIDI files produces a sequence of sound (cluster or note) with tempo.
+
+Given the partition parameters (paper size, orientation, font sizes),
+and the sequence of sounds/tempo,  layout objects are created to
+compute a layout and structure the notes into measures, lines and
+pages.
+
+While editing:
+
+- adding a page doesn't change the layout of the following pages
+  (until the lines are let flown back).
+
+- adding a line doesn't change the layout of the following lines (only
+  the layout of the following pages with respect to their lines),
+  until the measures are left flown back.
+
+- adding a measure doesn't change the layout of the following layouts
+  (only the layout of the following lines with respect to their
+  measures), until the notes are left flown back.
+
+- adding a note can be done either without moving the following notes,
+  or moving the following notes ("inserting" the note).
+
+At each level, we can have an automatic layout lock, that prevents
+recomputing the following layouts, until it's unlocked.  Note: only
+one page is visible, so objects (measures, lines) can overflow a page
+without having to recompute the layout of all the following pages,
+until we unlock the layout.
+
+
+
+
+
+ABNotation Schematic class diagram
+================================================================================
+
+Model
+--------------------------------------------------------------------------------
+
+
+                     element 1------------------o annotation
+                        ^                             ^                             
+                        |                             |
+                        |                     +-------+--------+
+     +------------------|----* tempo 1----+   |                |
+     |                  |                 | image             text
+     |  +------------+--+-----+---------+ |
+     |  |            |        |         | *
+    partition 1--* page 1--* line 1--* measure 1---* sound
+                              | \                      ^
+                              *  *                     |
+                          staff  ledger        +-------+-------+
+                          |   o    o           |               |
+                          |   |    |           |               |
+                        clef  +----========* note *-------o cluster
+                                                
+
 
 
 
