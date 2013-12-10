@@ -1,17 +1,17 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               circular.lisp
+;;;;FILE:               package.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Utility to deal with circular structures.
+;;;;    Packages of the ABNotation program.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2013-04-14 <PJB> Created.
+;;;;    2013-12-09 <PJB> Added this header.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    GPL3
@@ -32,31 +32,15 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CIRCULAR")
 
-(defvar *circular-references* nil)
+(defpackage "ABNOTATION"
+  (:use "COMMON-LISP")
+  (:export)
 
-(defmacro with-circular-references ((&key (test ''eql)) &body body)
-  `(let ((*circular-references* (cons (make-hash-table :test ,test) 0)))
-     ,@body))
+  (:export "APPENDF" "NCONCF" "DELETEF" "ADD-TO-LIST"
+           "DELETE-FROM-LIST" "INSERT-INTO-LIST" "DOVECTOR" "OBJECT-IDENTITY"
+           "PRINT-PARSEABLE-OBJECT" "SIMPLE-PROGRAM-ERROR"
+           "COPY-OBJECT-FROM"))
 
-(defun circular-register (object)
-  (let ((count (gethash object (car *circular-references*) 0)))
-    (if count
-      (= 1 (incf (gethash object (car *circular-references*) 0)))
-      (progn
-        (warn "BAD: re-registering ~S" object)
-        nil))))
-
-(defun circular-reference (object)
-  (let ((index (gethash object (car *circular-references*))))
-    (typecase index
-      (null    nil)
-      (integer (setf (gethash object (car *circular-references*))
-                     (if (= 1 index)
-                         nil
-                         (cons (incf (cdr *circular-references*))
-                               nil))))
-      (t       index))))
 
 ;;;; THE END ;;;;

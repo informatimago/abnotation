@@ -32,15 +32,6 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(defpackage "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CIRCULAR"
-  (:use "COMMON-LISP")
-  (:export
-   "CIRCULAR-REFERENCE"
-   "CIRCULAR-REGISTER"
-   "WITH-CIRCULAR-REFERENCES"
-   "*CIRCULAR-REFERENCES*"))
-
-
 (defpackage "COM.INFORMATIMAGO.OBJCL.WRAPPER"
   (:use "COMMON-LISP"
         ;; "CLOSER-MOP"
@@ -79,16 +70,14 @@
    "ANONYMOUS-WRAPPER-THUNK" "ANONYMOUS-WRAPPER-THUNK-SOURCE"
    "NSARRAY-TO-LIST" "LIST-TO-NSARRAY")
 
-  (:export "APPENDF" "NCONCF" "DELETEF" "ADD-TO-LIST"
-           "DELETE-FROM-LIST" "INSERT-INTO-LIST" "DOVECTOR" "OBJECT-IDENTITY"
-           "PRINT-PARSEABLE-OBJECT" "SIMPLE-PROGRAM-ERROR"
-           "ON-MAIN-THREAD" "COPY-OBJECT-FROM"))
+  (:export "ON-MAIN-THREAD"))
 
 
-(defpackage "ABNOTATION"
+(defpackage "ABNOTATION-COCOA"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.OBJCL"
-        "COM.INFORMATIMAGO.OBJCL.WRAPPER")
+        "COM.INFORMATIMAGO.OBJCL.WRAPPER"
+        "ABNOTATION")
   (:shadow "FORMAT"))
 
 

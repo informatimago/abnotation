@@ -1,12 +1,12 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               abnotation.asd
+;;;;FILE:               abnotation-cocoa.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    ASD file to load the core of the abnotation application.
+;;;;    ASD file to load the abnotation-cocoa application.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -34,11 +34,11 @@
 
 #+ccl (require :cocoa)
 
-(asdf:defsystem "abnotation"
+(asdf:defsystem "abnotation-cocoa"
 
     ;; system attributes:
     
-    :description  "The core of the ABNotation application"
+    :description  "ABNotation Cocoa application"
 
     :long-description "
 
@@ -67,15 +67,20 @@ according to the Alexis Bosch's synchrone musical notation.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
-    :depends-on ("com.informatimago.clext"
-                 "com.informatimago.common-lisp.cesarum")
+    :depends-on ("com.informatimago.objcl"
+                 "com.informatimago.clext"
+                 "com.informatimago.common-lisp.cesarum"
+                 "abnotation")
     
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
-                 (:file "package"    :path "abnotation/package")
-                 (:file "macros"     :path "abnotation/macros"     :depends-on ("package"))
-                 (:file "abgeometry" :path "abnotation/abgeometry" :depends-on ("package" "macros"))
-                 (:file "model"      :path "abnotation/model"      :depends-on ("package" "macros"))
+                 (:file "package")
+                 (:file "macros"     :depends-on ("package"))
+                 (:file "system"     :depends-on ("package"))
+                 (:file "wrapper"    :depends-on ("package" "macros" "system" "circular"))
+                 (:file "abgeometry" :depends-on ("package" "wrapper"))
+                 (:file "abview"     :depends-on ("package" "abgeometry"))
+                 (:file "abwindow"   :depends-on ("package" "macros" "abgeometry" "abview"))
 
                  ))
 
