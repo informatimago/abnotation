@@ -1,6 +1,6 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               abnotation.asd
+;;;;FILE:               gsharp-abnotation.asd
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
@@ -32,15 +32,14 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-#+ccl (require :cocoa)
-
-(asdf:defsystem "abnotation"
+(asdf:defsystem :gsharp-abnotation
 
     ;; system attributes:
     
-    :description  "ABNotation application"
+    :description  "Gsharp ABNotation application"
 
     :long-description "
+Scratch - using gsharp.
 
 This application reads midi files and displays and prints partitions
 according to the Alexis Bosch's synchrone musical notation.
@@ -55,7 +54,7 @@ according to the Alexis Bosch's synchrone musical notation.
 
     ;; component attributes:
     
-    :name "abnotation"
+    :name "gsharp-abnotation"
 
     :version "0.0.0"
 
@@ -67,20 +66,14 @@ according to the Alexis Bosch's synchrone musical notation.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
-    :depends-on ("com.informatimago.objcl"
-                 "com.informatimago.clext"
-                 "com.informatimago.common-lisp.cesarum")
+    :depends-on (:gsharp :mcclim)
     
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
-                 (:file "package")
-                 (:file "circular"   :depends-on ("package"))
-                 (:file "macros"     :depends-on ("package"))
-                 (:file "system"     :depends-on ("package"))
-                 (:file "wrapper"    :depends-on ("package" "macros" "system" "circular"))
-                 (:file "abgeometry" :depends-on ("package" "wrapper"))
-                 (:file "abview"     :depends-on ("package" "abgeometry"))
-                 (:file "abwindow"   :depends-on ("package" "macros" "abgeometry" "abview"))
+
+                 (:file "clef"               :depends-on ())
+                 (:file "gsharp-additions"   :depends-on ("clef"))
+                 (:file "commands"           :depends-on ("gsharp-additions"))
 
                  ))
 

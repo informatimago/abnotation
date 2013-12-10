@@ -31,20 +31,21 @@
 ;;;;    You should have received a copy of the GNU General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-
+;;;;    
 ;; (load "/home/pjb/works/gsharp/src/abnotation/loader.lisp")
 (in-package "COMMON-LISP-USER")
-(setf *print-right-margin* 110)
 
-#+ccl (import 'ccl:getenv)
-#+ccl (defsetf getenv ccl:setenv)
+(import 'ccl:getenv)
+(defsetf getenv ccl:setenv)
+
+
 
 #+ccl (setf ccl:*default-external-format*           :unix
             ccl:*default-file-character-encoding*   :utf-8
             ccl:*default-line-termination*          :unix
             ccl:*default-socket-character-encoding* :utf-8)
 
-(ql:quickload :com.informatimago.tools.pathname)
+(setf *print-right-margin* 110)
 
 
 #+ccl (setf (logical-pathname-translations "CCL")
@@ -59,19 +60,44 @@
                           nil))
                    (logical-pathname-translations "CCL")))
 
-(load-logical-pathname-translations "ABNOTATION")
+;; #+ccl (translate-logical-pathname #P"ccl:PATCHWORK.pathname-translations.newest")
+;; --> #P"/Users/pjb/LOGHOSTS/PATCHWORK"
+
+(load-logical-pathname-translations "GSHARP")
 
 (defparameter *src*
-  (com.informatimago.tools.pathname:translate-logical-pathname "ABNOTATION:SRC;"))
-(let ((dir (truename (translate-logical-pathname "ABNOTATION:"))))
-  #+ccl       (ccl::cd dir)
-  #+clisp     (ext:cd  dir)
-  #-(or ccl clisp) (error "(cd ~S)" dir))
+  #+ccl   #P"GSHARP:src;"
+  #+clisp #P"GSHARP:SRC;")
+
+#+ccl       (ccl::cd (truename #P"GSHARP:src;abnotation;"))
+#+clisp     (ext:cd  (truename #P"GSHARP:SRC;ABNOTATION;"))
+#-(or ccl clisp) (error "(cd #P\"GSHARP:SRC;ABNOTATION;\")")
 
 
 (dolist (dir (find-asdf-subdirectories  (list *src*)))
   (unless (member "old" (pathname-directory dir) :test (function string=))
     (pushnew dir asdf:*central-registry* :test (function equalp))))
 
+;; (ql:quickload :gsharp)
 (ql:quickload :abnotation)
+
+(load #+(or allegro ccl) #P"GSHARP:src;abnotation;gsharp-init.lisp"
+      #-(or allegro ccl) #P"GSHARP:SRC;ABNOTATION;GSHARP-INIT.LISP")
+
+
+
+(defun run-on-display (&optional (display (getenv "DISPLAY")))
+  (setf (getenv "DISPLAY") display)
+  (gsharp:gsharp :new-process t))
+
+(defun gsharp-buffer ()
+  (gsharp::buffer (first (gsharp::views (first gsharp::*gsharp-instances*)))))
+
+(defmacro in-gsharp (&body body)
+  `(let ((gsharp::*application-frame*  (first gsharp::*gsharp-instances*))
+         (gsharp::*esa-instance*       (first gsharp::*gsharp-instances*)))
+     (multiple-value-prog1 (progn ,@body)
+       ;; (gsharp::redisplay-frame-panes (first gsharp::*gsharp-instances*) :force-p t)
+       (let ((sheet (clim:frame-top-level-sheet (first gsharp::*gsharp-instances*))))
+        (clim:repaint-sheet sheet (clim:sheet-region sheet))))))
 

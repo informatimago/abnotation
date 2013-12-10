@@ -25,10 +25,18 @@ Principales fonctionalités
 
     - transposition d'une note ou d'un groupe de notes.
 
-Éditions
+Actions
 --------------------------------------------------------------------------------
 
-- sélections graphique (simple clic, shift-click, command-click):
+- load a MIDI file [menu, (drag-and-drop midi-file)]
+- export a MIDI file [menu]
+- load an abnotation partition file [menu, (drag-and-drop midi-file)]
+- save an abnotation partition file [menu]
+  
+
+
+
+- sélections [graphique (simple clic, shift-click, command-click), & bindings]
   + annotation (texte ou image)
   + note
     * head
@@ -91,6 +99,7 @@ Principales fonctionalités
 - selection of a text annotation
 - edition of rich text annotation (font).
 
+
 Other features
 --------------------------------------------------------------------------------
 
@@ -106,21 +115,15 @@ Other features
 Bindings
 --------------------------------------------------------------------------------
 
+    → ←   C-f/C-b forward/backward note/cluster
+    ⌘→ ⌘← M-f/M-b forward/backward measure
+    ↓ ↑     C-n/C-p forward/backward line
+    ⌘↓ ⌘↑   C-v/M-v forward/backward page
 
-→ ←   C-f/C-b forward/backward note/cluster
-⌘→ ⌘← M-f/M-b forward/backward measure
-↓ ↑     C-n/C-p forward/backward line
-⌘↓ ⌘↑   C-v/M-v forward/backward page
-
-⇧→ ⇧←   S-C-f/S-C-b selecting forward/backward note/cluster
-⇧⌘→ ⇧⌘← S-M-f/S-M-b selecting forward/backward measure
-⇧↓ ⇧↑     S-C-n/S-C-p selecting forward/backward line
-⇧⌘↓ ⇧⌘↑   S-C-v/S-M-v selecting forward/backward page
-
-
-
-
-
+    ⇧→ ⇧←   S-C-f/S-C-b selecting forward/backward note/cluster
+    ⇧⌘→ ⇧⌘← S-M-f/S-M-b selecting forward/backward measure
+    ⇧↓ ⇧↑     S-C-n/S-C-p selecting forward/backward line
+    ⇧⌘↓ ⇧⌘↑   S-C-v/S-M-v selecting forward/backward page
 
 
 ⌘ – &#x2318; – &#8984; – the Command Key symbol
