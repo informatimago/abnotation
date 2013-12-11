@@ -73,11 +73,11 @@
   (:export "ON-MAIN-THREAD"))
 
 
-(defpackage "ABNOTATION-COCOA"
+(defpackage "ABNOTATION.COCOA"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.OBJCL"
         "COM.INFORMATIMAGO.OBJCL.WRAPPER"
-        "ABNOTATION")
+        "ABNOTATION.CORE")
   (:shadow "FORMAT"))
 
 

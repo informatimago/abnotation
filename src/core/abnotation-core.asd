@@ -32,9 +32,7 @@
 ;;;;    along with this program.  If not, see http://www.gnu.org/licenses/
 ;;;;**************************************************************************
 
-#+ccl (require :cocoa)
-
-(asdf:defsystem "abnotation"
+(asdf:defsystem "abnotation-core"
 
     ;; system attributes:
     
@@ -72,10 +70,10 @@ according to the Alexis Bosch's synchrone musical notation.
     
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
-                 (:file "package"    :path "abnotation/package")
-                 (:file "macros"     :path "abnotation/macros"     :depends-on ("package"))
-                 (:file "abgeometry" :path "abnotation/abgeometry" :depends-on ("package" "macros"))
-                 (:file "model"      :path "abnotation/model"      :depends-on ("package" "macros"))
+                 (:file "package"    )
+                 (:file "macros"     :depends-on ("package"))
+                 (:file "geometry"   :depends-on ("package" "macros"))
+                 (:file "model"      :depends-on ("package" "macros"))
 
                  ))
 

@@ -6,7 +6,7 @@
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Packages of the ABNotation program.
+;;;;    Packages of the core of the ABNotation program.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
@@ -33,14 +33,30 @@
 ;;;;**************************************************************************
 
 
-(defpackage "ABNOTATION"
+(defpackage "ABNOTATION.CORE"
   (:use "COMMON-LISP")
-  (:export)
+  
+  (:shadow "NUMBER")
+  
+  (:export
+   "XOR")
+  
+  (:export
+   "COORDINATE"
+   "POINT" "POINT-P" "MAKE-POINT" "COPY-POINT"
+   "POINT-X" "POINT-Y"
+   "SIZE" "SIZE-P" "MAKE-SIZE" "COPY-SIZE"
+   "SIZE-WIDTH" "SIZE-HEIGHT"
+   "RECT" "RECT-P" "MAKE-RECT" "COPY-RECT" "RECT-ORIGIN" "RECT-SIZE" "RECT-TO-LIST"
+   "RECT-X"  "RECT-Y"  "RECT-WIDTH"  "RECT-HEIGHT"
+   "RECT-LEFT" "RECT-RIGHT" "RECT-BOTTOM" "RECT-TOP"
+   "RANGE" "RANGE-P" "RANGE-LOCATION" "RANGE-LENGTH" "COPY-RANGE" "MAKE-RANGE")
 
-  (:export "APPENDF" "NCONCF" "DELETEF" "ADD-TO-LIST"
-           "DELETE-FROM-LIST" "INSERT-INTO-LIST" "DOVECTOR" "OBJECT-IDENTITY"
-           "PRINT-PARSEABLE-OBJECT" "SIMPLE-PROGRAM-ERROR"
-           "COPY-OBJECT-FROM"))
+  (:export
+   "APPENDF" "NCONCF" "DELETEF" "ADD-TO-LIST"
+   "DELETE-FROM-LIST" "INSERT-INTO-LIST" "DOVECTOR" "OBJECT-IDENTITY"
+   "PRINT-PARSEABLE-OBJECT" "SIMPLE-PROGRAM-ERROR"
+   "COPY-OBJECT-FROM"))
 
 
 ;;;; THE END ;;;;

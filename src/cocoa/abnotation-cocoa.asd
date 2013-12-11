@@ -70,7 +70,7 @@ according to the Alexis Bosch's synchrone musical notation.
     :depends-on ("com.informatimago.objcl"
                  "com.informatimago.clext"
                  "com.informatimago.common-lisp.cesarum"
-                 "abnotation")
+                 "abnotation-core")
     
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components (
