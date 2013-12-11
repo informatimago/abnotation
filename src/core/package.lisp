@@ -34,7 +34,8 @@
 
 
 (defpackage "ABNOTATION.CORE"
-  (:use "COMMON-LISP")
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.CLEXT.ASSOCIATION")
   
   (:shadow "NUMBER")
   

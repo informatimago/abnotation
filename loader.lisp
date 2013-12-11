@@ -73,5 +73,6 @@
   (unless (member "old" (pathname-directory dir) :test (function string=))
     (pushnew dir asdf:*central-registry* :test (function equalp))))
 
-(ql:quickload :abnotation-cocoa)
+(ql:quickload :abnotation-core)
+#+cocoa (ql:quickload :abnotation-cocoa)
 
