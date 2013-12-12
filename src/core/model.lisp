@@ -263,17 +263,18 @@
    (staff-height        :initarg :staff-height        :accessor staff-height        :type real
                         :documentation "Unit: millimeter, values: 3, 5, 7 mm")))
 
-(defmethod initialize-instance :after ((parameters partition-parameters) &key &allow-other-keys)
-  (unless (and (slot-boundp parameters 'paper-size)
-               (slot-boundp parameters 'paper-printable-area))
-    (unless (and (slot-boundp parameters 'paper-format)
-                 (slot-boundp parameters 'paper-orientation))
-      (error "Either the :paper-format and :paper-orientation must be given, ~
+(defmethod initialize-instance :after ((parameters partition-parameters) &rest args &key &allow-other-keys)
+  (when args
+   (unless (and (slot-boundp parameters 'paper-size)
+                (slot-boundp parameters 'paper-printable-area))
+     (unless (and (slot-boundp parameters 'paper-format)
+                  (slot-boundp parameters 'paper-orientation))
+       (error "Either the :paper-format and :paper-orientation must be given, ~
               or :paper-size and :paper-printable-area must be given."))
-    (setf (values (slot-value parameters 'paper-size)
-                  (slot-value parameters 'paper-printable-area))
-          (paper-size-and-printable-area  (slot-value parameters 'paper-format)
-                                          (slot-value parameters 'paper-orientation))))
+     (setf (values (slot-value parameters 'paper-size)
+                   (slot-value parameters 'paper-printable-area))
+           (paper-size-and-printable-area  (slot-value parameters 'paper-format)
+                                           (slot-value parameters 'paper-orientation)))))
   parameters)
 
 (define-association configures
