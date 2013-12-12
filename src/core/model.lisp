@@ -239,16 +239,42 @@
                :ordered t)))
 
 
+(defparameter *papers*
+  '((("A4" :portrait) (210 297) (10 10 190 277))
+    (("A4" :paysage)  (297 210) (10 10 277 190))
+    (("A3" :portrait) (297 420) (10 10 277 4000))
+    (("A3" :paysage)  (420 297) (10 10 400 277))))
+
+(defun paper-size-and-printable-area (format orientation)
+  (values-list (cdr (assoc (list format orientation) *papers* :test (function equalp)))))
+
 
 (defclass partition-parameters ()
   ((page-number-font    :initarg :page-number-font    :accessor page-number-font    :type string)
    (line-number-font    :initarg :line-number-font    :accessor line-number-font    :type string)
    (measure-number-font :initarg :measure-number-font :accessor measure-number-font :type string)
-   (paper-size          :initarg :paper-size          :accessor paper-size          :type string)
+   (paper-format        :initarg :paper-format        :accessor paper-format        :type string)
    (paper-orientation   :initarg :paper-orientation   :accessor paper-orientation
                         :type (member :portrait :paysage) :initform :portrait)
+   (paper-size          :initarg :paper-size          :accessor paper-size          :type list
+                        :documentation "The (width height) in millimeter of the paper page.")
+   (paper-printable-area :initarg :paper-printable-area :accessor paper-printable-area :type list
+                        :documentation "The (left bottom width height) in millimeter of the printable area.")
    (staff-height        :initarg :staff-height        :accessor staff-height        :type real
                         :documentation "Unit: millimeter, values: 3, 5, 7 mm")))
+
+(defmethod initialize-instance :after ((parameters partition-parameters) &key &allow-other-keys)
+  (unless (and (slot-boundp parameters 'paper-size)
+               (slot-boundp parameters 'paper-printable-area))
+    (unless (and (slot-boundp parameters 'paper-format)
+                 (slot-boundp parameters 'paper-orientation))
+      (error "Either the :paper-format and :paper-orientation must be given, ~
+              or :paper-size and :paper-printable-area must be given."))
+    (setf (values (slot-value parameters 'paper-size)
+                  (slot-value parameters 'paper-printable-area))
+          (paper-size-and-printable-area  (slot-value parameters 'paper-format)
+                                          (slot-value parameters 'paper-orientation))))
+  parameters)
 
 (define-association configures
     ((parameters :type partition-parameters
@@ -275,8 +301,12 @@
 (define-print-object clef    name line pitch)
 (define-print-object tempo   measure-duration measures)
 (define-print-object partition parameters title author file staff-set pages tempos)
-(define-print-object partition-parameters page-number-font line-number-font measure-number-font
-                     paper-size paper-orientation staff-height)
+(define-print-object partition-parameters
+    page-number-font line-number-font measure-number-font
+    paper-format paper-orientation
+    paper-size paper-printable-area
+    staff-height)
+
 
 (defun create-bands ()
   (let ((clefs      (list (make-instance 'clef :name :bass15mb   :line 4 :pitch  41)
@@ -311,14 +341,16 @@
               :minimum-pitch 117 :bottom-pitch 117
               :maximum-pitch 122 :top-pitch 121))))
 
+
 (defun create-partition (staff-set &key (title "untitled") (author "anonymous") parameters)
   (let* ((partition  (make-instance 'partition :title title :author author :staff-set staff-set))
          (parameters (or parameters
                          (make-instance 'partition-parameters
+                             :title-number-font "Helvetica-16"
                              :page-number-font "Helvetica-12"
                              :line-number-font "Helvetica-10"
                              :measure-number-font "Helvetica-8"
-                             :paper-size "A4"
+                             :paper-format "A4"
                              :paper-orientation :portrait
                              :staff-height 5)))
          (tempo      (make-instance 'tempo :measure-duration 1))
@@ -336,6 +368,7 @@
     (attach 'gives-tempo tempo measure)
     (attach 'configures parameters partition)
     partition))
+
 
 (defparameter *staves/bass*                 '(2 5))
 (defparameter *staves/trebble*              '(4 7))
