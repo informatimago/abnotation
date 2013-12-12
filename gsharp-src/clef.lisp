@@ -22,10 +22,10 @@
 (defun clef/treble8vb       () (make-clef :treble8vb  :lineno 2))
 (defun clef/treble15mb      () (make-clef :treble15mb :lineno 2))
 
-(defun clef/bass15ma        () (make-clef :bass15ma   :lineno 2))
-(defun clef/bass8va         () (make-clef :bass8va    :lineno 2))
-(defun clef/bass8vb         () (make-clef :bass8vb    :lineno 2))
-(defun clef/bass15mb        () (make-clef :bass15mb   :lineno 2))
+(defun clef/bass15ma        () (make-clef :bass15ma   :lineno 4))
+(defun clef/bass8va         () (make-clef :bass8va    :lineno 4))
+(defun clef/bass8vb         () (make-clef :bass8vb    :lineno 4))
+(defun clef/bass15mb        () (make-clef :bass15mb   :lineno 4))
 
 
 ;; - choix du nombre de portées par ligne, avec les clefs: (𝄞 𝄢 𝄞𝄢 𝄞𝄸𝄞𝄢 𝄞𝄢𝄢𝄹 𝄞𝄸𝄞𝄢𝄢𝄹)

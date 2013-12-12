@@ -58,6 +58,11 @@
                           (user-homedir-pathname)
                           nil))
                    (logical-pathname-translations "CCL")))
+#-(and)
+(setf (logical-pathname-translations "ABNOTATION")
+      '(("ABNOTATION:**;*.*.*" #P"/Users/pjb/works/gsharp/src/abnotation/**/*.*")
+        ("ABNOTATION:**;*.*"   #P"/Users/pjb/works/gsharp/src/abnotation/**/*.*")
+        ("ABNOTATION:**;*"     #P"/Users/pjb/works/gsharp/src/abnotation/**/*")))
 
 (load-logical-pathname-translations "ABNOTATION")
 
@@ -73,6 +78,7 @@
   (unless (member "old" (pathname-directory dir) :test (function string=))
     (pushnew dir asdf:*central-registry* :test (function equalp))))
 
+#+darwin (require :cocoa)
 (ql:quickload :abnotation-core)
 #+cocoa (ql:quickload :abnotation-cocoa)
 

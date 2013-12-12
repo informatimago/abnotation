@@ -81,7 +81,7 @@
 
 (define-association annotation
     ((element :type element
-              :multiplicity 1
+              :multiplicity #|1|# 0-1
               :kind :aggregation)
      (annotation :type annotation
                  :multiplicity 0-1)))
@@ -101,10 +101,10 @@
 
 (define-association groups
     ((cluster :type cluster
-              :multiplicity 1
+              :multiplicity #|1|# 0-1
               :kind :aggregation)
-     (note :type note
-           :multiplicity 0-*)))
+     (notes :type note
+            :multiplicity 0-*)))
 
 
 (defclass numbered ()
@@ -118,33 +118,90 @@
 
 (define-association measure-contains
     ((measure :type measure
-              :multiplicity 1
+              :multiplicity #|1|# 0-1
               :kind :aggregation)
-     (sound :type sound
-            :multiplicity 0-*
-            :ordered t)))
+     (sounds :type sound
+             :multiplicity 0-*
+             :ordered t)))
 
 (defclass line (element numbered)
   ())
 
-(define-association line-contains
+(define-association line-contains-vertically
     ((line :type line
-           :multiplicity 1
+           :multiplicity #|1|# 0-1
            :kind :aggregation)
-     (measure :type measure
-              :multiplicity 0-*
-              :ordered t)))
+     (measures :type measure
+               :multiplicity 0-*
+               :ordered t)))
+
+
+(defclass band (element)
+  ())
+
+(define-association line-contains-horizontally
+    ((line :type line
+           :multiplicity #|1|# 0-1
+           :kind :aggregation)
+     (bands :type band
+            :multiplicity #|1-*|# 0-*
+            :ordered t)))
+
+(define-association band-contains
+    ((band :type band
+           :multiplicity #|1|# 0-1)
+     (notes :type note
+            :multiplicity #|1-*|# 0-*)))
+
+;; Those four generic functions have methods for staff, ledger and clef.  The staff methods defer to the (clef staff).
+(defgeneric maximum-pitch (element) 
+  (:documentation "The maximum pitch of a note on the ledger above a staff with the clef."))
+(defgeneric top-pitch (element)
+  (:documentation "The pitch of the top line of a staff with the clef."))
+(defgeneric bottom-pitch (element)
+  (:documentation "The pitch of the bottom line of a staff with the clef."))
+(defgeneric minimum-pitch (element)
+  (:documentation "The minimum pitch of a note on the ledger below a staff with the clef."))
+
+
+(defclass ledger (band)
+  ((minimum-pitch :initarg :minimum-pitch :reader minimum-pitch)
+   (bottom-pitch  :initarg :bottom-pitch  :reader bottom-pitch)
+   (top-pitch     :initarg :top-pitch     :reader top-pitch)
+   (maximum-pitch :initarg :maximum-pitch :reader maximum-pitch))
+  (:documentation "The lines between the staves."))
+
+(defclass staff (band)
+  ())
+
+(defclass clef (element)
+  ((name :initarg :name :reader name)
+   (line :initarg :line :reader line
+         :documentation "The line of the staff on which the clef is aligned (1-5, 1=bottom).")
+   (pitch :initarg :pitch :reader pitch
+          :documentation "The pitch of the clef = the note on (line clef).")))
+
+(define-association gives-pitch
+    ((clef :type clef
+           :multiplicity #|1|# 0-1)
+     (staff :type staff
+            :multiplicity #|1|# 0-1
+            :kind :aggregation)))
+
+
+
 
 (defclass page (element numbered)
   ())
 
-(define-association line-contains
+(define-association page-contains
     ((page :type page
-           :multiplicity 1
+           :multiplicity #|1|# 0-1
            :kind :aggregation)
-     (line :type line
-           :multiplicity 0-*
-           :ordered t)))
+     (lines :type line
+            :multiplicity 0-*
+            :ordered t)))
+
 
 (defclass partition ()
   ((title :initarg :title :accessor title
@@ -155,64 +212,32 @@
          :type (or pathname null) :initform nil)
    (staff-set :initarg :staff-set :accessor staff-set)))
 
-(define-association page-contains
+(define-association partition-contains
     ((partition :type partition
-                :multiplicity 1
+                :multiplicity #|1|# 0-1
                 :kind :aggregation)
-     (page :type page
-           :multiplicity 0-*
-           :ordered t)))
+     (pages :type page
+            :multiplicity 0-*
+            :ordered t)))
 
 (defclass tempo (element)
   ((measure-duration :initarg :measure-duration :accessor measure-duration)))
 
 (define-association partition-tempo
     ((partition :type partition
-                :multiplicity 1
+                :multiplicity #|1|# 0-1
                 :kind :aggregation)
-     (tempo :type tempo
-           :multiplicity 0-*
-           :ordered t)))
+     (tempos :type tempo
+             :multiplicity 0-*
+             :ordered t)))
 
-(define-association tempo-measure
+(define-association gives-tempo
     ((tempo :type tempo
-            :multiplicity 1)
-     (measure :type measure
-              :multiplicity 0-*
-              :ordered t)))
+            :multiplicity #|1|# 0-1)
+     (measures :type measure
+               :multiplicity 0-*
+               :ordered t)))
 
-(defclass horizontal-element (element)
-  ())
-
-(defclass staff (horizontal-element)
-  ((pitch-range :initarg :pitch-range :reader pitch-range)))
-
-(defclass ledger (horizontal-element)
-  ())
-
-(defclass clef (element)
-  ())
-
-(define-association staff-clef
-    ((staff :type staff
-            :multiplicity 1
-            :kind :aggregation)
-     (clef :type clef
-           :multiplicity 1)))
-
-(define-association line-contains
-    ((line :type line
-           :multiplicity 1
-           :kind :aggregation)
-     (band :type horizontal-element
-           :multiplicity 1-*
-           :ordered t)))
-
-(define-association band-contains
-    ((band :type horizontal-element
-           :multiplicity 1)
-     (note :type note
-           :multiplicity 1-*)))
 
 
 (defclass partition-parameters ()
@@ -220,44 +245,103 @@
    (line-number-font    :initarg :line-number-font    :accessor line-number-font    :type string)
    (measure-number-font :initarg :measure-number-font :accessor measure-number-font :type string)
    (paper-size          :initarg :paper-size          :accessor paper-size          :type string)
+   (paper-orientation   :initarg :paper-orientation   :accessor paper-orientation
+                        :type (member :portrait :paysage) :initform :portrait)
    (staff-height        :initarg :staff-height        :accessor staff-height        :type real
                         :documentation "Unit: millimeter, values: 3, 5, 7 mm")))
 
-(define-association configured
-    ((partition :type partition
-                :multiplicity 1
-                :kind :aggregate)
-     (parameters :type partition-parameters
-                 :multiplicity 1)))
+(define-association configures
+    ((parameters :type partition-parameters
+                 :multiplicity #|1|# 0-1)
+     (partition :type partition
+                :multiplicity #|1|# 0-1
+                :kind :aggregate)))
 
 
 
+(defmacro define-print-object (class &rest slots)
+  `(defmethod print-object ((object ,class) stream)
+    (print-parseable-object (object stream :type t :identity t) ,@slots)))
+
+(define-print-object image   filename)
+(define-print-object text    text)
+(define-print-object note    start-time duration dynamic pitch)
+(define-print-object cluster start-time duration dynamic notes)
+(define-print-object measure number sounds)
+(define-print-object line    number bands measures)
+(define-print-object page    number lines)
+(define-print-object ledger  minimum-pitch bottom-pitch top-pitch maximum-pitch)
+(define-print-object staff   clef)
+(define-print-object clef    name line pitch)
+(define-print-object tempo   measure-duration measures)
+(define-print-object partition parameters title author file staff-set pages tempos)
+(define-print-object partition-parameters page-number-font line-number-font measure-number-font
+                     paper-size paper-orientation staff-height)
+
+(defun create-bands ()
+  (let ((clefs      (list (make-instance 'clef :name :bass15mb   :line 4 :pitch  41)
+                          (make-instance 'clef :name :bass       :line 4 :pitch  65)
+                          (make-instance 'clef :name :treble     :line 2 :pitch  79)
+                          (make-instance 'clef :name :treble15ma :line 2 :pitch 103))))
+    (list (make-instance 'ledger
+              :minimum-pitch 23 :bottom-pitch 24
+              :maximum-pitch 28 :top-pitch 28)
+          (let ((staff (make-instance 'staff)))
+            (attach 'gives-pitch (pop clefs) staff)
+            staff)
+          (make-instance 'ledger
+              :minimum-pitch 48 :bottom-pitch 48
+              :maximum-pitch 52 :top-pitch 52)
+          (let ((staff (make-instance 'staff)))
+            (attach 'gives-pitch (pop clefs) staff)
+            staff)
+          (make-instance 'ledger
+              :minimum-pitch 72 :bottom-pitch 72
+              :maximum-pitch 72 :top-pitch 72)
+          (let ((staff (make-instance 'staff)))
+            (attach 'gives-pitch (pop clefs) staff)
+            staff)
+          (make-instance 'ledger
+              :minimum-pitch 93 :bottom-pitch 93
+              :maximum-pitch 96 :top-pitch 96)
+          (let ((staff (make-instance 'staff)))
+            (attach 'gives-pitch (pop clefs) staff)
+            staff)
+          (make-instance 'ledger
+              :minimum-pitch 117 :bottom-pitch 117
+              :maximum-pitch 122 :top-pitch 121))))
 
 (defun create-partition (staff-set &key (title "untitled") (author "anonymous") parameters)
-  (let ((partition  (make-instance 'partition :title title :author author :staff-set staff-set))
-        (parameters (or parameters
-                        (make-instance 'partition-parameters
-                            :page-number-font "Helvetica-12"
-                            :line-number-font "Helvetica-10"
-                            :measure-number-font "Helvetica-8"
-                            :paper-size "A4"
-                            :orientation :portrait
-                            :staff-height 5)))
-        (page       (make-instance 'page :number 1))
-        (line       (make-instance 'line :number 1))
-        (measure    (make-instance 'measure :number 1))
-        
-        )
-    parition))
+  (let* ((partition  (make-instance 'partition :title title :author author :staff-set staff-set))
+         (parameters (or parameters
+                         (make-instance 'partition-parameters
+                             :page-number-font "Helvetica-12"
+                             :line-number-font "Helvetica-10"
+                             :measure-number-font "Helvetica-8"
+                             :paper-size "A4"
+                             :paper-orientation :portrait
+                             :staff-height 5)))
+         (tempo      (make-instance 'tempo :measure-duration 1))
+         (page       (make-instance 'page :number 1))
+         (line       (make-instance 'line :number 1))
+         (measure    (make-instance 'measure :number 1)))
+    ;; (attach 'measure-contains measure sound)
+    ;; (attach 'band-contains band note)
+    (attach 'line-contains-vertically line measure)
+    (dolist (band (subseq (create-bands) (first staff-set) (second staff-set)))
+      (attach 'line-contains-horizontally line band))
+    (attach 'page-contains page line)
+    (attach 'partition-contains partition page)
+    (attach 'partition-tempo partition tempo)
+    (attach 'gives-tempo tempo measure)
+    (attach 'configures parameters partition)
+    partition))
 
-(pprint (macroexpand-1 '(define-association configured
-                         ((partition :type partition
-                           :multiplicity 1
-                           :kind :aggregate)
-                          (parameters :type partition-parameters
-                           :multiplicity 1)))))
-
-
-
+(defparameter *staves/bass*                 '(2 5))
+(defparameter *staves/trebble*              '(4 7))
+(defparameter *staves/bass-trebble*         '(2 7))
+(defparameter *staves/bass-trebble15ma*     '(2 nil))
+(defparameter *staves/bass15mb-trebble*     '(0 7))
+(defparameter *staves/bass15mb-trebble15ma* '(0 nil))
 
 ;;;; THE END ;;;;
