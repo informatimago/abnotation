@@ -77,7 +77,7 @@
 
 (defclass text (annotation)
   ((text :initarg :text :accessor text :type string :initform ""
-         :documetation "Some rich text string representation.")))
+         :documentation "Some rich text string representation.")))
 
 (define-association annotation
     ((element :type element
