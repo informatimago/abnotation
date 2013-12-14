@@ -74,6 +74,9 @@ according to the Alexis Bosch's synchrone musical notation.
                  (:file "macros"     :depends-on ("package"))
                  (:file "geometry"   :depends-on ("package" "macros"))
                  (:file "model"      :depends-on ("package" "macros"))
+                 (:file "midi"       :depends-on ("package" "macros" "model"))
+                 (:file "view"       :depends-on ("package" "macros" "model"))
+                 (:file "layout"     :depends-on ("package" "macros" "model" "view"))
 
                  ))
 

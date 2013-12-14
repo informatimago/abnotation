@@ -54,23 +54,34 @@
   ())
 (defclass sound-box (offsetable-box)
   ())
+(defclass head-box (offsetable-box)
+  ())
+(defclass accidental-box (offsetable-box)
+  ()
+  (:documentation "Dieze, bemol ou becare devant la head."))
+
+;; beam dynamic<> and tenue, and annotation, could span several measures/lines/pages.
 (defclass beam-box (offsetable-box)
   ())
 (defclass dynamic-box (offsetable-box)
   ())
 (defclass tenue-box (offsetable-box)
   ())
-(defclass head-box (offsetable-box)
-  ())
-(defclass accidental-box (offsetable-box)
-  ())
 (defclass annotation-box (offsetable-box)
   ())
 
 
 
-[load midi] --> (list (or note tempo)) --> [splice-measure] --> (list tempo->measure->sound)
-(list tempo->measure->sound) --> [layout] --> (and boxes
-                                                   page->line->measure->sound)
+;; [load midi] --> (list (or note tempo)) --> [splice-measure] --> (list tempo->measure->sound)
+;; (list tempo->measure->sound) --> [layout] --> (and boxes
+;;                                                    page->line->measure->sound)
 
-
+;; (/ 7.0 4)1.75
+;; (/ 5.0 4)1.25
+;; (/ 3.0 4)0.75
+;; 
+;; ---
+;; ---
+;; ---
+;; ---
+;; ---

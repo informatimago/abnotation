@@ -87,4 +87,16 @@
    "COPY-OBJECT-FROM"))
 
 
+
+(defpackage "ABNOTATION.MIDI"
+  (:use "COMMON-LISP"
+        "COM.INFORMATIMAGO.CLEXT.ASSOCIATION"
+        "ABNOTATION.CORE")
+
+  (:shadowing-import-from "ABNOTATION.CORE" "NUMBER")
+
+  (:export
+   ))
+
+
 ;;;; THE END ;;;;
