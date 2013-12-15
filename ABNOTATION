@@ -1,0 +1,24 @@
+;;;; -*- mode:lisp; coding:utf-8; -*-
+
+#.(list
+   
+   (list "ABNOTATION:**;*.*.*"
+         (merge-pathnames #P"works/abnotation/abnotation/**/*.*"
+                          (user-homedir-pathname) nil))
+   (list "ABNOTATION:**;*.*"
+         (merge-pathnames #P"works/abnotation/abnotation/**/*.*"
+                          (user-homedir-pathname) nil))
+   (list "ABNOTATION:**;*"
+         (merge-pathnames #P"works/abnotation/abnotation/**/*"
+                          (user-homedir-pathname) nil))
+
+   (list "ABNOTATION:DEPENDENCIES;**;*.*.*"
+         (merge-pathnames #P"works/abnotation/**/*.*"
+                          (user-homedir-pathname) nil))
+   (list "ABNOTATION:DEPENDENCIES;**;*.*"
+         (merge-pathnames #P"works/abnotation/**/*.*"
+                          (user-homedir-pathname) nil))
+   (list "ABNOTATION:DEPENDENCIES;**;*"
+         (merge-pathnames #P"works/abnotation/**/*"
+                          (user-homedir-pathname) nil))
+   )

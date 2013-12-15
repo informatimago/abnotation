@@ -66,15 +66,19 @@
 
 (load-logical-pathname-translations "ABNOTATION")
 
-(defparameter *src*
+(defparameter *sources*
   (com.informatimago.tools.pathname:translate-logical-pathname "ABNOTATION:SRC;"))
+(defparameter *dependencies*
+  (com.informatimago.tools.pathname:translate-logical-pathname "ABNOTATION:DEPENDENCIES;"))
+
+
 (let ((dir (truename (translate-logical-pathname "ABNOTATION:"))))
   #+ccl       (ccl::cd dir)
   #+clisp     (ext:cd  dir)
   #-(or ccl clisp) (error "(cd ~S)" dir))
 
 
-(dolist (dir (find-asdf-subdirectories  (list *src*)))
+(dolist (dir (find-asdf-subdirectories  (list *dependencies* *sources*)))
   (unless (member "old" (pathname-directory dir) :test (function string=))
     (pushnew dir asdf:*central-registry* :test (function equalp))))
 

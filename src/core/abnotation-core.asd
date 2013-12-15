@@ -65,7 +65,8 @@ according to the Alexis Bosch's synchrone musical notation.
                  ((#:albert #:docbook #:bgcolor)   . "white")
                  ((#:albert #:docbook #:textcolor) . "black"))
     
-    :depends-on ("com.informatimago.clext"
+    :depends-on ("midi"
+                 "com.informatimago.clext"
                  "com.informatimago.common-lisp.cesarum")
     
     #+asdf-unicode :encoding #+asdf-unicode :utf-8

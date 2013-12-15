@@ -432,54 +432,10 @@ specified by the midi EVENT.
 
 
 ;;;
-;;; convert midi files to gsharp buffers
+;;; load midi files into a partition.
 ;;;
 
-(defparameter *cache* (cons nil nil))
-
-(defun midi-stream-p (stream)
-  (if (eq stream (car *cache*))
-      (cdr *cache*)
-      (setf (car *cache*) stream
-            (cdr *cache*) (ignore-errors
-                            (let ((start (file-position stream)))
-                              (unwind-protect
-                                   (handler-case (read-midi-file (pathname stream))
-                                     ((or unknown-event header) (midi-condition)
-                                       (error "Not a midi file ~S ~S" stream midi-condition)))
-                                (file-position stream start)))))))
-
-
-;; (assert (equal '(nil nil)
-;;                (with-open-file (stream #P"~/works/gsharp/src/abnotation/files/bach-suite-spacing-1.gsh")
-;;                  (list (midi-stream-p stream)
-;;                        (midi-stream-p stream)))))
-
-
-;;;
-;;; gsharp-buffer-output
-;;;
-
-
-(defclass gsharp-buffer-output ()
-  ((buffer :initarg :buffer :reader buffer)
-   (cursor :reader cursor)
-   (last-timings :initform nil :accessor last-timings)))
-
-(defmethod initialize-instance ((self gsharp-buffer-output) &key filepath &allow-other-keys)
-  (call-next-method)
-  (unless (and (slot-boundp self 'buffer) (slot-value self 'buffer))
-    (setf (slot-value self 'buffer)
-          (let ((gsharp::*default-staves-function* 'gsharp::staves/treble15ma+treble+bass+bass15mb))
-            (gsharp::create-file-buffer (or filepath "untitled")))))
-  (setf (slot-value self 'cursor) (gsharp::make-initial-cursor (slot-value self 'buffer)))
-  self)
-
-
-
-;;;
-
-
+(mapartition)
 (defmethod insert-cluster ((output gsharp-buffer-output)
                            &key (lbeams 0) (rbeams 0) (notehead :filled) (dots 0) (stem-direction :auto))
   (let ((cluster (make-cluster
