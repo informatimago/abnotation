@@ -227,4 +227,7 @@ RETURN:         DST
 "))
 
 
+(defmacro not-implemented-yet (&rest arguments)
+  `(error "Not implemented yet ~S" ',arguments))
+
 ;;;; THE END ;;;;

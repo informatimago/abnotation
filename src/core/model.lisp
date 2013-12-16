@@ -220,6 +220,7 @@
             :multiplicity 0-*
             :ordered t)))
 
+
 (defclass tempo (element)
   ((measure-duration :initarg :measure-duration :accessor measure-duration)))
 

@@ -77,8 +77,11 @@
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.OBJCL"
         "COM.INFORMATIMAGO.OBJCL.WRAPPER"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CIRCULAR"
         "ABNOTATION.CORE")
-  (:shadow "FORMAT"))
+  (:shadowing-import-from "ABNOTATION.CORE" "NUMBER")
+  (:shadow "FORMAT")
+  (:export "MAIN"))
 
 
 ;;;; THE END ;;;;

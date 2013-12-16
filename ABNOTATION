@@ -1,24 +1,26 @@
 ;;;; -*- mode:lisp; coding:utf-8; -*-
 
-#.(list
-   
-   (list "ABNOTATION:**;*.*.*"
-         (merge-pathnames #P"works/abnotation/abnotation/**/*.*"
-                          (user-homedir-pathname) nil))
-   (list "ABNOTATION:**;*.*"
-         (merge-pathnames #P"works/abnotation/abnotation/**/*.*"
-                          (user-homedir-pathname) nil))
-   (list "ABNOTATION:**;*"
-         (merge-pathnames #P"works/abnotation/abnotation/**/*"
-                          (user-homedir-pathname) nil))
+#.(let ((basedir #-(and) #P"/home/pjb/"
+                 #+(and) (user-homedir-pathname)))
+     (list
+      
+      (list "ABNOTATION:**;*.*.*"
+            (merge-pathnames #P"works/abnotation/abnotation/**/*.*"
+                             basedir nil))
+      (list "ABNOTATION:**;*.*"
+            (merge-pathnames #P"works/abnotation/abnotation/**/*.*"
+                             basedir nil))
+      (list "ABNOTATION:**;*"
+            (merge-pathnames #P"works/abnotation/abnotation/**/*"
+                             basedir nil))
 
-   (list "ABNOTATION:DEPENDENCIES;**;*.*.*"
-         (merge-pathnames #P"works/abnotation/**/*.*"
-                          (user-homedir-pathname) nil))
-   (list "ABNOTATION:DEPENDENCIES;**;*.*"
-         (merge-pathnames #P"works/abnotation/**/*.*"
-                          (user-homedir-pathname) nil))
-   (list "ABNOTATION:DEPENDENCIES;**;*"
-         (merge-pathnames #P"works/abnotation/**/*"
-                          (user-homedir-pathname) nil))
-   )
+      (list "ABNOTATION:DEPENDENCIES;**;*.*.*"
+            (merge-pathnames #P"works/abnotation/**/*.*"
+                             basedir nil))
+      (list "ABNOTATION:DEPENDENCIES;**;*.*"
+            (merge-pathnames #P"works/abnotation/**/*.*"
+                             basedir nil))
+      (list "ABNOTATION:DEPENDENCIES;**;*"
+            (merge-pathnames #P"works/abnotation/**/*"
+                             basedir nil))
+      ))

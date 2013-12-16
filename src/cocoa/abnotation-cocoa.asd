@@ -77,11 +77,17 @@ according to the Alexis Bosch's synchrone musical notation.
                  (:file "package")
                  (:file "macros"     :depends-on ("package"))
                  (:file "system"     :depends-on ("package"))
-                 (:file "wrapper"    :depends-on ("package" "macros" "system" "circular"))
+                 (:file "wrapper"    :depends-on ("package" "macros" "system"))
                  (:file "abgeometry" :depends-on ("package" "wrapper"))
-                 (:file "abview"     :depends-on ("package" "abgeometry"))
-                 (:file "abwindow"   :depends-on ("package" "macros" "abgeometry" "abview"))
+                 (:file "bezier"     :depends-on ("package" "wrapper" "abgeometry"))
+                 (:file "keymap"     :depends-on ("package"))
+                 (:file "views"      :depends-on ("package" "keymap"))
+                 (:file "abview"     :depends-on ("package" "keymap" "abgeometry"))
+                 (:file "abwindow"   :depends-on ("package" "keymap" "views" "macros"
+                                                            "abgeometry"  "abview"))
 
+                 (:file "main"       :depends-on ("package" "macros" "abgeometry" "abview"
+                                                            "abwindow"))
                  ))
 
 ;;;; THE END ;;;;

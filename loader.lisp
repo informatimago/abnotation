@@ -82,7 +82,11 @@
   (unless (member "old" (pathname-directory dir) :test (function string=))
     (pushnew dir asdf:*central-registry* :test (function equalp))))
 
-#+darwin (require :cocoa)
-(ql:quickload :abnotation-core)
-#+cocoa (ql:quickload :abnotation-cocoa)
 
+#+darwin (progn
+           (format *trace-output* "~&;; Requiring cocoa~%")
+           (finish-output *trace-output*)
+           (require :cocoa))
+(ql:quickload :abnotation-core)
+(when (find-package "NS")
+  (ql:quickload :abnotation-cocoa))
