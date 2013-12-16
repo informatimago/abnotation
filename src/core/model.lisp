@@ -114,7 +114,10 @@
 
 
 (defclass measure (element numbered)
-  ())
+  ((stat-time :initarg :start-time :initform 0 :accessor start-time)))
+
+(defmethod end-time ((measure measure))
+  (+ (start-time measure) (measure-duration (tempo measure))))
 
 (define-association measure-contains
     ((measure :type measure
@@ -240,6 +243,8 @@
                :ordered t)))
 
 
+
+
 (defparameter *papers*
   '((("A4" :portrait) (210 297) (10 10 190 277))
     (("A4" :paysage)  (297 210) (10 10 277 190))
@@ -251,18 +256,20 @@
 
 
 (defclass partition-parameters ()
-  ((page-number-font    :initarg :page-number-font    :accessor page-number-font    :type string)
-   (line-number-font    :initarg :line-number-font    :accessor line-number-font    :type string)
-   (measure-number-font :initarg :measure-number-font :accessor measure-number-font :type string)
-   (paper-format        :initarg :paper-format        :accessor paper-format        :type string)
-   (paper-orientation   :initarg :paper-orientation   :accessor paper-orientation
-                        :type (member :portrait :paysage) :initform :portrait)
-   (paper-size          :initarg :paper-size          :accessor paper-size          :type list
-                        :documentation "The (width height) in millimeter of the paper page.")
-   (paper-printable-area :initarg :paper-printable-area :accessor paper-printable-area :type list
-                        :documentation "The (left bottom width height) in millimeter of the printable area.")
-   (staff-height        :initarg :staff-height        :accessor staff-height        :type real
-                        :documentation "Unit: millimeter, values: 3, 5, 7 mm")))
+  ((page-number-font      :initarg :page-number-font        :accessor page-number-font      :type string)
+   (line-number-font      :initarg :line-number-font        :accessor line-number-font      :type string)
+   (measure-number-font   :initarg :measure-number-font     :accessor measure-number-font   :type string)
+   (default-measure-speed :initarg :default-measure-speed   :accessor default-measure-speed :type real
+                          :initform 40 :documentation "The scale of a measure in mm/s.")
+   (paper-format          :initarg :paper-format            :accessor paper-format          :type string)
+   (paper-orientation     :initarg :paper-orientation       :accessor paper-orientation
+                          :type (member :portrait :paysage) :initform :portrait)
+   (paper-size            :initarg :paper-size              :accessor paper-size            :type list
+                          :documentation "The (width height) in millimeter of the paper page.")
+   (paper-printable-area  :initarg :paper-printable-area    :accessor paper-printable-area  :type list
+                          :documentation "The (left bottom width height) in millimeter of the printable area.")
+   (staff-height          :initarg :staff-height            :accessor staff-height          :type real
+                          :documentation "Unit: millimeter, values: 3, 5, 7 mm")))
 
 (defmethod initialize-instance :after ((parameters partition-parameters) &rest args &key &allow-other-keys)
   (when args
@@ -310,38 +317,39 @@
     staff-height)
 
 
-(defun create-bands ()
+(defun create-bands (staff-set)
   (let ((clefs      (list (make-instance 'clef :name :bass15mb   :line 4 :pitch  41)
                           (make-instance 'clef :name :bass       :line 4 :pitch  65)
                           (make-instance 'clef :name :treble     :line 2 :pitch  79)
                           (make-instance 'clef :name :treble15ma :line 2 :pitch 103))))
-    (list (make-instance 'ledger
-              :minimum-pitch 23 :bottom-pitch 24
-              :maximum-pitch 28 :top-pitch 28)
-          (let ((staff (make-instance 'staff)))
-            (attach 'gives-pitch (pop clefs) staff)
-            staff)
-          (make-instance 'ledger
-              :minimum-pitch 48 :bottom-pitch 48
-              :maximum-pitch 52 :top-pitch 52)
-          (let ((staff (make-instance 'staff)))
-            (attach 'gives-pitch (pop clefs) staff)
-            staff)
-          (make-instance 'ledger
-              :minimum-pitch 72 :bottom-pitch 72
-              :maximum-pitch 72 :top-pitch 72)
-          (let ((staff (make-instance 'staff)))
-            (attach 'gives-pitch (pop clefs) staff)
-            staff)
-          (make-instance 'ledger
-              :minimum-pitch 93 :bottom-pitch 93
-              :maximum-pitch 96 :top-pitch 96)
-          (let ((staff (make-instance 'staff)))
-            (attach 'gives-pitch (pop clefs) staff)
-            staff)
-          (make-instance 'ledger
-              :minimum-pitch 117 :bottom-pitch 117
-              :maximum-pitch 122 :top-pitch 121))))
+    (subseq (list (make-instance 'ledger
+                      :minimum-pitch 23 :bottom-pitch 24
+                      :maximum-pitch 28 :top-pitch 28)
+                  (let ((staff (make-instance 'staff)))
+                    (attach 'gives-pitch (pop clefs) staff)
+                    staff)
+                  (make-instance 'ledger
+                      :minimum-pitch 48 :bottom-pitch 48
+                      :maximum-pitch 52 :top-pitch 52)
+                  (let ((staff (make-instance 'staff)))
+                    (attach 'gives-pitch (pop clefs) staff)
+                    staff)
+                  (make-instance 'ledger
+                      :minimum-pitch 72 :bottom-pitch 72
+                      :maximum-pitch 72 :top-pitch 72)
+                  (let ((staff (make-instance 'staff)))
+                    (attach 'gives-pitch (pop clefs) staff)
+                    staff)
+                  (make-instance 'ledger
+                      :minimum-pitch 93 :bottom-pitch 93
+                      :maximum-pitch 96 :top-pitch 96)
+                  (let ((staff (make-instance 'staff)))
+                    (attach 'gives-pitch (pop clefs) staff)
+                    staff)
+                  (make-instance 'ledger
+                      :minimum-pitch 117 :bottom-pitch 117
+                      :maximum-pitch 122 :top-pitch 121))
+            (first staff-set) (second staff-set))))
 
 
 (defun create-partition (staff-set &key (title "untitled") (author "anonymous") parameters)
@@ -362,7 +370,7 @@
     ;; (attach 'measure-contains measure sound)
     ;; (attach 'band-contains band note)
     (attach 'line-contains-vertically line measure)
-    (dolist (band (subseq (create-bands) (first staff-set) (second staff-set)))
+    (dolist (band (create-bands staff-set))
       (attach 'line-contains-horizontally line band))
     (attach 'page-contains page line)
     (attach 'partition-contains partition page)
