@@ -435,29 +435,6 @@ specified by the midi EVENT.
 ;;; load midi files into a partition.
 ;;;
 
-(mapartition)
-(defmethod insert-cluster ((output gsharp-buffer-output)
-                           &key (lbeams 0) (rbeams 0) (notehead :filled) (dots 0) (stem-direction :auto))
-  (let ((cluster (make-cluster
-                  :notehead notehead
-                  :lbeams lbeams
-                  :rbeams rbeams
-                  :dots dots
-                  :stem-direction stem-direction))
-        (cursor (cursor output)))
-    (gsharp::insert-element cluster cursor)
-    (gsharp::forward-element cursor)
-    cluster))
-
-(defun insert-note (pitch cluster accidentals)
-  (let* ((staff (car (staves (layer (slice (bar cluster))))))
-         (note (make-note pitch staff
-                 :head (notehead cluster)
-                 :accidentals accidentals
-                 :dots (dots cluster))))
-    (add-note cluster note)))
-
-
 
 (defun select-staff (staves key)
   (loop
@@ -477,36 +454,6 @@ specified by the midi EVENT.
     :finally (return selected-staf)))
 
 
-;; (define-microtonal-accidentals :double-flat :sesquiflat :flat :semiflat
-;;                                :natural 
-;;                                :semisharp :sharp :sesquisharp :double-sharp)
-;; 
-;; (define-accidentals :double-flat :flat :natural :sharp :double-sharp)
-
-(defmethod output-note ((output gsharp-buffer-output) (note midi-note))
-  (with-slots (buffer last-timings) output
-    (setf last-timings (timings note))
-    (multiple-value-bind (head beams dots) (quantized-duration note)
-      (let* ((cluster (insert-cluster output
-                                      :notehead head
-                                      :dots dots
-                                      :rbeams beams))
-             (staff   (car (staves (layer (slice (bar cluster))))))
-             (note    (make-note  (key note)
-                                  (select-staff (staves buffer) (key note))
-                                  :head         head
-                                  :accidentals  (accidentals note)
-                                  :dots         dots)))
-        (add-note cluster note)))))
-
-
-(defmethod output-silence ((output gsharp-buffer-output) duration)
-  (with-slots (buffer last-timings) output
-    (multiple-value-bind (head beams dots) (quantized-duration duration last-timings)
-      (insert-cluster output
-                      :notehead head
-                      :dots dots
-                      :rbeams beams))))
 
 
 (defun read-midi-track (track output)
@@ -514,15 +461,6 @@ specified by the midi EVENT.
     (dolist (event track)
       (process-event state event))))
 
-(defun read-buffer-from-midi-stream (stream)
-  "
-TODO: Select the staves: (gsharp::staves/treble8va+treble+bass+bass8vb)
-TODO: Select what to do with the channels: select one or more of them to be merged, transposed, etc.
-"
-    (let ((file    (midi-stream-p stream))
-          (gbuffer (make-instance 'gsharp-buffer-output :filepath (pathname stream))))
-      (read-midi-track (first (midifile-tracks file)) gbuffer)
-      (buffer gbuffer)))
 
 
 ;;;
@@ -530,18 +468,17 @@ TODO: Select what to do with the channels: select one or more of them to be merg
 ;;;
 
 
-(defparameter *file* (with-open-file (stream #P"~/works/gsharp/src/abnotation/files/1-canal.mid")
-                       (list (midi-stream-p stream)
-                             (midifile-tracks (midi-stream-p stream)))))
+(defparameter *file*
+  (midifile-tracks (read-midi-file #P"~/works/abnotation/abnotation/files/1-canal.mid")))
 
 (defparameter *state* (make-instance 'midi-state))
 
 
 #-(and)
-(dolist (event (first (second *file*)))
+(dolist (event (first *file* ))
   (process-event *state* event))
 
-
+#-(and)
 (defun test/gsharp-buffer-output ()
   (let ((timings (make-instance 'timings)))
     (flet ((note (key duration &optional (velocity 64))
@@ -581,9 +518,6 @@ TODO: Select what to do with the channels: select one or more of them to be merg
         
         buffer))))
 
-
-;; (gsharp::in-gsharp
-;;  (test/gsharp-buffer-output))
 
 
 #-(and)

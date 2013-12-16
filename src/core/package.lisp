@@ -90,6 +90,7 @@
 
 (defpackage "ABNOTATION.MIDI"
   (:use "COMMON-LISP"
+        "MIDI"
         "COM.INFORMATIMAGO.CLEXT.ASSOCIATION"
         "ABNOTATION.CORE")
 
