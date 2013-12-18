@@ -1,0 +1,37 @@
+-*- mode:picture -*-
+
+
+                     element 1------------------o annotation
+                        ^                             ^                             
+                        |                             |
+                        |                     +-------+--------+
+     +------------------|----* tempo 1----+   |                |
+     |                  |                 | image             text
+     |  +------------+--+-----+---------+ |
+     |  |            |        |         | *
+    partition 1--* page 1--* line 1--* measure 1---* sound
+       |                      | \                      ^
+       |                      *  *                     |
+       |                  staff  ledger        +-------+-------+
+       |                  |   o    o           |               |                                
+       |                  |   |    |           |               |
+       |                clef  +----========* note *-------o cluster
+       |                        
+       |                     +---page-box
+       |                     |           
+  partition-parameters       +---line-box
+       *                     |           
+       |                     +---measure-box 
+  graphic-element            |              
+       ^                     +---sound-box  head, beam, dynamic, tenue, annotation
+       |                     |                                                    
+       +---------------------+---line-box
+                             |           
+                             +---ledger-box
+                             |            
+                             +---staff-box
+                             |            
+                             +---clef-box 
+                             |
+                             
+

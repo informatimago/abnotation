@@ -44,6 +44,7 @@
 (defclass measure-box (graphic-element)
   ((adjusted-width :initarg :adjusted-width :accessor adjusted-width :type coordinate)
    (front-kerning  :initarg :front-kerning  :accessor front-kerning  :type coordinate)))
+
 (defclass line-box (offsetable-box)
   ())
 (defclass ledger-box (offsetable-box)

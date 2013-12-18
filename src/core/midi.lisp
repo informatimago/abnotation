@@ -604,9 +604,9 @@ specified by the midi EVENT.
     sequence))
 
 
-(let ((partition (create-partition *staves/bass15mb-trebble15ma*)))
- (setf (tempo-and-notes partition) (abnotation-read-midi-file  #P"~/works/abnotation/abnotation/files/1-canal.mid"))
- (inspect partition))
+;; (let ((partition (create-partition *staves/bass15mb-trebble15ma*)))
+;;  (setf (tempo-and-notes partition) (abnotation-read-midi-file  #P"~/works/abnotation/abnotation/files/1-canal.mid"))
+;;  partition)
 
 
 

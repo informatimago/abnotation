@@ -139,6 +139,7 @@ Model
 --------------------------------------------------------------------------------
 
 
+
                      element 1------------------o annotation
                         ^                             ^                             
                         |                             |
@@ -148,12 +149,42 @@ Model
      |  +------------+--+-----+---------+ |
      |  |            |        |         | *
     partition 1--* page 1--* line 1--* measure 1---* sound
-                              | \                      ^
-                              *  *                     |
-                          staff  ledger        +-------+-------+
-                          |   o    o           |               |
-                          |   |    |           |               |
-                        clef  +----========* note *-------o cluster
+       |                      | \                      ^
+       |                      *  *                     |
+       |                  staff  ledger        +-------+-------+
+       |                  |   o    o           |               |                                
+       |                  |   |    |           |               |
+       |                clef  +----========* note *-------o cluster
+       |                        
+       |                     +---page-box
+       |                     |           
+  partition-parameters       +---line-box
+       *                     |           
+       |                     +---measure-box 
+  graphic-element            |              
+       ^                     +---sound-box  head, beam, dynamic, tenue, annotation
+       |                     |                                                    
+       +---------------------+---line-box
+                             |           
+                             +---ledger-box
+                             |            
+                             +---staff-box
+                             |            
+                             +---clef-box 
+                             |
+                             
+
+
+measure-box.width  = (or manual-adjustment (max (* tempo measure-speed) (max sound-box.width)))
+measure-box.height = (or manual-adjustment (max sound-box.height))
+
+line-box.width       = (- printable-area.width left-margin manual-adjustment)
+(accumulate (measure) (< (sum measure-box.width) line-box.width))
+top-ledger.top       = (reduce max  (measures line) :key measure.top)
+bottom-ledger.bottom = (reduce min (measures line) :key measure.bottom)
+line-box.height      = (- top-ledger.top bottom-ledger.bottom)
+
+(accumulate (line) (< (sum (+ interline line.height)) page.height))
 
 
 Midi Reader
