@@ -300,9 +300,10 @@ element."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defvar *path-class* 'path)
 
 (defun create-path ()
-  (make-instance 'path))
+  (make-instance *path-class*))
 
 (defun position-of-cell (list cell)
   "Returns the position of the CELL in the LIST"

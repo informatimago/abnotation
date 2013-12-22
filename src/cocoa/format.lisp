@@ -1,17 +1,17 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               views.lisp
+;;;;FILE:               format.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    Subclasses of NS views.
+;;;;    A format function to redirect to views.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2013-12-16 <PJB> Created.
+;;;;    2013-12-22 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -31,23 +31,17 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+
 (in-package "ABNOTATION.COCOA")
-(objcl:set-objective-cl-syntax)
-
-@[NSTextView subClass:ABTextView slots:()]
-
-@[ABTextView method:(keyDown:(:id)event)
-             resultType:(:void)
-             body:(process-key-event event :view self)]
-
-@[NSTextField subClass:ABTextField slots:()]
-
-@[ABTextField method:(keyDown:(:id)event)
-              resultType:(:void)
-              body:(process-key-event event :view self)]
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (format t "~&processing views.lisp~%"))
+(defgeneric format (output control-string &rest arguments)
+  (:method ((output null) control-string &rest arguments)
+    (apply (function cl:format) output control-string arguments))
+  (:method ((output (eql t)) control-string &rest arguments)
+    (apply (function cl:format) output control-string arguments))
+  (:method ((output stream) control-string &rest arguments)
+    (apply (function cl:format) output control-string arguments)))
+
 
 ;;;; THE END ;;;;

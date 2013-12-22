@@ -34,14 +34,6 @@
 (in-package "ABNOTATION.COCOA")
 (objcl:set-objective-cl-syntax)
 
-(defgeneric format (output control-string &rest arguments )
-  (:method ((output null) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments))
-  (:method ((output (eql t)) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments))
-  (:method ((output stream) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments)))
-
 
 @[NSWindow subClass:ABWindow
            slots: ((partition        :initform (create-partition *staves/bass15mb-trebble15ma*)

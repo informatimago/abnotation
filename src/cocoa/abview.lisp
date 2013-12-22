@@ -19,10 +19,12 @@
   (setf (page self) (elt (pages partition) 0)))
 
 (defun draw-partition-page (abview rect)
-  (let* ((*path-class* 'ns-bezier-path)
+  (let* ((*path-class* 'cocoa-bezier-path)
          (p (create-path)))
-    (move-to-coordinates p 100 100)
-    (curve-to-coordinates p 100 200 200 200 200 100 )
+    (assert (typep p 'cocoa-bezier-path))
+    (move-to-coordinates p nil 100 100)
+    (curve-to-coordinates p nil 100 200 200 200 200 100 )
     (close-subpath p)
     [(bezier-path p) stroke])
   (values))
+
