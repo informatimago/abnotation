@@ -136,7 +136,7 @@ C: coefficients array of the rational function
 
 
 (defun elliptical-arc (cx cy a b &optional (theta 0.0d0) (lambda1 0.0d0) (lambda2 2pi)
-                                   (degree 2) (threshold 1.0d-10))
+                       (degree 2) (threshold 1.0d-10) (transform nil))
   "
 Build an approximation of an elliptical arc from its canonical
 geometrical elements.
@@ -149,6 +149,7 @@ LAMBDA1:        start angle of the arc
 LAMBDA2:        end angle of the arc
 DEGREE:         
 THRESHOLD:      Default flatness for Bézier curve approximation (greater than 1.0e-10).
+TRANSFORM:      affine transformation to apply
 RETURN:         a path
 "
   (assert (find degree #(1 2 3)))
@@ -311,7 +312,7 @@ RETURN:  The upper bound of the approximation error between the Bézier
              ;;     (line-to-coordinates path xB yB))
              ;;   (move-to-coordinates path xB yB))
 
-             (move-to-coordinates path xB yB)
+             (move-to-coordinates path transform xB yB)
              (let* ((tt    (tan (/ dEta 2)))
                     (alpha (* (sin dEta) (/ (1- (sqrt (+ 4 (* 3 tt tt))))3))))
                (declare (type double-float tt alpha))
@@ -335,18 +336,20 @@ RETURN:  The upper bound of the approximation error between the Bézier
                               xBDot    (- (+ (* aSinEtaB cosTheta) (* bCosEtaB sinTheta)))
                               yBDot    (- (* bCosEtaB cosTheta) (* aSinEtaB sinTheta)))
                         (case degree
-                          ((1) (line-to-coordinates path xB yB))
+                          ((1) (line-to-coordinates path transform xB yB))
                           ((2) (let  ((k (/ (- (* yBDot (- xB xA)) (* xBDot (- yB yA)))
                                             (- (* xADot yBDot)     (* yADot xBDot)))))
-                                 (quad-curve-to-coordinates path 
+                                 (quad-curve-to-coordinates path transform
                                                             (+ xA (* k xADot))  (+ yA (* k yADot)) 
                                                             xB yB)))
-                          ((3) (curve-to-coordinates path 
+                          ((3) (curve-to-coordinates path transform
                                                      (+ xA (* alpha xADot)) (+ yA (* alpha yADot)) 
                                                      (- xB (* alpha xBDot)) (- yB (* alpha yBDot)) 
                                                      xB yB))))))
+
              ;; (when pie-slice-p
              ;;   (close-path path))
+
              path)))))))
 
 

@@ -49,10 +49,10 @@
                     (path-element-line-to-point
                      [bezier lineToPoint:(nspoint (path-element-point element))])
                     (path-element-quad-curve-to-point
-                     (let ((2/3v (vector* 2/3 (path-element-control-point element))))
+                     (let ((2/3v (vector* #.(coerce 2/3 'coordinate) (path-element-control-point element))))
                        [bezier curveToPoint:(nspoint (path-element-point element))
-                               controlPoint1:(nspoint (vector+ 2/3v (vector* 1/3 (get-nspoint [bezier currentPoint]))))
-                               controlPoint2:(nspoint (vector+ 2/3v (vector* 1/3 (path-element-point element))))]))
+                               controlPoint1:(nspoint (vector+ 2/3v (vector* #.(coerce 1/3 'coordinate) (get-nspoint [bezier currentPoint]))))
+                               controlPoint2:(nspoint (vector+ 2/3v (vector* #.(coerce 1/3 'coordinate) (path-element-point element))))]))
                     (path-element-curve-to-point
                      [bezier curveToPoint:(nspoint (path-element-point element))
                              controlPoint1:(nspoint (path-element-control-point-1 element))
@@ -62,8 +62,8 @@
 
 (defmethod bezier-path ((path ns-bezier-path))
   (if (slot-value path 'dirty)
-      (setf (slot-value path 'dirty)  nil
-            (slot-value path 'bezier) (compute-bezier-path path))
+      (prog1 (setf (slot-value path 'bezier) (compute-bezier-path path))
+        (setf (slot-value path 'dirty)  nil))
       (slot-value path 'bezier)))
 
 (defmethod move-to-point ((path ns-bezier-path) point) 

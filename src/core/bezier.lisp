@@ -116,23 +116,37 @@ with POINT parameters, and with X, and Y coordinates parameters.
          stream))
 
 
-(defgeneric copy-path-element (element)
+(defgeneric copy-path-element (element &optional matrix)
   (:documentation "Returns a copy of the element.")
-  (:method ((element path-element-move-to-point))
+  (:method ((element path-element-move-to-point) &optional matrix)
     (make-instance (class-of element)
-        :point (path-element-point element)))
-  (:method ((element path-element-line-to-point))
+      :point (if matrix
+               (transform-point (path-element-point element))
+               (path-element-point element))))
+  (:method ((element path-element-line-to-point) &optional matrix)
     (make-instance (class-of element)
-        :point (path-element-point element)))
-  (:method ((element path-element-quad-curve-to-point))
+      :point (if matrix
+               (transform-point (path-element-point element))
+               (path-element-point element))))
+  (:method ((element path-element-quad-curve-to-point) &optional matrix)
     (make-instance (class-of element)
-        :point         (path-element-point element)
-        :control-point (path-element-control-point element)))
-  (:method ((element path-element-curve-to-point))
+      :point         (if matrix
+                       (transform-point (path-element-point element))
+                       (path-element-point element))
+      :control-point (if matrix
+                       (transform-point (path-element-control-point element))
+                       (path-element-control-point element))))
+  (:method ((element path-element-curve-to-point) &optional matrix)
     (make-instance (class-of element)
-        :point           (path-element-point element)
-        :control-point-1 (path-element-control-point-1 element)
-        :control-point-2 (path-element-control-point-2 element))))
+      :point           (if matrix
+                         (transform-point (path-element-point element))
+                         (path-element-point element))
+      :control-point-1 (if matrix
+                         (transform-point (path-element-control-point-1 element))
+                         (path-element-control-point-1 element))
+      :control-point-2 (if matrix
+                         (transform-point (path-element-control-point-2 element))
+                         (path-element-control-point-2 element)))))
 
 
 (defgeneric path-element-equal (e1 e2)
@@ -170,7 +184,6 @@ with POINT parameters, and with X, and Y coordinates parameters.
                        :documentation "Indicates whether the last subpath is closed."))
   (:documentation "A graphics path is a mathematical description of a series of shapes or lines."))
 
-
 (defgeneric copy-path (path)
   (:documentation "Produces a deep copy of the PATH.  All the elements are duplicated.
 Notice that the points and rect in the path-element instances are not duplicated,
@@ -194,58 +207,59 @@ Notice: We don't try to check whether the path is a rect when it has
   (:documentation "Whether the two specified paths contain the
 same sequence of path elements."))
 
-(defgeneric path-contains-point (path point eofill)
+(defgeneric path-contains-point (path matrix point eofill)
   (:documentation "A point is contained in a path if it would be
 inside the painted region when the path is filled.  This depends on eofill
 which may be true, in which case the Even-Odd-Fill rule is applied,
-or NIL in which case the winding rule is applied."))
+or NIL in which case the winding rule is applied.
+The matrix, if present, is applied to the POINT prior to testing."))
 
 
-(defgeneric move-to-point             (path point)
+(defgeneric move-to-point             (path matrix point)
   (:documentation "Starts a new subpath from the POINT."))
 
-(defgeneric move-to-coordinates       (path x y)
+(defgeneric move-to-coordinates       (path matrix x y)
   (:documentation "Starts a new subpath from the point at coordinates X and Y."))
 
-(defgeneric line-to-point             (path point)
+(defgeneric line-to-point             (path matrix point)
   (:documentation "Adds a line segment from the current point to the new POINT."))
 
-(defgeneric line-to-coordinates       (path x y)
+(defgeneric line-to-coordinates       (path matrix x y)
   (:documentation "Adds a line segment from the current point to the new point at coordinates X and Y."))
 
-(defgeneric quad-curve-to-point       (path control-point point)
+(defgeneric quad-curve-to-point       (path matrix control-point point)
   (:documentation "Adds a quadratic Bézier curve from the current point to the new POINT using the CONTROL-POINT."))
 
-(defgeneric quad-curve-to-coordinates (path cpx cpy x y)
+(defgeneric quad-curve-to-coordinates (path matrix cpx cpy x y)
   (:documentation "Adds a quadratic Bézier curve from the current point to the new point at coordinates X and Y, using the control-point at coordinates CPX and CPY."))
 
-(defgeneric curve-to-point            (path control-point-1 control-point-2 point)
+(defgeneric curve-to-point            (path matrix control-point-1 control-point-2 point)
   (:documentation "Adds a Bézier curve from the current point to the new POINT using the control points CONTROL-POINT-1 and CONTROL-POINT-2."))
 
-(defgeneric curve-to-coordinates      (path cp1x cp1y cp2x cp2y x y)
+(defgeneric curve-to-coordinates      (path matrix cp1x cp1y cp2x cp2y x y)
   (:documentation "Adds a Bézier curve from the current point to the new point at coordinates X and Y, using the control points at coordinates CP1X, CP1Y, and CP2X, CP2Y."))
 
 (defgeneric close-subpath             (path)
   (:documentation "Closes the current subpath."))
 
-(defgeneric add-rect                  (path rect)
+(defgeneric add-rect                  (path matrix rect)
   (:documentation "Adds the rectangle RECT as new subpath to the PATH."))
 
-(defgeneric add-rects                 (path rects)
+(defgeneric add-rects                 (path matrix rects)
   (:documentation "Adds each rectangle in RECTS as new subpaths to the PATH."))
 
-(defgeneric add-lines                 (path points)
+(defgeneric add-lines                 (path matrix points)
   (:documentation "Adds the line segments from the current point to each of the POINTS in sequence."))
 
-(defgeneric add-ellipse-in-rect       (path rect)
+(defgeneric add-ellipse-in-rect       (path matrix rect)
   (:documentation "Adds the ellipse circumscript into the RECT to the PATH."))
 
-(defgeneric add-arc                   (path center radius start-angle end-angle clockwisep)
+(defgeneric add-arc                   (path matrix center radius start-angle end-angle clockwisep)
   (:documentation "Adds an arc of the given RADIUS and CENTER, from
 the START-ANGLE to the END-ANGLE, in the clockwise or
 counter-clockwise direction."))
 
-(defgeneric add-arc-to-point          (path start-point end-point radius)
+(defgeneric add-arc-to-point          (path matrix start-point end-point radius)
   (:documentation "
 The current point and start-point define a line, and the start-point
 and the end-point define another line.
@@ -258,8 +272,9 @@ then a line is added before the arc.
 Note: if the current point, start-point and end-point are colinear,
 then it merely adds two line segments."))
 
-(defgeneric add-path                  (path other-path)
-  (:documentation "Appends the elements from OTHER-PATH to the PATH."))
+(defgeneric add-path                  (path matrix other-path)
+  (:documentation "Appends the elements from OTHER-PATH to the PATH.
+Makes a copy of the elements only when a transformation MATRIX is applied."))
 
 (defgeneric surrounding-box              (path)
   (:documentation "Returns the surrounding box of the specified path.  If
@@ -285,10 +300,9 @@ element."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar *path-class* 'path)
 
 (defun create-path ()
-  (make-instance *path-class*))
+  (make-instance 'path))
 
 (defun position-of-cell (list cell)
   "Returns the position of the CELL in the LIST"
@@ -362,7 +376,7 @@ element."))
                (bottom (min (point-y p0) (point-y p1) (point-y p2)  (point-y p3)))
                (right  (max (point-x p0) (point-x p1) (point-x p2)  (point-x p3)))
                (top    (max (point-y p0) (point-y p1) (point-y p2)  (point-y p3))))
-          (make-rect left bottom (- right left) (- top bottom))))))))
+          (rect left bottom (- right left) (- top bottom))))))))
 
 
 (defmethod path-equal (path other-path)
@@ -377,8 +391,15 @@ element."))
 
 
 
-(defmethod path-contains-point ((path path) point (eofill null))
+(defmethod path-contains-point ((path path) (matrix null) point (eofill null))
   (not-implemented-yet))
+
+(defmethod path-contains-point ((path path) (matrix null) point (eofill t))
+  (not-implemented-yet))
+
+(defmethod path-contains-point (path (matrix vector) point eofill)
+  (path-contains-point path nil (transform-point matrix (point-x point) (point-y point))))
+
 
 
 (defun add-element (path element)
@@ -418,39 +439,82 @@ move-to-point path element."
 
 
 
-(defmethod move-to-point             ((path path)  point)
+(defmethod move-to-point             ((path path) (matrix null)  point)
   (add-element path (make-instance 'path-element-move-to-point :point point)))
 
-(defmethod move-to-coordinates       (path x y)
-  (move-to-point path (point x y)))
+(defmethod move-to-point             (path (matrix vector) point)
+  (move-to-point path nil (transform-point (point-x point) (point-y point))))
+
+(defmethod move-to-coordinates       (path (matrix null) x y)
+  (move-to-point path nil (point x y)))
+
+(defmethod move-to-coordinates       (path (matrix vector) x y)
+  (move-to-point path nil (transform-point matrix x y)))
 
 
-(defmethod line-to-point             ((path path) point)
+
+(defmethod line-to-point             ((path path) (matrix null) point)
   (add-element path (make-instance 'path-element-line-to-point :point point)))
 
-(defmethod line-to-coordinates       (path x y)
-  (line-to-point path (point x y)))
+(defmethod line-to-point             (path (matrix vector) point)
+  (line-to-point path nil (transform-point (point-x point) (point-y point))))
+
+(defmethod line-to-coordinates       (path (matrix null) x y)
+  (line-to-point path nil (point x y)))
+
+(defmethod line-to-coordinates       (path (matrix vector) x y)
+  (line-to-point path nil (transform-point matrix x y)))
 
 
 
-(defmethod quad-curve-to-point       ((path path) (control-point point) point)
+
+(defmethod quad-curve-to-point       ((path path) (matrix null) (control-point point) point)
   (add-element path (make-instance 'path-element-quad-curve-to-point
                       :point point
                       :control-point control-point)))
 
+(defmethod quad-curve-to-point       (path (matrix vector) control-point point)
+  (quad-curve-to-point path nil
+                       (transform-point matrix (point-x control-point) (point-y control-point))
+                       (transform-point matrix (point-x point) (point-y point))))
 
-(defmethod quad-curve-to-coordinates (path cpx cpy x y)
-  (quad-curve-to-point path (point cpx cpy) (point x y)))
+(defmethod quad-curve-to-coordinates (path (matrix null) cpx cpy x y)
+  (quad-curve-to-point path nil
+                       (point cpx cpy)
+                       (point x y)))
+
+(defmethod quad-curve-to-coordinates (path (matrix vector) cpx cpy x y)
+  (quad-curve-to-point path nil
+                       (transform-point matrix cpx cpy)
+                       (transform-point matrix x y)))
 
 
-(defmethod curve-to-point            ((path path) control-point-1 control-point-2 point)
+(defmethod curve-to-point            ((path path) (matrix null) control-point-1 control-point-2 point)
   (add-element path (make-instance 'path-element-curve-to-point
                       :point point
                       :control-point-1 control-point-1
                       :control-point-2 control-point-2)))
 
-(defmethod curve-to-coordinates      (path cp1x cp1y cp2x cp2y x y)
-  (curve-to-point path (point cp1x cp1y) (point cp2x cp2y) (point x y)))
+(defmethod curve-to-point            (path (matrix vector) control-point-1 control-point-2 point)
+  (curve-to-point path nil
+                  (transform-point matrix
+                                   (point-x control-point-1)
+                                   (point-y control-point-1))
+                  (transform-point matrix
+                                   (point-x control-point-2)
+                                   (point-y control-point-2))
+                  (transform-point matrix
+                                   (point-x point)
+                                   (point-y point))))
+
+(defmethod curve-to-coordinates      (path (matrix null) cp1x cp1y cp2x cp2y x y)
+  (curve-to-point path nil (point cp1x cp1y) (point cp2x cp2y) (point x y)))
+
+(defmethod curve-to-coordinates      (path (matrix vector) cp1x cp1y cp2x cp2y x y)
+  (curve-to-point path nil
+                  (transform-point matrix cp1x cp1y)
+                  (transform-point matrix cp2x cp2y)
+                  (transform-point matrix x y)))
 
 
 (defmethod close-subpath             ((path path))
@@ -459,45 +523,56 @@ move-to-point path element."
   (values))
 
 
-(defmethod add-rect                  (path rect)
-  (move-to-point path (rect-origin rect)))
+(defmethod add-rect                  (path (matrix null) rect)
+  (move-to-point path matrix (rect-origin rect)))
+
+(defmethod add-rect                  (path (matrix vector) rect)
+  (let ((mins (transform-point matrix (left  rect) (bottom rect)))
+        (maxs (transform-point matrix (right rect) (top    rect))))
+    (move-to-point path nil mins)
+    (move-to-point path nil (point (point-x maxs) (point-y mins)))
+    (move-to-point path nil maxs)
+    (move-to-point path nil (point (point-x mins) (point-y maxs)))
+    (close-subpath path)))
 
 
-(defmethod add-rects                 (path rects)
-  (map nil (lambda (rect) (add-rect path rect)) rects))
+
+(defmethod add-rects                 (path matrix rects)
+  (map nil (lambda (rect) (add-rect path matrix rect)) rects))
 
 
-(defmethod add-lines                 (path points)
+(defmethod add-lines                 (path matrix points)
   (let ((first-time t))
     (map nil (lambda (point)
-               (if first-time
+                 (if first-time
                    (progn (setf first-time nil)
-                          (move-to-point path point))
-                   (line-to-point path point)))
+                          (move-to-point path matrix point))
+                   (line-to-point path matrix point)))
          points)))
 
 
-(defmethod add-ellipse-in-rect       (path rect)
-  (add-path path (elliptical-arc (rect-center-x rect) (rect-center-y rect)
+(defmethod add-ellipse-in-rect       (path matrix rect)
+  (add-path path matrix
+                 (elliptical-arc (rect-center-x rect) (rect-center-y rect)
                                  (/ (rect-width rect) 2) (/ (rect-height rect 2)))))
 
-(defmethod add-arc                   (path center radius start-angle end-angle clockwisep)
+(defmethod add-arc                   (path matrix center radius start-angle end-angle clockwisep)
   (let ((ellipse (elliptical-arc (point-x center) (point-y center)
                                  radius radius
                                  0
                                  (if clockwisep end-angle start-angle)
                                  (if clockwisep start-angle end-angle))))
-    (add-path path ellipse)))
+    (add-path path matrix ellipse)))
 
 
-(defmethod add-arc-to-point          (path start-point end-point radius)
+(defmethod add-arc-to-point          (path matrix start-point end-point radius)
   (let* ((current-point (path-current-point path))
          (v1            (vector- start-point current-point))
          (v2            (vector- end-point   start-point)))
     (if (zerop (dot-product v1 v2))
         (progn
-          (line-to-point path start-point)
-          (line-to-point path end-point))
+          (line-to-point path matrix start-point)
+          (line-to-point path matrix end-point))
         (let* ((ccw           (plusp (determinant v1 v2)))
                (perpendicular (if ccw
                                   pi/2
@@ -510,13 +585,17 @@ move-to-point path element."
                (end-angle   (vector-angle r1 r2))
                (start-point (vector- center r1)))
           (unless (point= start-point current-point)
-            (line-to-point path start-point))
-          (add-path path (elliptical-arc (point-x center) (point-y center) radius radius
+            (line-to-point path matrix start-point))
+          (add-path path matrix
+                    (elliptical-arc (point-x center) (point-y center) radius radius
                                     0 start-angle end-angle))))))
 
 
-(defmethod add-path                  (path other-path)
-  (path-apply other-path (lambda (element) (add-element path element))))
+(defmethod add-path                  (path matrix other-path)
+  (path-apply other-path
+              (if matrix
+                (lambda (element) (add-element path (copy-path-element element matrix)))
+                (lambda (element) (add-element path element)))))
 
 
 (defgeneric expand-surrounding-box (element rect)
