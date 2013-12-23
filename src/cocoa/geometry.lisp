@@ -47,6 +47,49 @@
 ;;; Conversions between ns:ns-point, ns:ns-size, ns:ns-rect and
 ;;; point, size and rect.
 
+(defmethod to-lisp ((nspoint ns:ns-point))
+  (make-point :x     (ns:ns-point-x nspoint)
+              :y     (ns:ns-point-y nspoint)))
+
+(defmethod to-lisp ((nssize ns:ns-size))
+  (make-size :width   (ns:ns-size-width nssize)
+             :height  (ns:ns-size-height nssize)))
+
+(defmethod to-lisp ((rect ns:ns-rect))
+  (make-rect :x (rect-x rect) :y (rect-y rect)
+             :width (rect-width rect)
+             :height (rect-height rect)))
+
+(defmethod to-lisp ((range ns:ns-range))
+  (make-range :location (range-location range) :length (range-length range)))
+
+(defmethod to-objc ((point point))
+  (ns:make-ns-point (point-x point) (point-y point)))
+
+(defmethod to-objc ((size size))
+  (ns:make-ns-size (size-width size) (size-height size)))
+
+(defmethod to-objc ((rect rect))
+  (ns:make-ns-rect (rect-x rect) (rect-y rect)
+                   (rect-width rect) (rect-height rect)))
+
+(defmethod to-objc ((range range))
+  (ns:make-ns-range (range-location range) (range-length range)))
+
+
+(defun rect-from-macptr (ptr)
+  (ecase (type-of (coerce 0.0 'coordinate))
+    (single-float (rect (ccl::%get-single-float ptr 0)
+                        (ccl::%get-single-float ptr 4)
+                        (ccl::%get-single-float ptr 8)
+                        (ccl::%get-single-float ptr 12)))
+    (double-float (rect (ccl::%get-double-float ptr 0)
+                        (ccl::%get-double-float ptr 8)
+                        (ccl::%get-double-float ptr 16)
+                        (ccl::%get-double-float ptr 24)))))
+
+
+
 (defmethod wrap ((nspoint ns:ns-point))
   (wrapping nspoint
             (make-point :x     (ns:ns-point-x nspoint)

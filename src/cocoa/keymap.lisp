@@ -1,4 +1,4 @@
-(in-package "ABNOTATION.COCOA")
+(in-package "ABNOTATION.COMMAND")
 (objcl:set-objective-cl-syntax)
 
 
@@ -13,8 +13,8 @@
         (cons #$NSFunctionKeyMask    :function)))
 
 (defclass keymap ()
-  ((name :initarg :name :accessor name)
-   (parent :initarg :parent :accessor parent)
+  ((name :initarg :name :accessor keymap-name)
+   (parent :initarg :parent :accessor keymap-parent)
    (bindings :initarg :bindings :initform (make-hash-table :test (function equal)) :reader bindings
              :documentation "bindings can be a hash-table or a function mapping key chords to commands.")))
 
@@ -27,7 +27,7 @@
       (or (etypecase bindings
             (function (funcall bindings key))
             (hash-table (gethash key binding)))
-          (key-binding key (parent keymap))))))
+          (key-binding key (keymap-parent keymap))))))
 
 
 (defvar *keymaps*

@@ -126,38 +126,6 @@ expressed). ::
   (:method (object &optional (offset 0)) (point (+ (right object) offset) (bottom object))))
 
 
-(defun stack-objects (objects &key (direction :up) (align :left) (spacing 0))
-  "
-Stack up or down the ``OBJECTS`` based on the position of the first one.
-"
-  (when objects
-    (let* ((frame (frame (first objects)))
-           (x  (ecase align
-                 (:left   (rect-left     frame))
-                 (:right  (rect-right    frame))
-                 (:center (rect-center-x frame))))
-           (y  (ecase direction
-                 (:up   (rect-top    frame))
-                 (:down (rect-bottom frame)))))
-      (loop
-         :for object :in (rest objects)
-         :for frame = (frame object)
-         :do (when (eq direction :down)
-               (decf y (+ spacing (rect-height frame))))
-         :do (place object (ecase align
-                             (:left   (make-point :x x                              :y y))
-                             (:right  (make-point :x (- x (rect-width frame))       :y y))
-                             (:center (make-point :x (- x (/ (rect-width frame) 2)) :y y))))
-         :do (when (eq direction :up)
-               (incf y (+ spacing (rect-height frame)))))))
-  objects)
-
-(defun stack-up (objects &key (align :left) (spacing 0))
-  (stack-objects objects :direction :up :align align :spacing spacing))
-
-(defun pile-down (objects &key (align :left) (spacing 0))
-  (stack-objects objects :direction :down :align align :spacing spacing))
-
 
 (defgeneric vector-x (a))
 (defgeneric vector-y (a))
@@ -238,7 +206,7 @@ u2 = - det[v0,v1]/det[v1,v2]
   (setf (point-x p) (point-x new-value)
         (point-y p) (point-y new-value))
   new-value)
-(defmethod bound ((p point)) (rect 0.0 0.0 0.0 0.0))
+(defmethod bounds ((p point)) (rect 0.0 0.0 0.0 0.0))
 (defmethod frame ((p point)) (make-rect :origin p :width 0.0 :height 0.0))
 
 ;;;---------------------------------------------------------------------
@@ -256,7 +224,7 @@ u2 = - det[v0,v1]/det[v1,v2]
 
 (defmethod width  ((s size)) (size-width  s))
 (defmethod height ((s size)) (size-height s))
-(defmethod bound  ((s size)) (rect :x 0.0 :y 0.0 :size s))
+(defmethod bounds  ((s size)) (make-rect :x 0.0 :y 0.0 :size s))
 
 
 ;;;---------------------------------------------------------------------
@@ -327,7 +295,7 @@ u2 = - det[v0,v1]/det[v1,v2]
   (setf (rect-x r) (point-x new-value)
         (rect-y r) (point-y new-value))
   new-value)
-(defmethod bound ((r rect)) (rect 0.0 0.0 (width r) (height r)))
+(defmethod bounds ((r rect)) (rect 0.0 0.0 (width r) (height r)))
 (defmethod frame ((r rect)) r)
 
 
@@ -336,6 +304,14 @@ u2 = - det[v0,v1]/det[v1,v2]
         (rect-y rect)
         (rect-width rect)
         (rect-height rect)))
+
+(defun rect-inset (r inset-x inset-y)
+  "Returns a rect like R but with the borders \"inset\" by inset-x horizontaly, and by inset-y vertically.
+If inset-x/y is positive the result is smaller, if it's negative, then the result is larger."
+  (rect  (+ (rect-x r) inset-x)
+         (+ (rect-y r) inset-y)
+         (- (rect-width r) inset-x inset-x)
+         (- (rect-height r) inset-y inset-y)))
 
 
 (defun rect-offset (r dx dy)
@@ -352,6 +328,29 @@ u2 = - det[v0,v1]/det[v1,v2]
     (rect  x y
            (- (max (right a) (right b)) x)
            (- (max (top   a) (top   b)) y))))
+
+
+(defun rect-empty-p (r)
+  (or (minusp (width r))
+      (minusp (height r))))
+
+
+(defun rect-intersection (a b)
+  (if (or (< (right a) (left b))
+          (< (right b) (left a))
+          (< (top a) (bottom b))
+          (< (top b) (bottom a)))
+    (rect 0 0 -1 -1)
+    (let ((x (max (left a) (left b)))
+          (y (max (bottom a) (bottom b))))
+      (rect x y
+            (- (min (right a) (right b)) x)
+            (- (min (top a) (top b)) y)))))
+
+(defun left-side   (rect) (rect (left  rect) (bottom rect) 1 (height rect)))
+(defun right-side  (rect) (rect (right rect) (bottom rect) 1 (height rect)))
+(defun bottom-side (rect) (rect (left  rect) (bottom rect) (width rect) 1))
+(defun top-side    (rect) (rect (left  rect) (top    rect) (width rect) 1))
 
 
 (defun rect-expand (rect point)

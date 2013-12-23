@@ -38,15 +38,16 @@
 @[NSWindow subClass:ABWindow
            slots: ((partition        :initform (create-partition *staves/bass15mb-trebble15ma*)
                                      :accessor partition)
-                   (partition-view   :initform nil :accessor partition-view)
-                   (command-view     :initform nil :accessor command-view)
-                   (output-view      :initform nil :accessor output-view))]
+                   (partition-subview   :initform nil :accessor partition-subview)
+                   (scroll-subview      :initform nil :accessor scroll-subview)
+                   (command-subview     :initform nil :accessor command-subview)
+                   (output-subview      :initform nil :accessor output-subview))]
 
 
 @[ABWindow method:(appendOutput:(:id #|NSString|#)message)
            resultType:(:void)
            body:
-           (let* ((output (output-view self))
+           (let* ((output (output-subview self))
                   (end    (unwrap (make-range :location [[output string] length]))))
              [output setSelectedRange:end]
              [output insertText:message]
@@ -65,20 +66,17 @@
     (on-main-thread [window appendOutput:message] :wait nil)))
 
 
-;; (wrapping (wrap "Untitled"))
 
-(defun paper-rect (paper-format)
-  (ecase paper-format
-    ((a4) (make-rect :x 0 :y 0 :width (* 72 210.0) :height (* 72 297.0)))))
+
 
 (defun create-abwindow (rect &optional (title "Untitled AB Partition"))
   (let* ((title (if (stringp title)
-                    (unwrap title)
-                    title))
+                  (unwrap title)
+                  title))
          (window  [[ABWindow alloc]
                    initWithContentRect:(unwrap rect)
                    styleMask:(logior  #$NSTitledWindowMask 
-                                      #$NSClosableWindowMask  
+                                      #$NSClosableWindowMask   
                                       #$NSMiniaturizableWindowMask 
                                       #$NSResizableWindowMask)
                    backing:#$NSBackingStoreBuffered
@@ -88,23 +86,27 @@
                                                                                                         (rect-top command-rect))))
 
          (output-rect    (make-rect :x 0 :y 0 :width (rect-width rect) :height 100))
-         (partition-rect (paper-rect 'a4))
-         (output-view    [[ABTextView  alloc] initWithFrame:(unwrap output-rect)])
-         (command-view   [[ABTextField alloc] initWithFrame:(unwrap command-rect)])
-         (partition-view [[ABView alloc] initWithFrame:(unwrap partition-rect)])
-         (split-view     [[NSSplitView alloc] initWithFrame:(unwrap split-rect)]))
-    (setf (output-view window) output-view
-          (command-view window) command-view
-          (partition-view window) partition-view)
-    [split-view addSubview:partition-view]
-    [split-view addSubview:output-view]
-    [split-view adjustSubviews]
-    [split-view setPosition:(- (rect-height split-rect) (rect-height output-rect)) ofDividerAtIndex:0]
+         (scroll-rect    (make-rect :x 0 :y (height output-rect)
+                                    :width (width rect) :height (- (height split-rect) (height output-rect))))
+         (output-subview    [[ABTextView  alloc] initWithFrame:(unwrap output-rect)])
+         (command-subview   [[ABTextField alloc] initWithFrame:(unwrap command-rect)])
+         (partition-subview [[ABView alloc] initWithFrame:(unwrap scroll-rect)])
+         (split-subview     [[NSSplitView alloc] initWithFrame:(unwrap split-rect)])
+         (scroll-subview    (scroll-view scroll-rect partition-subview)))
+    (setf (output-subview window)    output-subview
+          (command-subview window)   command-subview
+          (partition-subview window) partition-subview
+          (scroll-subview window)    scroll-subview)
+    [split-subview addSubview:scroll-subview]
+    [split-subview addSubview:output-subview]
+    [split-subview adjustSubviews]
+    [split-subview setPosition:(- (rect-height split-rect) (rect-height output-rect)) ofDividerAtIndex:0]
     [window setTitle:title]
-    [[window contentView] addSubview:split-view]
-    [[window contentView] addSubview:command-view]
-    [window setInitialFirstResponder:partition-view]
-    (setf (partition partition-view) (partition window))
+    [[window contentView] addSubview:split-subview]
+    [[window contentView] addSubview:command-subview]
+    [window setInitialFirstResponder:partition-subview]
+    (compute-frame-and-bounds partition-subview)
+    (setf (partition partition-subview) (partition window))
     (format window "Hello World!~%")
     window))
 
