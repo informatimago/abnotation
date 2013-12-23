@@ -26,5 +26,24 @@
     (curve-to-coordinates p nil 100 200 200 200 200 100 )
     (close-subpath p)
     [(bezier-path p) stroke])
+  (draw (rect 100 100 200 200))
   (values))
+
+
+(defmethod draw ((r rect))
+  (let* ((*path-class* 'cocoa-bezier-path)
+         (p      (create-path))
+         (left   (rect-left   r))
+         (right  (rect-right  r))
+         (top    (rect-top    r))
+         (bottom (rect-bottom r)))
+    (assert (typep p 'cocoa-bezier-path))
+    (move-to-coordinates p nil left bottom)
+    (line-to-coordinates p nil left top)
+    (line-to-coordinates p nil right top)
+    (line-to-coordinates p nil right botom)
+    (close-subpath p)
+    [(bezier-path p) stroke]))
+
+
 

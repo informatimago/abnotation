@@ -123,4 +123,56 @@
     `(oclo:slet ((,vrect ,call)) (wrap ,vrect))))
 
 
+
+;; layout stuff:
+
+(defun size-width  (p) (ns:ns-size-width p))
+(defun size-height (p) (ns:ns-size-height p))
+(defun (setf size-width)  (new-value p) (setf (ns:ns-size-width  p) new-value))
+(defun (setf size-height) (new-value p) (setf (ns:ns-size-height p) new-value))
+
+
+(defun rect-x      (p) (ns:ns-rect-x      p))
+(defun rect-y      (p) (ns:ns-rect-y      p))
+(defun rect-width  (p) (ns:ns-rect-width  p))
+(defun rect-height (p) (ns:ns-rect-height p))
+(defun (setf rect-x)      (new-value p) (setf (ns:ns-rect-x      p) new-value))
+(defun (setf rect-y)      (new-value p) (setf (ns:ns-rect-y      p) new-value))
+(defun (setf rect-width)  (new-value p) (setf (ns:ns-rect-width  p) new-value))
+(defun (setf rect-height) (new-value p) (setf (ns:ns-rect-height p) new-value))
+
+
+
+(defmethod origin ((self ns:ns-rect))
+  (rect-origin self))
+
+(defmethod (setf origin) (new-value (self ns:ns-rect))
+  (setf (rect-origin self) new-value))
+
+(defmethod frame ((self ns:ns-rect))
+  (wrap self))
+
+
+(defmethod bounds ((self ns:ns-rect))
+  (make-rect :size (rect-size self)))
+
+(defmethod place ((self ns:ns-rect) (to ns:ns-point))
+  (setf (rect-origin self) to)
+  self)
+
+
+
+(defmethod above ((self ns:ns-point) &optional (offset 0))
+  (make-point :x (point-x self) :y (+ (point-y self) offset)))
+
+(defmethod below ((self ns:ns-point) &optional (offset 0))
+  (make-point :x (point-x self) :y (- (point-y self) offset)))
+
+(defmethod left-of ((self ns:ns-point) &optional (offset 0))
+  (make-point :x (- (point-x self) offset) :y (point-y self)))
+
+(defmethod right-of ((self ns:ns-point) &optional (offset 0))
+  (make-point :x (+ (point-x self) offset) :y (point-y self)))
+
+
 ;;;; THE END ;;;;

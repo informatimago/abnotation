@@ -75,6 +75,41 @@
 (defgeneric bottom (object))
 (defgeneric top    (object))
 
+(defgeneric origin (object)
+  (:documentation "The point origin of the coordinates of the ``OBJECT``."))
+
+(defgeneric (setf origin) (new-value object)
+  (:documentation "Change the origin of the ``OBJECT``."))
+
+(defgeneric bounds (object)
+  (:documentation "
+The rectangle surrounding the ``OBJECT``, in the coordinate system
+relative to the ``ORIGIN``.
+"))
+
+(defgeneric frame (object)
+  (:documentation "
+The rectangle surrounding the ``OBJECT``, in the coordinate system
+where the object is drawn (same coordinate system in which ``ORIGIN`` is
+expressed). ::
+
+    (frame object) == (rect-offset (bounds object)
+                                   (point-x (origin object))
+                                   (point-y (origin object)))
+
+")
+  (:method (object)
+    (rect-offset (bounds object)
+                 (point-x (origin object))
+                 (point-y (origin object)))))
+
+(defgeneric place (object point)
+  (:documentation "Change the origin of the ``OBJECT`` to be the ``POINT``.")
+  (:method (object (to ns:ns-point))
+    (setf (origin object) to)
+    object))
+
+
 (defgeneric above (object &optional offset)
   (:documentation "Returns a point that is above the OBJECT by OFFSET units.")
   (:method (object &optional (offset 0)) (point (left object) (+ (top object) offset))))
@@ -88,6 +123,38 @@
   (:documentation "Returns a point that is on the right of the OBJECT by OFFSET units.")
   (:method (object &optional (offset 0)) (point (+ (right object) offset) (bottom object))))
 
+
+(defun stack-objects (objects &key (direction :up) (align :left) (spacing 0))
+  "
+Stack up or down the ``OBJECTS`` based on the position of the first one.
+"
+  (when objects
+    (let* ((frame (frame (first objects)))
+           (x  (ecase align
+                 (:left   (rect-left              frame))
+                 (:right  (rect-right             frame))
+                 (:center (rect-horizontal-center frame))))
+           (y  (ecase direction
+                 (:up   (rect-top    frame))
+                 (:down (rect-bottom frame)))))
+      (loop
+         :for object :in (rest objects)
+         :for frame = (frame object)
+         :do (when (eq direction :down)
+               (decf y (+ spacing (rect-height frame))))
+         :do (place object (ecase align
+                             (:left   (make-point :x x                              :y y))
+                             (:right  (make-point :x (- x (rect-width frame))       :y y))
+                             (:center (make-point :x (- x (/ (rect-width frame) 2)) :y y))))
+         :do (when (eq direction :up)
+               (incf y (+ spacing (rect-height frame)))))))
+  objects)
+
+(defun stack-up (objects &key (align :left) (spacing 0))
+  (stack-objects objects :direction :up :align align :spacing spacing))
+
+(defun pile-down (objects &key (align :left) (spacing 0))
+  (stack-objects objects :direction :down :align align :spacing spacing))
 
 
 (defgeneric vector-x (a))
@@ -156,6 +223,7 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defun make-point (&key (x 0.0d0) (y 0.0d0))
   (%make-point :x (coordinate x) :y (coordinate y)))
 (defun point (x y) (make-point :x x :y y))
+(declaim (inline make-point point))
 
 (defmethod right  ((p point)) (point-x p))
 (defmethod left   ((p point)) (point-x p))
@@ -173,7 +241,7 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defun make-size (&key (width 0.0d0) (height 0.0d0))
   (%make-size :width (coordinate width) :height (coordinate height)))
 (defun size (width height) (make-size :width width :height height))
-
+(declaim (inline make-size size))
 
 ;;;---------------------------------------------------------------------
 ;;; RECT
@@ -218,6 +286,7 @@ u2 = - det[v0,v1]/det[v1,v2]
           (%make-rect :x     (coordinate x)      :y      (coordinate y)
                       :width (coordinate width)  :height (coordinate height)))))
 (defun rect (x y width height) (make-rect :x x :y y :width width :height height))
+(declaim (inline make-rect rect rect-origin rect-size rect-to-list))
 
 (defun rect-origin (rect)
   (%make-point :x     (rect-x rect)     :y      (rect-y rect)))
@@ -241,18 +310,18 @@ u2 = - det[v0,v1]/det[v1,v2]
 
 (defun rect-offset (r dx dy)
   "Returns a rect of same size as ``R`` but with an origin offset by ``DX`` and ``DY``."
-  (make-rect  (+ dx (rect-x r))
-              (+ dy (rect-y r))
-              (rect-width r)
-              (rect-height r)))
+  (rect  (+ dx (rect-x r))
+         (+ dy (rect-y r))
+         (rect-width r)
+         (rect-height r)))
 
 (defun rect-union (a b)
   "Returns the smallest rect that covers both the rects ``A`` and ``B``."
   (let ((x  (min (left a) (left b)))
         (y  (min (bottom a) (bottom b))))
-    (make-rect  x y
-                (- (max (right a) (right b)) x)
-                (- (max (top   a) (top   b)) y))))
+    (rect  x y
+           (- (max (right a) (right b)) x)
+           (- (max (top   a) (top   b)) y))))
 
 
 (defun rect-expand (rect point)
@@ -281,7 +350,7 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defun make-range (&key (location 0) (length 0))
   (%make-range :location (truncate location) :length (truncate length)))
 (defun range (location length) (make-range :location location :length length))
-
+(declaim (inline make-range range))
 
 
 ;;;---------------------------------------------------------------------
@@ -351,6 +420,10 @@ u2 = - det[v0,v1]/det[v1,v2]
 
 
 
+(defmethod distance-squared ((p point) (q point))
+  (+ (square (- (point-x p) (point-x q)))
+     (square (- (point-y p) (point-y q)))))
+
 ;;;---------------------------------------------------------------------
 ;;; SIZE as vectors
 ;;;---------------------------------------------------------------------
@@ -418,5 +491,39 @@ u2 = - det[v0,v1]/det[v1,v2]
          (POINT -1/2  1/2)
          (POINT -1/2  1/2)))))
 
+
+;;;---------------------------------------------------------------------
+
+(defun stack-objects (objects &key (direction :up) (align :left) (spacing 0))
+  "
+Stack up or down the ``OBJECTS`` based on the position of the first one.
+"
+  (when objects
+    (let* ((frame (frame (first objects)))
+           (x  (ecase align
+                 (:left   (rect-left              frame))
+                 (:right  (rect-right             frame))
+                 (:center (rect-horizontal-center frame))))
+           (y  (ecase direction
+                 (:up   (rect-top    frame))
+                 (:down (rect-bottom frame)))))
+      (loop
+         :for object :in (rest objects)
+         :for frame = (frame object)
+         :do (when (eq direction :down)
+               (decf y (+ spacing (rect-height frame))))
+         :do (place object (ecase align
+                             (:left   (make-point :x x                              :y y))
+                             (:right  (make-point :x (- x (rect-width frame))       :y y))
+                             (:center (make-point :x (- x (/ (rect-width frame) 2)) :y y))))
+         :do (when (eq direction :up)
+               (incf y (+ spacing (rect-height frame)))))))
+  objects)
+
+(defun stack-up (objects &key (align :left) (spacing 0))
+  (stack-objects objects :direction :up :align align :spacing spacing))
+
+(defun pile-down (objects &key (align :left) (spacing 0))
+  (stack-objects objects :direction :down :align align :spacing spacing))
 
 ;;;; THE END ;;;;
