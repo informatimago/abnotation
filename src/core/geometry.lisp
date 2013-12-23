@@ -74,6 +74,8 @@
 (defgeneric left   (object))
 (defgeneric bottom (object))
 (defgeneric top    (object))
+(defgeneric width  (object))
+(defgeneric height (object))
 
 (defgeneric origin (object)
   (:documentation "The point origin of the coordinates of the ``OBJECT``."))
@@ -131,9 +133,9 @@ Stack up or down the ``OBJECTS`` based on the position of the first one.
   (when objects
     (let* ((frame (frame (first objects)))
            (x  (ecase align
-                 (:left   (rect-left              frame))
-                 (:right  (rect-right             frame))
-                 (:center (rect-horizontal-center frame))))
+                 (:left   (rect-left     frame))
+                 (:right  (rect-right    frame))
+                 (:center (rect-center-x frame))))
            (y  (ecase direction
                  (:up   (rect-top    frame))
                  (:down (rect-bottom frame)))))
@@ -229,6 +231,15 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defmethod left   ((p point)) (point-x p))
 (defmethod bottom ((p point)) (point-y p))
 (defmethod top    ((p point)) (point-y p))
+(defmethod width  ((p point)) 0.0)
+(defmethod height ((p point)) 0.0)
+(defmethod origin ((p point)) p)
+(defmethod (setf origin) (new-value (p point))
+  (setf (point-x p) (point-x new-value)
+        (point-y p) (point-y new-value))
+  new-value)
+(defmethod bound ((p point)) (rect 0.0 0.0 0.0 0.0))
+(defmethod frame ((p point)) (make-rect :origin p :width 0.0 :height 0.0))
 
 ;;;---------------------------------------------------------------------
 ;;; SIZE
@@ -243,6 +254,11 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defun size (width height) (make-size :width width :height height))
 (declaim (inline make-size size))
 
+(defmethod width  ((s size)) (size-width  s))
+(defmethod height ((s size)) (size-height s))
+(defmethod bound  ((s size)) (rect :x 0.0 :y 0.0 :size s))
+
+
 ;;;---------------------------------------------------------------------
 ;;; RECT
 ;;;---------------------------------------------------------------------
@@ -253,18 +269,6 @@ u2 = - det[v0,v1]/det[v1,v2]
   (width  (coordinate 0.0d0) :type coordinate)
   (height (coordinate 0.0d0) :type coordinate))
 
-(defun rect-left   (r) (rect-x r))
-(defun rect-right  (r) (+ (rect-x r) (rect-width r)))
-(defun rect-bottom (r) (rect-y r))
-(defun rect-top    (r) (+ (rect-x r) (rect-height r)))
-(defun rect-center-x (r) (+ (rect-x r) (/ (rect-width r) 2)))
-(defun rect-center-y (r) (+ (rect-y r) (/ (rect-height r) 2)))
-(declaim (inline rect-left rect-right rect-bottom rect-top rect-center-x rect-center-y))
-
-(defmethod right  ((r rect)) (rect-right  r))
-(defmethod left   ((r rect)) (rect-left   r))
-(defmethod bottom ((r rect)) (rect-bottom r))
-(defmethod top    ((r rect)) (rect-top    r))
 
 (defun make-rect (&key (x 0.0d0 xp) (y 0.0d0 yp) (width 0.0d0 widthp) (height 0.0d0 heightp)
                     ;; (left 0.0d0 leftp)
@@ -285,27 +289,53 @@ u2 = - det[v0,v1]/det[v1,v2]
                       :width (size-width size)   :height (size-height size))
           (%make-rect :x     (coordinate x)      :y      (coordinate y)
                       :width (coordinate width)  :height (coordinate height)))))
-(defun rect (x y width height) (make-rect :x x :y y :width width :height height))
-(declaim (inline make-rect rect rect-origin rect-size rect-to-list))
+(defun rect (x y width height)
+  (%make-rect :x (coordinate x)
+              :y (coordinate y)
+              :width (coordinate width)
+              :height (coordinate height)))
+(declaim (inline make-rect rect))
 
-(defun rect-origin (rect)
-  (%make-point :x     (rect-x rect)     :y      (rect-y rect)))
-(defun rect-size   (rect)
-  (%make-size  :width (rect-width rect) :height (rect-height rect)))
 
+(defun rect-left     (r) (rect-x r))
+(defun rect-right    (r) (+ (rect-x r) (rect-width r)))
+(defun rect-bottom   (r) (rect-y r))
+(defun rect-top      (r) (+ (rect-x r) (rect-height r)))
+(defun rect-center-x (r) (+ (rect-x r) (/ (rect-width r) 2)))
+(defun rect-center-y (r) (+ (rect-y r) (/ (rect-height r) 2)))
+(defun rect-origin   (r) (point (rect-x r) (rect-y r)))
+(defun rect-size     (r) (size (rect-width r) (rect-height r)))
 (defun (setf rect-origin) (point rect)
   (setf (rect-x rect) (point-x point)
-        (rect-y rect) (point-y point)))
-(defun (setf rect-size)   (size  rect)
+        (rect-y rect) (point-y point))
+  point)
+(defun (setf rect-size) (size rect)
   (setf (rect-width  rect) (size-width  size)
-        (rect-height rect) (size-height size)))
+        (rect-height rect) (size-height size))
+  size)
+(declaim (inline rect-left rect-right rect-bottom rect-top rect-center-x rect-center-y
+                 rect-origin rect-size rect-to-list))
+
+(defmethod right  ((r rect)) (rect-right  r))
+(defmethod left   ((r rect)) (rect-left   r))
+(defmethod bottom ((r rect)) (rect-bottom r))
+(defmethod top    ((r rect)) (rect-top    r))
+(defmethod width  ((r rect)) (rect-width  r))
+(defmethod height ((r rect)) (rect-height r))
+(defmethod origin ((r rect)) (rect-origin r))
+(defmethod (setf origin) (new-value (r rect))
+  (setf (rect-x r) (point-x new-value)
+        (rect-y r) (point-y new-value))
+  new-value)
+(defmethod bound ((r rect)) (rect 0.0 0.0 (width r) (height r)))
+(defmethod frame ((r rect)) r)
+
 
 (defun rect-to-list (rect)
   (list (rect-x rect)
         (rect-y rect)
         (rect-width rect)
         (rect-height rect)))
-
 
 
 (defun rect-offset (r dx dy)
@@ -501,9 +531,9 @@ Stack up or down the ``OBJECTS`` based on the position of the first one.
   (when objects
     (let* ((frame (frame (first objects)))
            (x  (ecase align
-                 (:left   (rect-left              frame))
-                 (:right  (rect-right             frame))
-                 (:center (rect-horizontal-center frame))))
+                 (:left   (rect-left     frame))
+                 (:right  (rect-right    frame))
+                 (:center (rect-center-x frame))))
            (y  (ecase direction
                  (:up   (rect-top    frame))
                  (:down (rect-bottom frame)))))

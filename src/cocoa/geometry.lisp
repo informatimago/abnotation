@@ -126,53 +126,51 @@
 
 ;; layout stuff:
 
-(defun size-width  (p) (ns:ns-size-width p))
-(defun size-height (p) (ns:ns-size-height p))
-(defun (setf size-width)  (new-value p) (setf (ns:ns-size-width  p) new-value))
-(defun (setf size-height) (new-value p) (setf (ns:ns-size-height p) new-value))
+(defmethod width  ((r ns:ns-size)) (ns:ns-size-width r))
+(defmethod height ((r ns:ns-size)) (ns:ns-size-height r))
+(defmethod (setf width)  (new-value (r ns:ns-size)) (setf (ns:ns-size-width  r) new-value))
+(defmethod (setf height) (new-value (r ns:ns-size)) (setf (ns:ns-size-height r) new-value))
 
-
-(defun rect-x      (p) (ns:ns-rect-x      p))
-(defun rect-y      (p) (ns:ns-rect-y      p))
-(defun rect-width  (p) (ns:ns-rect-width  p))
-(defun rect-height (p) (ns:ns-rect-height p))
-(defun (setf rect-x)      (new-value p) (setf (ns:ns-rect-x      p) new-value))
-(defun (setf rect-y)      (new-value p) (setf (ns:ns-rect-y      p) new-value))
-(defun (setf rect-width)  (new-value p) (setf (ns:ns-rect-width  p) new-value))
-(defun (setf rect-height) (new-value p) (setf (ns:ns-rect-height p) new-value))
-
-
-
-(defmethod origin ((self ns:ns-rect))
-  (rect-origin self))
-
-(defmethod (setf origin) (new-value (self ns:ns-rect))
-  (setf (rect-origin self) new-value))
-
-(defmethod frame ((self ns:ns-rect))
-  (wrap self))
-
-
-(defmethod bounds ((self ns:ns-rect))
-  (make-rect :size (rect-size self)))
-
-(defmethod place ((self ns:ns-rect) (to ns:ns-point))
-  (setf (rect-origin self) to)
-  self)
+(defmethod left   ((r ns:ns-rect)) (ns:ns-rect-x      r))
+(defmethod bottom ((r ns:ns-rect)) (ns:ns-rect-y      r))
+(defmethod width  ((r ns:ns-rect)) (ns:ns-rect-width  r))
+(defmethod height ((r ns:ns-rect)) (ns:ns-rect-height r))
+(defmethod (setf left)   (new-value (r ns:ns-rect)) (setf (ns:ns-rect-x      r) new-value))
+(defmethod (setf bottom) (new-value (r ns:ns-rect)) (setf (ns:ns-rect-y      r) new-value))
+(defmethod (setf width)  (new-value (r ns:ns-rect)) (setf (ns:ns-rect-width  r) new-value))
+(defmethod (setf height) (new-value (r ns:ns-rect)) (setf (ns:ns-rect-height r) new-value))
 
 
 
-(defmethod above ((self ns:ns-point) &optional (offset 0))
-  (make-point :x (point-x self) :y (+ (point-y self) offset)))
+(defmethod origin ((r ns:ns-rect))
+  (rect-origin r))
 
-(defmethod below ((self ns:ns-point) &optional (offset 0))
-  (make-point :x (point-x self) :y (- (point-y self) offset)))
+(defmethod (setf origin) (new-value (r ns:ns-rect))
+  (setf (rect-origin r) new-value))
 
-(defmethod left-of ((self ns:ns-point) &optional (offset 0))
-  (make-point :x (- (point-x self) offset) :y (point-y self)))
+(defmethod frame ((r ns:ns-rect))
+  (wrap r))
 
-(defmethod right-of ((self ns:ns-point) &optional (offset 0))
-  (make-point :x (+ (point-x self) offset) :y (point-y self)))
+
+(defmethod bounds ((r ns:ns-rect))
+  (make-rect :size (rect-size r)))
+
+(defmethod place ((r ns:ns-rect) (to ns:ns-point))
+  (setf (rect-origin r) to)
+  r)
+
+
+(defmethod above ((r ns:ns-point) &optional (offset 0))
+  (make-point :x (point-x r) :y (+ (point-y r) offset)))
+
+(defmethod below ((r ns:ns-point) &optional (offset 0))
+  (make-point :x (point-x r) :y (- (point-y r) offset)))
+
+(defmethod left-of ((r ns:ns-point) &optional (offset 0))
+  (make-point :x (- (point-x r) offset) :y (point-y r)))
+
+(defmethod right-of ((r ns:ns-point) &optional (offset 0))
+  (make-point :x (+ (point-x r) offset) :y (point-y r)))
 
 
 ;;;; THE END ;;;;
