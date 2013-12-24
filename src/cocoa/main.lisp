@@ -38,6 +38,7 @@
 (defvar *window* nil)
 
 (defun main ()
+  (setf *path-class* 'cocoa-bezier-path)
   (when *window*
     [*window* close])
   (setf *window*  (create-abwindow (make-rect :x 10 :y 100 :width 1000 :height 700)))

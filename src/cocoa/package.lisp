@@ -72,10 +72,15 @@
 
   (:export "ON-MAIN-THREAD"))
 
+(defpackage "ABNOTATION.IO"
+  (:use "COMMON-LISP")
+  (:shadow "FORMAT")
+  (:export "FORMAT"))
 
 (defpackage "ABNOTATION.COMMAND"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.OBJCL")
+  (:shadowing-import-from "ABNOTATION.IO" "FORMAT")
   (:export
    "KEYMAP" "KEYMAP-NAME" "KEYMAP-PARENT" "GLOBAL-SET-KEY" "KBD" "DEFINE-KEY"
    "GET-KEYMAP" "CURRENT-GLOBAL-MAP" "CREATE-KEYMAP" "KEY-BINDING"
@@ -86,10 +91,11 @@
         "COM.INFORMATIMAGO.OBJCL"
         "COM.INFORMATIMAGO.OBJCL.WRAPPER"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CIRCULAR"
+        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
         "ABNOTATION.CORE"
         "ABNOTATION.COMMAND")
   (:shadowing-import-from "ABNOTATION.CORE" "NUMBER")
-  (:shadow "FORMAT")
+  (:shadowing-import-from "ABNOTATION.IO" "FORMAT")
   (:export "MAIN"))
 
 

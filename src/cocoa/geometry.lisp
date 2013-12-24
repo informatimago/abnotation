@@ -76,6 +76,9 @@
 (defmethod to-objc ((range range))
   (ns:make-ns-range (range-location range) (range-length range)))
 
+(defmethod to-objc ((string string))
+  (objcl:objcl-string string))
+
 
 (defun rect-from-macptr (ptr)
   (ecase (type-of (coerce 0.0 'coordinate))
@@ -173,6 +176,10 @@
 (defmethod height ((r ns:ns-size)) (ns:ns-size-height r))
 (defmethod (setf width)  (new-value (r ns:ns-size)) (setf (ns:ns-size-width  r) new-value))
 (defmethod (setf height) (new-value (r ns:ns-size)) (setf (ns:ns-size-height r) new-value))
+
+;; (symbol-package 'defmethod)#<Package "OBJC">
+;; (macroexpand-1 '(defmethod (setf width)  (new-value (r ns:ns-size)) (setf (ns:ns-size-width  r) new-value)))
+
 
 (defmethod left   ((r ns:ns-rect)) (ns:ns-rect-x      r))
 (defmethod bottom ((r ns:ns-rect)) (ns:ns-rect-y      r))

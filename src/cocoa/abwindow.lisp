@@ -36,12 +36,12 @@
 
 
 @[NSWindow subClass:ABWindow
-           slots: ((partition        :initform (create-partition *staves/bass15mb-trebble15ma*)
-                                     :accessor partition)
+           slots: ((partition           :initform (create-partition *staves/bass15mb-trebble15ma*)
+                                        :accessor partition)
                    (partition-subview   :initform nil :accessor partition-subview)
-                   (scroll-subview      :initform nil :accessor scroll-subview)
                    (command-subview     :initform nil :accessor command-subview)
-                   (output-subview      :initform nil :accessor output-subview))]
+                   (output-subview      :initform nil :accessor output-subview)
+                   (split-subview       :initform nil :accessor split-subview))]
 
 
 @[ABWindow method:(appendOutput:(:id #|NSString|#)message)
@@ -81,26 +81,29 @@
                                       #$NSResizableWindowMask)
                    backing:#$NSBackingStoreBuffered
                    defer:nil])
-         (command-rect   (make-rect :x 0 :y  0                      :width (rect-width rect) :height  32))
-         (split-rect     (make-rect :x 0 :y (rect-top command-rect) :width (rect-width rect) :height (- (rect-height rect)
-                                                                                                        (rect-top command-rect))))
-
-         (output-rect    (make-rect :x 0 :y 0 :width (rect-width rect) :height 100))
-         (scroll-rect    (make-rect :x 0 :y (height output-rect)
-                                    :width (width rect) :height (- (height split-rect) (height output-rect))))
-         (output-subview    [[ABTextView  alloc] initWithFrame:(unwrap output-rect)])
-         (command-subview   [[ABTextField alloc] initWithFrame:(unwrap command-rect)])
-         (partition-subview [[ABView alloc] initWithFrame:(unwrap scroll-rect)])
-         (split-subview     [[NSSplitView alloc] initWithFrame:(unwrap split-rect)])
-         (scroll-subview    (scroll-view scroll-rect partition-subview)))
-    (setf (output-subview window)    output-subview
+         (command-rect   (make-rect :x 0 :y 0
+                                    :width (width rect) :height  32))
+         (split-rect     (make-rect :x 0 :y (top command-rect)
+                                    :width (width rect)
+                                    :height (- (height rect)
+                                               (top command-rect))))
+         (output-rect    (make-rect :x 0 :y 0
+                                    :width (width rect) :height 100))
+         (partition-rect (make-rect :x 0 :y (height output-rect)
+                                    :width (width rect)
+                                    :height (- (height split-rect) (height output-rect))))
+         (partition-subview [[ABView alloc] initWithFrame:(to-objc partition-rect)])
+         (output-subview    [[ABTextView  alloc] initWithFrame:(to-objc output-rect)])
+         (command-subview   [[ABTextField alloc] initWithFrame:(to-objc command-rect)])
+         (split-subview     (split-view split-rect
+                                        (list (height output-rect)
+                                              (scroll-view output-rect output-subview)
+                                              (scroll-view partition-rect partition-subview))
+                                        :divider-style :thick)))
+    (setf (partition-subview window) partition-subview
+          (output-subview window)    output-subview
           (command-subview window)   command-subview
-          (partition-subview window) partition-subview
-          (scroll-subview window)    scroll-subview)
-    [split-subview addSubview:scroll-subview]
-    [split-subview addSubview:output-subview]
-    [split-subview adjustSubviews]
-    [split-subview setPosition:(- (rect-height split-rect) (rect-height output-rect)) ofDividerAtIndex:0]
+          (split-subview window)     split-subview)
     [window setTitle:title]
     [[window contentView] addSubview:split-subview]
     [[window contentView] addSubview:command-subview]

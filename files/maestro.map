@@ -1,0 +1,153 @@
+ 62 :accent 
+ 71 :accent 
+226 :accented-tenuto-above 
+228 :accented-tenuto-below 
+229 :accidental-courtesy-double-flat 
+197 :accidental-courtesy-double-sharp 
+ 65 :accidental-courtesy-flat 
+ 78 :accidental-courtesy-natural 
+ 97 :accidental-courtesy-sharp 
+ 98 :accidental-flat 
+110 :accidental-natural 
+ 36 :accidental-quarter-tone-sharp 
+ 35 :accidental-sharp 
+105 :accidental-small-flat 
+200 :accidental-small-natural 
+ 73 :accidental-small-sharp 
+ 92 :barline 
+202 :bass-8va 
+116 :bass-8vb 
+214 :breath-mark 
+ 34 :caesura 
+ 63 :clef-bass 
+ 47 :clef-natural 
+227 :clef-percusion 
+247 :clef-percusion-open 
+ 38 :clef-treble 
+ 86 :clef-treble-8vb 
+ 66 :clef-ut 
+224 :colon-italic 
+ 99 :common-time 
+ 67 :cut-time 
+183 :diamond 
+ 48 :digit-0 
+ 49 :digit-1 
+ 50 :digit-2 
+ 51 :digit-3 
+ 52 :digit-4 
+ 53 :digit-5 
+ 54 :digit-6 
+ 55 :digit-7 
+ 56 :digit-8 
+ 57 :digit-9 
+ 46 :dot 
+210 :dotted-barline 
+164 :double-ottava 
+ 96 :double-ottava-basso 
+241 :dymamic-n 
+102 :dynamic-forte 
+205 :dynamic-forte-piano 
+207 :dynamic-fortississimo 
+ 90 :dynamic-forzando 
+206 :dynamic-louder-than-fortississimo 
+ 70 :dynamic-mezzo-forte 
+ 80 :dynamic-mezzo-piano 
+112 :dynamic-piano 
+115 :dynamic-s 
+223 :dynamic-sforzando 
+231 :dynamic-sforzando 
+199 :dynamic-sforzando-piano 
+ 83 :dynamic-sforzato 
+216 :dynamic-softer-than-pianississimo 
+122 :dynamic-z 
+233 :dynamics-r 
+187 :equal-sign 
+ 85 :fermata-below 
+117 :fermata-below 
+ 74 :flag-first-downstem 
+106 :flag-first-upstem 
+236 :flag-second-downstem-2 
+ 75 :flag-second-upstem 
+235 :flag-second-upstem-2 
+237 :flag-sixteenth-note-downstem-2 
+234 :flag-sixteenth-note-upstem-2 
+ 84 :grupetto 
+248 :half-diminished-chord 
+ 72 :half-note-downstem 
+ 79 :harmonic 
+165 :harmonic 
+108 :left-facing-triangle 
+118 :marcato-down 
+ 39 :marcato-rounded-up 
+ 94 :marcato-up 
+255 :marcato-up 
+203 :marcato-with-staccato-down 
+168 :marcato-with-staccato-up 
+ 45 :minus-sign 
+ 77 :mordent 
+ 76 :natural-harmonic 
+111 :natural-harmonic 
+191 :non-pitched-notehead 
+225 :note-alternate-double-whole 
+ 89 :note-cymbal-open-head 
+ 87 :note-double-whole 
+ 69 :note-eighth-note-downstem 
+101 :note-eighth-upstem 
+104 :note-half-upstem 
+ 81 :note-quarter-downstem 
+113 :note-quarter-upstem 
+ 88 :note-sixteenth-downstem 
+ 82 :note-sixteenth-downstem-flag 
+120 :note-sixteenth-upstem 
+114 :note-sixteenth-upstem-flag 
+ 58 :note-small-1/8-downstem 
+ 59 :note-small-1/8-upstem 
+218 :note-small-quarter-equals 
+119 :note-whole 
+124 :note-whole-and-half-diamond 
+ 41 :parenthesis-close 
+ 40 :parenthesis-open 
+ 44 :pause 
+176 :pedal-down 
+ 42 :pedal-up 
+ 43 :plus-sign 
+209 :plus-sign 
+172 :rectangle 
+194 :rest-one-hundred-twenty-eighth 
+217 :rest-sixty-fourth-note 
+174 :rest-thirty-second 
+193 :right-facing-triangle 
+103 :rolled-chord-arpeggio 
+198 :rounded-marcato-down 
+212 :second-downstem-flag 
+ 37 :segno 
+252 :segno 
+192 :slash 
+220 :small-15 
+ 91 :small-courtesy-sharp 
+186 :small-digit-0 
+161 :small-digit-1 
+163 :small-digit-3 
+162 :small-digit-4 
+167 :small-digit-6 
+182 :small-digit-7 
+201 :small-digit-8 
+170 :small-digit-9 
+ 93 :small-double-sharp 
+169 :small-half-note-upstem 
+204 :small-quarter-note-downstem 
+219 :small-slash 
+107 :staccato 
+ 61 :staff-lines 
+ 95 :tenuto 
+ 60 :tenuto-with-staccato 
+175 :tenuto-with-staccato 
+ 33 :tremolo-measured-1 
+ 64 :tremolo-measured-2 
+121 :triangle 
+177 :triangle 
+109 :trill-extension 
+126 :trill-extension 
+181 :trill-extension 
+171 :two-measure-repeat 
+230 :unmeasured-tremolo 

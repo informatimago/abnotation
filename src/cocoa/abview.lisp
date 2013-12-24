@@ -29,8 +29,9 @@
   (let ((bounds  (paper-bounds (paper-format view) (paper-orientation view)))
         (frame   (paper-frame view (paper-format view) (paper-orientation view) (zoom view))))
     (format [view window] "bounds=~S frame=~S~%" bounds frame)
+    [view setFrame:(to-objc frame)]
     [view setBounds:(to-objc bounds)]
-    [view setFrame:(to-objc frame)])
+    [view setNeedsDisplay:YES])
   view)
 
 (defmethod (setf zoom) :after (new-value (view ab-view))
@@ -56,34 +57,23 @@
   (let* ((*path-class* 'cocoa-bezier-path)
          (p (create-path)))
     (assert (typep p 'cocoa-bezier-path))
-    (move-to-coordinates p nil 100 100)
-    (curve-to-coordinates p nil 100 200 200 200 200 100 )
+    
+    (move-to-coordinates p nil 20 20)
+    (curve-to-coordinates p nil 20 190 190 190 190 20)
     (close-subpath p)
     [(bezier-path p) stroke])
-  (draw (rect 100 100 200 200))
+  (draw (rect 10 10 190 277))
   (values))
 
 
-(defmethod draw ((r rect) &optional clip-rect)
-  (let* ((*path-class* 'cocoa-bezier-path)
-         (p      (create-path))
-         (left   (rect-left   r))
-         (right  (rect-right  r))
-         (top    (rect-top    r))
-         (bottom (rect-bottom r)))
-    (assert (typep p 'cocoa-bezier-path))
-    (move-to-coordinates p nil left bottom)
-    (line-to-coordinates p nil left top)
-    (line-to-coordinates p nil right top)
-    (line-to-coordinates p nil right bottom)
-    (line-to-coordinates p nil left bottom)
-    (move-to-coordinates p nil (1+ left) (1+ bottom))
-    (line-to-coordinates p nil (1- right) (1+ bottom))
-    (line-to-coordinates p nil (1- right) (1- top))
-    (line-to-coordinates p nil (1+ left) (1- top))
-    (line-to-coordinates p nil (1+ left) (1+ bottom))
-    (close-subpath p)
-    [(bezier-path p) fill]))
 
+;; (*path-class* 'cocoa-bezier-path)
+;; (assert (typep p 'cocoa-bezier-path))
+
+(defmethod fill-path ((path cocoa-bezier-path))
+  [(bezier-path path) fill])
+
+(defmethod stroke-path ((path cocoa-bezier-path))
+  [(bezier-path path) stroke])
 
 

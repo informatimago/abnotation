@@ -556,6 +556,20 @@ Gsharp Schematic class diagram
               12-edo   regular-temperament                                    
                                                                               
 
+durations
+==========
+
+11    :maxima     ||o||           1024    -3
+10    :long       |o|              512    -2
+ 9    :breve      |=|              256    -1
+ 8    :whole      ronde            128     0
+ 7    :half       blanche           64     1
+ 6    :filled     noire             32     2
+ 5    :8th        croche            16     3
+ 4    :16th       double-croche      8     4
+ 3    :32th       triple-croche      4     5
+ 2    :64th       quadruple-croche   2     6
+ 1    :128th      quintuple-croche   1     7
 
 .. comment:
    ---------------------------------------------------------------

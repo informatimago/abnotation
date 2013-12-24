@@ -32,7 +32,7 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "ABNOTATION.COCOA")
+(in-package "ABNOTATION.IO")
 
 
 (defgeneric format (output control-string &rest arguments)
