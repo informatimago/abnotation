@@ -44,25 +44,17 @@
                    (split-subview       :initform nil :accessor split-subview))]
 
 
-@[ABWindow method:(appendOutput:(:id #|NSString|#)message)
-           resultType:(:void)
-           body:
-           (let* ((output (output-subview self))
-                  (end    (unwrap (make-range :location [[output string] length]))))
-             [output setSelectedRange:end]
-             [output insertText:message]
-             [output scrollRangeToVisible:end])]
-
-
-
 @[ABWindow method:(keyDown:(:id #|NSEvent|#)event)
            resultType:(:void)
            body: (process-key-event event :window self)]
 
 
+@[ABWindow method:(appendOutput:(:id #|NSString|#)message)
+           resultType:(:void)
+           body:[(output-subview self) appendOutput:message]]
 
 (defmethod format ((window ab-window) control-string &rest arguments)
-  (let ((message (unwrap (apply (function cl:format) nil control-string arguments))))
+  (let ((message [(to-objc (cl:format nil "~?" control-string arguments)) retain]))
     (on-main-thread [window appendOutput:message] :wait nil)))
 
 
@@ -110,6 +102,8 @@
     [window setInitialFirstResponder:partition-subview]
     (compute-frame-and-bounds partition-subview)
     (setf (partition partition-subview) (partition window))
+    (setf *minibuffer* command-subview
+          *message*    output-subview)
     (format window "Hello World!~%")
     window))
 

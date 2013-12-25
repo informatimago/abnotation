@@ -44,16 +44,34 @@
                       [self setFont:[NSFont userFixedPitchFontOfSize:*text-font-size*]])
                     self)]
 
-
 @[ABTextView method:(keyDown:(:id)event)
              resultType:(:void)
              body:(process-key-event event :view self)]
+
+@[ABTextView method:(appendOutput:(:id #|NSString|#)message)
+             resultType:(:void)
+             body:
+             (let* ((end (unwrap (make-range :location [[self string] length]))))
+               [self setSelectedRange:end]
+               [self insertText:[message autorelease]]
+               [self scrollRangeToVisible:end])]
+
+
+(defmethod format ((output ab-text-view) control-string &rest arguments)
+  (let ((message [(to-objc (cl:format nil "~?" control-string arguments)) retain]))
+    (on-main-thread [output appendOutput:message] :wait nil)))
+
 
 @[NSTextField subClass:ABTextField slots:()]
 
 @[ABTextField method:(keyDown:(:id)event)
               resultType:(:void)
               body:(process-key-event event :view self)]
+
+(defmethod format ((output ab-text-field) control-string &rest arguments)
+  (let ((message [(to-objc (format nil "~?" control-string arguments)) retain]))
+    (on-main-thread [output setStringValue:[message autorelease]])))
+
 
 
 (defun scroll-view (frame &optional document-view)

@@ -83,6 +83,7 @@ according to the Alexis Bosch's synchrone musical notation.
                  (:file "bezier"     :depends-on ("package" "wrapper" "geometry"))
                  (:file "graphic"    :depends-on ("package" "bezier"))
                  (:file "keymap"     :depends-on ("package" "format"))
+                 (:file "command"    :depends-on ("package" "format" "keymap" "abview"))
                  (:file "views"      :depends-on ("package" "format" "keymap"))
                  (:file "abview"     :depends-on ("package" "format" "keymap" "geometry"
                                                   "graphic"))

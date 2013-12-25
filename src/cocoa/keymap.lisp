@@ -3,20 +3,46 @@
 
 (defun beep ()  (#_NSBeep))
 
+(defvar *minibuffer* nil)
+(defvar *message*    nil)
+
+(defun message (control-string &rest arguments)
+  (let ((message (format nil "~?" control-string arguments)))
+    (format *trace-output* "~A~%" message)
+    (format *message*      "~A~%" message)
+    (format *minibuffer*   "~A"   message)))
+
 (defparameter *modifier-map*
-  (list (cons #$NSAlphaShiftKeyMask  :alpha-shift)
-        (cons #$NSShiftKeyMask       :shift)
-        (cons #$NSControlKeyMask     :control)
-        (cons #$NSAlternateKeyMask   :alternate)
-        (cons #$NSCommandKeyMask     :command)
-        (cons #$NSNumericPadKeyMask  :numeric-pad)
-        (cons #$NSHelpKeyMask        :help)
-        (cons #$NSFunctionKeyMask    :function)))
+  (list (list #$NSAlphaShiftKeyMask  :alpha-shift "L-")
+        (list #$NSShiftKeyMask       :shift       "S-")
+        (list #$NSControlKeyMask     :control     "C-")
+        (list #$NSAlternateKeyMask   :alternate   "A-")
+        (list #$NSCommandKeyMask     :command     "c-")
+        (list #$NSNumericPadKeyMask  :numeric-pad "n-")
+        (list #$NSHelpKeyMask        :help        "h-")
+        (list #$NSFunctionKeyMask    :function    "f-")))
 
 
 ;;;
 ;;; Key Chords
 ;;;
+
+(defun modifier-string (modifier)
+  (third (find modifier *modifier-map* :key (function second))))
+
+(defun key-sequence-string (chords)
+  (with-output-to-string (*standard-output*)
+    (let ((sep ""))
+     (dolist (chord chords)
+       (princ sep) (setf sep " ")
+       (if (consp chord)
+         (progn
+           (dolist (modifier (rest chord))
+             (princ (modifier-string modifier)))
+           (princ (first chord)))
+         (princ chord))))))
+
+
 
 (defun key (characters modifiers)
   (if modifiers
@@ -82,21 +108,15 @@
 - a function,
 mapping key chords to commands.")))
 
-(defgeneric keymap-binding (keymap chord)
+(defgeneric keymap-raw-binding (keymap chord)
   (:method ((keymap null) chord)
            nil)
   (:method ((keymap keymap) chord)
-           (let* ((bindings (slot-value keymap 'bindings))
-                  (command  (etypecase bindings
-                              (list       (cdr (assoc chord bindings :test (function equal))))
-                              (hash-table (gethash chord bindings))
-                              (function   (funcall bindings chord)))))
-             (or command (keymap-binding (keymap-parent keymap) chord)))))
-
-
-(defmethod (setf keymap-bindings) (new-bindings (keymap keymap))
-  (setf (slot-value keymap 'bindings) new-bindings))
-
+           (let ((bindings (slot-value keymap 'bindings)))
+             (etypecase bindings
+               (list       (cdr (assoc chord bindings :test (function equal))))
+               (hash-table (gethash chord bindings))
+               (function   (funcall bindings chord))))))
 
 (defun %keymap-upgrade-to-hash-table (keymap)
   (let ((bindings (slot-value keymap 'bindings)))
@@ -107,13 +127,13 @@ mapping key chords to commands.")))
                                :test (function equal)
                                :size (length bindings)))))
 
-(defmethod (setf keymap-binding) (new-command (keymap keymap) chord)
+(defmethod (setf keymap-raw-binding) (new-command (keymap keymap) chord)
   (let ((bindings (slot-value keymap 'bindings)))
     (etypecase bindings
       (list       (if (<= *minimum-bindings-for-hash-table*
                           (length bindings))
                     (progn (%keymap-upgrade-to-hash-table keymap)
-                           (setf (keymap-binding keymap chord) new-command))
+                           (setf (keymap-raw-binding keymap chord) new-command))
                     (let ((entry (assoc chord bindings :test (function equal))))
                       (cond
                        (entry
@@ -122,15 +142,46 @@ mapping key chords to commands.")))
                         (push (cons chord new-command) (slot-value keymap 'bindings)))))))
       (hash-table (if new-command
                     (setf (gethash chord bindings) new-command)
-                    (remash chord bindings)))
-      (function   (error "Cannot change bindings of a function keymap.")))))
+                    (remhash chord bindings)))
+      (function   (error "Cannot change bindings of a function keymap."))))
+  new-command)
+
+
+(defgeneric keymap-binding (keymap chord)
+  (:method ((keymap null) chord)
+           nil)
+  (:method ((keymap keymap) chord)
+           (or (keymap-raw-binding keymap chord)   
+               (keymap-binding (keymap-parent keymap) chord))))
+
+
+
 
 
 (defun define-key (keymap key command)
-  (setf (keymap-binding keymap key) command))
+  (setf (keymap-raw-binding keymap key) command))
 
-(defun global-set-key (key command)
-  (define-key (global-keymap) key command))
+
+(defun keymap-set-key (keymap chords command)
+  (let ((path   (butlast chords))
+        (chord  (car (last chords)))
+        (km     keymap)
+        (parent (keymap-parent keymap)))
+    (loop
+     :for chord :in path
+     :for next-km     = (keymap-raw-binding km chord)
+     :for next-parent = (keymap-raw-binding parent chord)
+     :do (progn
+           (when (null next-km)
+             (setf next-km (make-instance 'keymap :parent next-parent)
+                   (keymap-raw-binding km chord) next-km))
+           (setf km next-km
+                 parent next-parent)))
+    (setf (keymap-raw-binding km chord) command)))
+
+
+(defun global-set-key (chords command)
+  (keymap-set-key (global-keymap) chords command))
 
 
 ;;;
@@ -166,12 +217,18 @@ mapping key chords to commands.")))
 
 (defclass input-state ()
   ((current-keymap :initarg :keymap :accessor input-state-current-keymap)
-   (modal-keymap :initform nil)))
+   (modal-keymap :initform nil)
+   (so-far :initform '())))
 
 (defmethod input-state-modal-keymap ((state input-state))
   (or (slot-value state 'modal-keymap)
       (input-state-current-keymap state)))
 
+(defmethod (setf input-state-current-keymap) :after (keymap (state input-state))
+  (setf (slot-value state 'modal-keymap) nil))
+
+(defmethod reset-modal-keymap ((state input-state))
+  (setf (slot-value state 'modal-keymap) nil))
 (defmethod shift-modal-keymap ((state input-state) (keymap keymap))
   (setf (slot-value state 'modal-keymap) keymap))
 
@@ -180,6 +237,9 @@ mapping key chords to commands.")))
 
 (defun current-keymap ()
   (input-state-current-keymap *input-state*))
+
+(defun (setf current-keymap) (keymap)
+  (setf (input-state-current-keymap *input-state*) keymap))
 
 (defun key-binding (chord)
   (keymap-binding (current-keymap) chord))
@@ -191,33 +251,41 @@ mapping key chords to commands.")))
 (defmethod process-key ((state input-state) chord)
   (let* ((keymap  (input-state-modal-keymap state))
          (command (keymap-binding keymap chord)))
-    (etypecase command
-      (null   (beep))
-      ;; (string "keyboard-macro")
-      (keymap (shift-modal-keymap state command))
-      (symbol (call-interactively state command)))))
+    (with-slots (so-far) state
+      (push chord so-far)
+      (message (key-sequence-string (reverse so-far)))
+      (etypecase command
+        (null     (beep)
+                  (setf so-far '())
+                  (reset-modal-keymap state)
+                  (message ""))
+        ;; (string "keyboard-macro")
+        (keymap   (shift-modal-keymap state command))
+        (symbol   (setf so-far '())
+                  (message "~(~A~)" command)
+                  (reset-modal-keymap state)
+                  (call-interactively state command))
+        (function (setf so-far '())
+                  (message "")
+                  (reset-modal-keymap state)
+                  (call-interactively state command))))))
+
+
+(defun current-view ()
+  (abnotation.cocoa::partition-subview abnotation.cocoa::*window*))
 
 
 
-(defmacro command (lambda-list &body body)
-  `(lambda ,lambda-list body))
+(defmacro defcommand (name lambda-list &body body)
+  `(defun ,name ,lambda-list ,@body))
 
-(let ((abview-km (create-keymap "ABView" (global-keymap)))
-      (abview-A-x-km (create-keymap "ABView A-x")))
 
-  (define-key abview-A-x-km '(#\x :alternate)
-    abview-A-x-km)
-  
-  (define-key abview-A-x-km #\+
-    (command () (setf (zoom *abview*) (* (zoom *abview*) 2))))
 
-  (define-key abview-A-x-km #\-
-    (command () (setf (zoom *abview*) (/ (zoom *abview*) 2)))))
+
 
 ;; (process-key *input-state* '(#\x :alternate))
-;; (process-key *input-state* '#\+)
-
-
+;; (process-key *input-state* '#\-)
+;; (inspect *input-state*)
 
 
 
@@ -235,22 +303,35 @@ mapping key chords to commands.")))
 
 
 
+;; (defun process-key-event (event &key window view)
+;;   (catch :petite-gazongue
+;;     (let* ((characters (objcl:lisp-string [event charactersIgnoringModifiers]))
+;;            (modifiers (loop
+;;                        :with modifiers = [event modifierFlags]
+;;                        :for (mask modifier) :in *modifier-map*
+;;                        :unless (zerop (logand mask modifiers))
+;;                        :collect modifier))
+;;            (window  (or window [view window]))
+;;            (command (keymap-binding 
+;;                      (get-keymap (objcl:lisp-string [(or window view) className]))
+;;                      (key characters modifiers))))
+;;       (format window "Characters: ~S Modifiers: (~{~S~^ ~})~%" characters modifiers)
+;;       (if command
+;;         (funcall command)
+;;         (beep)))))
+
 (defun process-key-event (event &key window view)
   (catch :petite-gazongue
-    (let* ((characters (objcl:lisp-string [event charactersIgnoringModifiers]))
-           (modifiers (loop
-                       :with modifiers = [event modifierFlags]
-                       :for (mask . modifier) :in *modifier-map*
-                       :unless (zerop (logand mask modifiers))
-                       :collect modifier))
-           (window  (or window [view window]))
-           (command (keymap-binding 
-                     (get-keymap (objcl:lisp-string [(or window view) className]))
-                     (key characters modifiers))))
-      (format window "Characters: ~S Modifiers: (~{~S~^ ~})~%" characters modifiers)
-      (if command
-        (funcall command)
-        (beep)))))
+    (let* ((character (aref (objcl:lisp-string [event charactersIgnoringModifiers]) 0))
+           (modifiers (remove :shift
+                              (loop
+                               :with modifiers = [event modifierFlags]
+                               :for (mask modifier) :in *modifier-map*
+                               :unless (zerop (logand mask modifiers))
+                               :collect modifier))))
+      (process-key *input-state* (key character modifiers)))
+    (return-from process-key-event))
+  (message "Cancelled"))
 
 
 ;;;; THE END ;;;;
