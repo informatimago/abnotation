@@ -70,18 +70,20 @@ according to the Alexis Bosch's synchrone musical notation.
                  "com.informatimago.common-lisp.cesarum")
     
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :components ((:file "package"        :depends-on ())
-                 (:file "macros"         :depends-on ("package"))
-                 (:file "geometry"       :depends-on ("package" "macros"))
-                 (:file "matrix"         :depends-on ("package" "geometry"))
-                 (:file "bezier"         :depends-on ("package" "geometry" "matrix"))
-                 (:file "elliptical-arc" :depends-on ("package" "geometry" "matrix" "bezier"))
-                 (:file "graphic"        :depends-on ("package" "bezier" "elliptical-arc"))
-                 (:file "model"          :depends-on ("package" "macros"))
-                 (:file "midi"           :depends-on ("package" "macros" "model"))
-                 (:file "layout"         :depends-on ("package" "macros" "model" "bezier"))
-                 (:file "draw"           :depends-on ("package" "macros" "model" "bezier" "layout" "graphic"))
+    :components
+    ((:file "package"        :depends-on ())
+     (:file "macros"         :depends-on ("package"))
+     (:file "geometry"       :depends-on ("package" "macros"))
+     (:file "matrix"         :depends-on ("package" "geometry"))
+     (:file "bezier"         :depends-on ("package" "geometry" "matrix"))
+     (:file "elliptical-arc" :depends-on ("package" "geometry" "matrix" "bezier"))
+     (:file "graphic"        :depends-on ("package" "bezier" "elliptical-arc"))
+     (:file "model"          :depends-on ("package" "macros"))
+     (:file "midi"           :depends-on ("package" "macros" "model"))
+     (:file "layout"         :depends-on ("package" "macros" "model" "bezier"))
+     (:file "draw"           :depends-on ("package" "macros" "model" "bezier" "layout"
+                                          "graphic"))
 
-                 ))
+     ))
 
 ;;;; THE END ;;;;

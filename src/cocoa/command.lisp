@@ -41,6 +41,51 @@
   (throw :petite-gazongue nil))
 
 
+;; (defun ask-user (title question &rest options &key &allow-other-keys)
+;;   "
+;; DO:      Runs a modal panel asking the user a QUESTION.
+;; 
+;; OPTIONS: from one to tree key string options. The strings are used as
+;;          button labels, the keys are the result returned corresponding
+;;          to the user choice.
+;; "
+;;   (ecase (#_NSRunAlertPanel
+;;           (to-objc title)
+;;           (to-objc "%@")
+;;           (if (nth 1 options)
+;;             (to-objc (nth 1 options))
+;;             (error "Missing at least one option."))
+;;           (if (nth 3 options) (to-objc (nth 3 options)) oclo:*null*)
+;;           (if (nth 5 options) (to-objc (nth 5 options)) oclo:*null*)
+;;           :id (to-objc question))
+;;     ((#.#$NSAlertDefaultReturn)   (nth 0 options))
+;;     ((#.#$NSAlertAlternateReturn) (nth 2 options))
+;;     ((#.#$NSAlertOtherReturn)     (nth 4 options))))
+
+
+(defun ask-user (title question &rest options &key &allow-other-keys)
+  "
+DO:      Runs a modal panel asking the user a QUESTION.
+
+OPTIONS: from one to tree key string options. The strings are used as
+         button labels, the keys are the result returned corresponding
+         to the user choice.
+"
+  (ecase [[NSAlert alertWithMessageText:(to-objc title)
+                   defaultButton:(if (nth 1 options)
+                                   (to-objc (nth 1 options))
+                                   (error "Missing at least one option."))
+                   alternateButton:(if (nth 3 options) (to-objc (nth 3 options)) oclo:*null*)
+                   otherButton:(if (nth 5 options) (to-objc (nth 5 options)) oclo:*null*)
+                   informativeTextWithFormat:(to-objc "%@") (:id)(to-objc question)] runModal]
+    ((#.#$NSAlertDefaultReturn)   (nth 0 options))
+    ((#.#$NSAlertAlternateReturn) (nth 2 options))
+    ((#.#$NSAlertOtherReturn)     (nth 4 options))))
+
+
+;; (ask-user "Title 1" "Question?" :default "Ok <>" :alternate "Alternative //" :other "Cancel !!")
+;; (ask-user "Title 1" "Question?" :default "Ok <>" :cancel "Cancel !!")
+
 
 
 (defun select-file ()
@@ -57,36 +102,18 @@
     [panel setExtensionHidden:NO]
     ;; [panel setAllowedFileTypes:[]]
     (if (= [panel runModal] #$NSFileHandlingPanelOKButton)
-      (progn
-        [panel URL])
+      (let ((url [panel URL]))
+        (if [url isFileURL]
+          (to-lisp [url path])
+          (keyboard-quit)))
       (keyboard-quit))))
-
-
-(defcommand find-file ()
-  (message "Let's open the file ~S" (select-file)))
-
 
 
 (global-set-key '((#\g :control))                'keyboard-quit)
 (global-set-key '((#\x :control) (#\g :control)) 'keyboard-quit)
-(global-set-key '((#\x :control) (#\f :control)) 'find-file)
 
 
 
-
-
-(defcommand zoom-in ()
-  (setf (abnotation.cocoa::zoom (current-view)) (* (abnotation.cocoa::zoom (current-view)) 2)))
-
-(defcommand zoom-out ()
-  (setf (abnotation.cocoa::zoom (current-view)) (/ (abnotation.cocoa::zoom (current-view)) 2)))
-
-
-(let ((abview-km (create-keymap "ABView" (global-keymap))))
-  (keymap-set-key abview-km '((#\x :control) #\+) 'zoom-in)
-  (keymap-set-key abview-km '((#\x :control) #\=) 'zoom-in)
-  (keymap-set-key abview-km '((#\x :control) #\-) 'zoom-out)
-  (setf (current-keymap) abview-km))
 
 
 ;;;; THE END ;;;;

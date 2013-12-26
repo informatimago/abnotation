@@ -425,13 +425,22 @@ RETURN:         NEW-HANDLE.
 
 
 ;;------------------------------------------------------------
+;; Converting between lisp and Objective-C values.
+;;------------------------------------------------------------
+
+(defgeneric to-lisp (object)
+  (:method ((object ns:ns-object)) (wrap object)))
+
+(defgeneric to-objc (object)
+  (:method ((object t)) (unwrap object)))
+
+;;------------------------------------------------------------
 ;; wrapping NSString
 ;;------------------------------------------------------------
 
 (defmethod wrap ((object ns:ns-string))
   ;; TODO: substitute-object for long strings.
   (objcl:lisp-string object))
-
 
 ;;------------------------------------------------------------
 ;; wrapping NSNumber

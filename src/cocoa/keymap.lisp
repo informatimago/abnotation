@@ -271,10 +271,11 @@ mapping key chords to commands.")))
                   (call-interactively state command))))))
 
 
-(defun current-view ()
-  (abnotation.cocoa::partition-subview abnotation.cocoa::*window*))
-
-
+(defvar *current-window* nil)
+(defun current-window () *current-window*)
+(defvar *current-view* nil)
+(defun current-view () *current-view*)
+  
 
 (defmacro defcommand (name lambda-list &body body)
   `(defun ,name ,lambda-list ,@body))

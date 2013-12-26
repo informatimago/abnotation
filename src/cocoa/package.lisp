@@ -70,24 +70,33 @@
    "ANONYMOUS-WRAPPER-THUNK" "ANONYMOUS-WRAPPER-THUNK-SOURCE"
    "NSARRAY-TO-LIST" "LIST-TO-NSARRAY")
 
+  (:export "TO-LISP" "TO-OBJC")
+  
   (:export "ON-MAIN-THREAD"))
+
 
 (defpackage "ABNOTATION.IO"
   (:use "COMMON-LISP")
   (:shadow "FORMAT")
   (:export "FORMAT"))
 
+
 (defpackage "ABNOTATION.COMMAND"
   (:use "COMMON-LISP"
         "COM.INFORMATIMAGO.OBJCL"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
-  (:shadowing-import-from "ABNOTATION.CORE" "TO-OBJC")
+  (:shadowing-import-from "COM.INFORMATIMAGO.OBJCL.WRAPPER" "TO-LISP" "TO-OBJC")
   (:shadowing-import-from "ABNOTATION.IO" "FORMAT")
   (:export
 
    "*MINIBUFFER*"
    "*MESSAGE*"
+   "*CURRENT-VIEW*"
+   "*CURRENT-WINDOW*"
 
+   "CURRENT-VIEW"
+   "CURRENT-WINDOW"
+   
    "CALL-INTERACTIVELY"
    "COMMAND"
    "CREATE-KEYMAP"
@@ -108,11 +117,16 @@
    "KEYMAP-NAME"
    "KEYMAP-NAMED"
    "KEYMAP-PARENT"
+   "KEYMAP-SET-KEY"
    "MESSAGE"
    "MODIFIER-STRING"
    "PROCESS-KEY"
-   "PROCESS-KEY-EVENT"
-   ))
+   "PROCESS-KEY-EVENT")
+
+  (:export
+   "DEFCOMMAND"
+   "SELECT-FILE"
+   "ASK-USER"))
 
 (defpackage "ABNOTATION.COCOA"
   (:use "COMMON-LISP"

@@ -277,6 +277,8 @@ segments, one on each successive measure."))
                           :type string                    :initform "anonymous")
    (file                  :initarg :file                  :accessor file
                           :type (or pathname null)        :initform nil)
+   (needs-saving          :initarg :needs-saving          :initform nil
+                          :type boolean                   :accessor needs-saving)
    (staff-set             :initarg :staff-set             :accessor staff-set)
    (page-number-font      :initarg :page-number-font      :accessor page-number-font
                           :type string)
@@ -354,7 +356,8 @@ segments, one on each successive measure."))
                :multiplicity 0-*
                :ordered t)))
 
-
+(defmethod (setf tempos) :after (new-tempo (partition partition))
+  (setf (needs-saving partition) t))
 
 
 

@@ -77,3 +77,17 @@
   [(bezier-path path) stroke])
 
 
+
+(defcommand zoom-in ()
+  (setf (zoom (current-view)) (* (zoom (current-view)) 2)))
+
+(defcommand zoom-out ()
+  (setf (zoom (current-view)) (/ (zoom (current-view)) 2)))
+
+
+(let ((abview-km (create-keymap "ABView" (global-keymap))))
+  (keymap-set-key abview-km '((#\x :control) #\+) 'zoom-in)
+  (keymap-set-key abview-km '((#\x :control) #\=) 'zoom-in)
+  (keymap-set-key abview-km '((#\x :control) #\-) 'zoom-out)
+  (setf (current-keymap) abview-km))
+

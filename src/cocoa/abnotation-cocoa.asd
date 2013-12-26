@@ -34,64 +34,66 @@
 
 #+ccl (require :cocoa)
 
-(asdf:defsystem "abnotation-cocoa"
+(asdf:defsystem
+ "abnotation-cocoa"
 
-    ;; system attributes:
-    
-    :description  "ABNotation Cocoa application"
+ ;; system attributes:
+ 
+ :description  "ABNotation Cocoa application"
 
-    :long-description "
+ :long-description "
 
 This application reads midi files and displays and prints partitions
 according to the Alexis Bosch's synchrone musical notation.
 
 "
-    
-    :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
-    
-    :licence "AGPL3"
+ 
+ :author     "Pascal J. Bourguignon <pjb@informatimago.com>"
+ 
+ :maintainer "Pascal J. Bourguignon <pjb@informatimago.com>"
+ 
+ :licence "AGPL3"
 
-    ;; component attributes:
-    
-    :name "abnotation"
+ ;; component attributes:
+ 
+ :name "abnotation"
 
-    :version "0.0.0"
+ :version "0.0.0"
 
-    :properties ((#:author-email                   . "pjb@informatimago.com")
-                 (#:date                           . "Autumn 2013")
-                 ((#:albert #:output-dir)          . "/tmp/documentation/abnotation/")
-                 ((#:albert #:formats)             . ("docbook"))
-                 ((#:albert #:docbook #:template)  . "book")
-                 ((#:albert #:docbook #:bgcolor)   . "white")
-                 ((#:albert #:docbook #:textcolor) . "black"))
-    
-    :depends-on ("com.informatimago.objcl"
-                 "com.informatimago.clext"
-                 "com.informatimago.common-lisp.cesarum"
-                 "abnotation-core")
-    
-    #+asdf-unicode :encoding #+asdf-unicode :utf-8
-    :components (
-                 (:file "package")
-                 (:file "macros"     :depends-on ("package"))
-                 (:file "system"     :depends-on ("package"))
-                 (:file "format"     :depends-on ("package"))
-                 (:file "wrapper"    :depends-on ("package" "macros" "system"))
-                 (:file "geometry"   :depends-on ("package" "wrapper"))
-                 (:file "bezier"     :depends-on ("package" "wrapper" "geometry"))
-                 (:file "graphic"    :depends-on ("package" "bezier"))
-                 (:file "keymap"     :depends-on ("package" "format"))
-                 (:file "command"    :depends-on ("package" "format" "keymap" "abview"))
-                 (:file "views"      :depends-on ("package" "format" "keymap"))
-                 (:file "abview"     :depends-on ("package" "format" "keymap" "geometry"
-                                                  "graphic"))
-                 (:file "abwindow"   :depends-on ("package" "format" "keymap" "views" "macros"
-                                                            "geometry"  "abview"))
+ :properties ((#:author-email                   . "pjb@informatimago.com")
+              (#:date                           . "Autumn 2013")
+              ((#:albert #:output-dir)          . "/tmp/documentation/abnotation/")
+              ((#:albert #:formats)             . ("docbook"))
+              ((#:albert #:docbook #:template)  . "book")
+              ((#:albert #:docbook #:bgcolor)   . "white")
+              ((#:albert #:docbook #:textcolor) . "black"))
+ 
+ :depends-on ("com.informatimago.objcl"
+              "com.informatimago.clext"
+              "com.informatimago.common-lisp.cesarum"
+              "abnotation-core")
+ 
+ #+asdf-unicode :encoding #+asdf-unicode :utf-8
+ :components
+ (
+  (:file "package")
+  (:file "macros"     :depends-on ("package"))
+  (:file "system"     :depends-on ("package"))
+  (:file "format"     :depends-on ("package"))
+  (:file "wrapper"    :depends-on ("package" "macros" "system"))
+  (:file "geometry"   :depends-on ("package" "wrapper"))
+  (:file "bezier"     :depends-on ("package" "wrapper" "geometry"))
+  (:file "graphic"    :depends-on ("package" "bezier"))
+  (:file "keymap"     :depends-on ("package" "format"))
+  (:file "command"    :depends-on ("package" "format" "keymap"))
+  (:file "views"      :depends-on ("package" "format" "keymap"))
+  (:file "abview"     :depends-on ("package" "format" "command"
+                                   "geometry" "graphic"))
+  (:file "abwindow"   :depends-on ("package" "format" "command" "views" "macros"
+                                   "geometry" "graphic" "abview"))
 
-                 (:file "main"       :depends-on ("package" "format" "macros" "geometry" "abview"
-                                                            "abwindow" "views"))
-                 ))
+  (:file "main"       :depends-on ("package" "format" "macros" "geometry" "abview"
+                                   "abwindow" "views"))
+  ))
 
 ;;;; THE END ;;;;

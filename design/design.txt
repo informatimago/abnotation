@@ -557,7 +557,8 @@ Gsharp Schematic class diagram
                                                                               
 
 durations
-==========
+================================================================================
+
 
 11    :maxima     ||o||           1024    -3
 10    :long       |o|              512    -2
@@ -570,6 +571,34 @@ durations
  3    :32th       triple-croche      4     5
  2    :64th       quadruple-croche   2     6
  1    :128th      quintuple-croche   1     7
+
+CLIM Regions
+================================================================================
+
+(clim:bounding-rectangle* pen)
+(clim:make-point x y)
+(clim:make-rotation-transformation angle)
+(clim:make-scaling-transformation kx ky)
+(clim:make-translation-transformation x y)
+(clim:point-y point)
+(clim:pointp x)
+(clim:region-difference path1 path2)
+(clim:region-union path1 path2)
+(clim:transform-region tr region)
+(climi::bezier-area :segments segments)
+(climi::bezier-curve :segments segments)
+(climi::close-path path)
+(climi::convolve-regions *pen* path)
+(climi::make-bezier-curve points)
+(climi::make-bezier-segment p0 p1 p2 p3)
+(climi::make-slanting-transformation slant)
+(climi::part-way p0 p1 alpha)
+(climi::path-end path)
+(climi::path-start path)
+(climi::reverse-path path)
+clim:region
+
+
 
 .. comment:
    ---------------------------------------------------------------

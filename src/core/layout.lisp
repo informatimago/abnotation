@@ -60,6 +60,9 @@
 ;; ---
 ;; ---
 
-#||
+(defmethod lay-partition-output ((partition partition))
 
-||#
+  )
+
+
+;;;; THE END ;;;;

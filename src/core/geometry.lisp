@@ -46,10 +46,6 @@
 ;;; Representation of coordinates, points, sizes and rectangles.
 ;;;
 
-(defun xor (a b)
-  "Return A ⊻ B"
-  (or (and a (not b)) (and (not a) b)))
-
 
 ;;;---------------------------------------------------------------------
 ;;; Generic geometry
