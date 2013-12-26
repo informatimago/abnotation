@@ -1,0 +1,28 @@
+This directory contains the CLIM 2.0 specification dated May 10,
+1994. The specification is in four postscript files:
+
+	clim_doc_1_100.ps
+	clim_doc_101_200.ps
+	clim_doc_201_300.ps
+	clim_doc_301_end.ps
+
+An index created by Stefan Hegny is also included. See the files:
+
+	clim-index.txt
+	clim-index.ps
+	clim-index-2.ps
+
+You can download individual files from this directory. Or you can pick 
+up a compressed tar file of the whole directory by going up one level
+to:
+
+	/pub/clim
+
+and doing the following:
+
+	ftp> bin
+	200 Type set to I.
+	ftp> get clim-spec.tar.gz
+
+[This directory mirrors the clim-spec in /pub/mcl/contrib/clim/papers
+on ftp.digitool.com with minor changes in the arrangement of files]
