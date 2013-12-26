@@ -629,7 +629,9 @@ move-to-point path element."
   (:method ((element path-element-move-to-point) rect previous)
            (declare (ignore previous))
     (rect-expand rect (path-element-point element)))
-  (:method ((element path-element-line-to-point) rect)
+
+  (:method ((element path-element-line-to-point) rect previous)
+           (declare (ignore previous))
     (rect-expand rect (path-element-point element)))
 
   (:method ((element path-element-quad-curve-to-point) rect previous)

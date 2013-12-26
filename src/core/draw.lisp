@@ -146,7 +146,9 @@
     (dolist (line (lines page))
       (draw line clip-rect))
     (draw (number-annotation element) clip-rect)
-    (draw (title-annotation  element) clip-rect)
+    (let ((title (title-annotation  element)))
+      (when title
+        (draw title clip-rect)))
     (progn ; debug
       (draw-string "Hello World" (point (left printable-area) (- (top printable-area) 20.0)))
       (set-font "Maestro" 12.0)

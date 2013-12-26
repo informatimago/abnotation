@@ -182,10 +182,28 @@ Otherwise it's a - - - - tenue."))
 
 \\f0\\b\\fs24 \\cf0 ~D}")
 
+(defparameter *title-annotation-rtf-format*
+  "{\\rtf1\\ansi\\ansicpg1252\\cocoartf1187\\cocoasubrtf400
+{\\fonttbl\\f0\\froman\\fcharset0 Times-Roman;}
+{\\colortbl;\\red255\\green255\\blue255;}
+\\paperw11900\\paperh16840\\margl1440\\margr1440\\vieww10800\\viewh8400\\viewkind0
+\\pard\\tx566\\tx1133\\tx1700\\tx2267\\tx2834\\tx3401\\tx3968\\tx4535\\tx5102\\tx5669\\tx6236\\tx6803\\pardirnatural\\qc
+
+\\f0\\b\\fs28 \\cf0 \\
+~A
+\\fs24 \\
+
+\\b0 \\
+~A\\
+}")
+
+
+
 (defgeneric number-annotation (element)
   (:method ((element numbered))
            (or (slot-value element 'number-annotation)
                (setf  (slot-value element 'number-annotation)
+                     ;; TODO: layout?
                       (make-instance 'text :rtf (format nil *number-annotation-rtf-format*
                                                         (number element)))))))
 
@@ -359,6 +377,19 @@ segments, one on each successive measure."))
             :multiplicity 0-*
             :ordered t)))
 
+(defgeneric title-annotation (element)
+  (:method ((page page))
+           (and (= 1 (number page))
+                (partition page)
+                (title-annotation (partition page))))
+  (:method ((partition partition))
+           (or (slot-value partition 'title-annotation)
+               (setf (slot-value partition 'title-annotation)
+                     ;; TODO: layout?
+                     (make-instance 'text
+                         :rtf (format nil *title-annotation-rtf-format*
+                                      (title partition)
+                                      (author partition)))))))
 
 (defclass tempo (element)
   ((measure-duration :initarg :measure-duration :accessor measure-duration)))
