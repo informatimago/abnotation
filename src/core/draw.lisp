@@ -56,13 +56,79 @@
 
 
 
-(defmethod draw ((line line) &optional clip-rect)
-  (declare (ignore clip-rect))
-  ;; draw portée
-  ;; draw clef
-  ;; draw measures
-  ;; draw line number
+(defmethod draw :before ((element graphic-element) &optional clip-rect)
+  (set-color :red)
+  (draw (box element) clip-rect))
+
+(defmethod draw :after ((element graphic-element) &optional clip-rect)
+  (when (annotation element)
+   (draw (annotation element) clip-rect)))
+
+
+(defmethod draw ((element image) &optional clip-rect)
+  ;; TODO: draw image in (box element)
   )
+
+(defmethod draw ((element text) &optional clip-rect)
+  ;; TODO: draw rich text in (box element)
+  )
+
+
+(defmethod draw ((element head) &optional clip-rect)
+  (set-color :black)
+  #| TODO: draw ellipse in box |#)
+
+(defmethod draw ((element accidental) &optional clip-rect)
+  (set-color :black)
+  #| TODO: draw ♮♯♭ in box |#)
+
+(defmethod draw ((element tenue-segment) &optional clip-rect)
+  (set-color :black)
+  #| TODO: draw tenue segment in box |#)
+
+(defmethod draw ((element dynamic-segment) &optional clip-rect)
+  (set-color :black)
+  #| TODO: draw dynamic segment in box |#)
+
+(defmethod draw ((element beam-segment) &optional clip-rect)
+  (set-color :black)
+  #| TODO: draw beam segment in box |#)
+
+
+(defmethod on-line-p ((note note))
+  ;; TODO: (f (pitch note))
+  nil)
+
+(defmethod draw ((element ledger) &optional clip-rect)
+  (set-color :black)
+  (dolist (note (notes element))
+    (when (on-line-p note)
+      ;; (draw-ledger-line (rect-inset (box (head note)) -1.0 0))
+      )))
+
+(defmethod draw ((element staff) &optional clip-rect)
+  (set-color :black)
+  ;; TODO:
+  ;; (loop
+  ;;  :with box = (box element)
+  ;;  :for y :from 0 :to 4
+  ;;  :do (draw-line (left box) y (right box) y))
+  (draw (clef element) clip-rect))
+
+(defmethod draw ((element clef) &optional clip-rect)
+  #|TODO: draw clef|#)
+
+(defmethod draw ((element measure) &optional clip-rect)
+  ;; TODO: (draw-measure-hat element clip-rect)
+  ;; TODO: (draw-measure-bar element clip-rect)
+  (draw (number-annotation element) clip-rect))
+
+(defmethod draw ((element line) &optional clip-rect)
+  (dolist (band (bands element))
+    (draw band clip-rect))
+  (dolist (measure (measures element))
+    (draw measure clip-rect))
+  (draw (number-annotation element) clip-rect))
 
 (defmethod draw ((page page) &optional clip-rect)
   (let* ((printable-area (apply (function rect) (paper-printable-area (partition page))))
@@ -77,19 +143,19 @@
         (close-subpath p)
         (set-color :gray)
         (stroke-path p)))
-    ;; draw partition annotation and title on first page.
     (dolist (line (lines page))
       (draw line clip-rect))
-    ;; draw page number
-    ;; draw page annotation(s)
-    (draw-string "Hello World" (point (left printable-area) (- (top printable-area) 20.0)))
+    (draw (number-annotation element) clip-rect)
+    (draw (title-annotation  element) clip-rect)
+    (progn ; debug
+      (draw-string "Hello World" (point (left printable-area) (- (top printable-area) 20.0)))
+      (set-font "Maestro" 12.0)
+      (draw-string (map 'string 'code-char '(104 113 101 120))
+                   (point (left printable-area) (- (top printable-area) 60.0))
+                   :attributes t)
+      (let ((p (create-path)))
+        (move-to-coordinates p nil (left printable-area) (- (top printable-area) 60.0))
+        (line-to-coordinates p nil (right printable-area) (- (top printable-area) 60.0))
+        (stroke-path p)))))
 
-    (set-font "Maestro" 12.0)
-    (draw-string (map 'string 'code-char '(104 113 101 120))
-                 (point (left printable-area) (- (top printable-area) 60.0))
-                 :attributes t)
-    (let ((p (create-path)))
-      (move-to-coordinates p nil (left printable-area) (- (top printable-area) 60.0))
-      (line-to-coordinates p nil (right printable-area) (- (top printable-area) 60.0))
-      (stroke-path p))
-    ))
+;;;; THE END ;;;;

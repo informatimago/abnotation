@@ -75,6 +75,7 @@ according to the Alexis Bosch's synchrone musical notation.
      (:file "macros"         :depends-on ("package"))
      (:file "geometry"       :depends-on ("package" "macros"))
      (:file "matrix"         :depends-on ("package" "geometry"))
+     (:file "transformation" :depends-on ("package" "geometry" "matrix"))
      (:file "bezier"         :depends-on ("package" "geometry" "matrix"))
      (:file "elliptical-arc" :depends-on ("package" "geometry" "matrix" "bezier"))
      (:file "graphic"        :depends-on ("package" "bezier" "elliptical-arc"))

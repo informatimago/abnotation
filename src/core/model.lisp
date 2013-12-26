@@ -75,6 +75,8 @@
 (defclass offsetable-element (graphic-element)
   ((offset :initarg :offset :accessor offset :type point)))
 
+(defmethod box ((element offsetable-element))
+  (rect-offset (slot-value element 'box) (offset element)))
 
 (defclass annotation (offsetable-element)
   ())
@@ -86,8 +88,8 @@
                              package file where the image is saved in.")))
 
 (defclass text (annotation)
-  ((text :initarg :text :accessor text :type string :initform ""
-         :documentation "Some rich text string representation.")))
+  ((rtf :initarg :rtf :accessor rtf :type string :initform ""
+         :documentation "RTF string.")))
 
 (define-association annotation
     ((element :type element
@@ -167,9 +169,29 @@ Otherwise it's a - - - - tenue."))
 
 
 (defclass numbered ()
-  ((number :initarg :number :reader number)))
+  ((number :initarg :number :reader number)
+   (number-annotation :initform nil)))
 
-(defgeneric renumber (numbered))
+
+(defparameter *number-annotation-rtf-format*
+  "{\\rtf1\\ansi\\ansicpg1252\\cocoartf1187\\cocoasubrtf400
+{\\fonttbl\\f0\\froman\\fcharset0 Times-Roman;}
+{\\colortbl;\\red255\\green255\\blue255;}
+\\paperw11900\\paperh16840\\margl1440\\margr1440\\vieww10800\\viewh8400\\viewkind0
+\\pard\\tx566\\tx1133\\tx1700\\tx2267\\tx2834\\tx3401\\tx3968\\tx4535\\tx5102\\tx5669\\tx6236\\tx6803\\pardirnatural
+
+\\f0\\b\\fs24 \\cf0 ~D}")
+
+(defgeneric number-annotation (element)
+  (:method ((element numbered))
+           (or (slot-value element 'number-annotation)
+               (setf  (slot-value element 'number-annotation)
+                      (make-instance 'text :rtf (format nil *number-annotation-rtf-format*
+                                                        (number element)))))))
+
+(defgeneric renumber (element)
+  (:method :before ((element numbered))
+           (setf (slot-value element 'number-annotation) nil)))
 
 
 (defclass measure (graphic-element numbered)
