@@ -131,7 +131,7 @@
   (draw (number-annotation element) clip-rect))
 
 (defmethod draw ((page page) &optional clip-rect)
-  (let* ((printable-area (apply (function rect) (paper-printable-area (partition page))))
+  (let* ((printable-area (paper-printable-area (partition page)))
          (margin (rect-inset printable-area -0.1 -0.1)))
     (unless (and clip-rect
                  (rect-empty-p (rect-intersection clip-rect (left-side margin)))
@@ -145,8 +145,8 @@
         (stroke-path p)))
     (dolist (line (lines page))
       (draw line clip-rect))
-    (draw (number-annotation element) clip-rect)
-    (let ((title (title-annotation  element)))
+    (draw (number-annotation page) clip-rect)
+    (let ((title (title-annotation page)))
       (when title
         (draw title clip-rect)))
     (progn ; debug

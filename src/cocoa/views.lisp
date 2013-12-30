@@ -34,7 +34,9 @@
 (in-package "ABNOTATION.COCOA")
 (objcl:set-objective-cl-syntax)
 
+
 @[NSTextView subClass:ABTextView slots:()]
+
 
 (defvar *text-font-size* 12.0)
 @[ABTextView method:(initWithFrame:(:<NSR>ect)frame)
@@ -186,21 +188,28 @@ RETURN:              A new NSSplitView containing the subviews.
            (/ resolution 25.4))
   (:method ((resolution size))
            (size (/ (size-width resolution) 25.4)
-                 (/ (size-height resolution) 25.4))))
+                 (/ (size-height resolution) 25.4)))
+  (:method ((position point))
+           (point (/ (point-x position) 25.4)
+                  (/ (point-y position) 25.4)))
+  (:method ((r rect))
+           (rect (dot/inch->dot/mm (rect-x r))
+                 (dot/inch->dot/mm (rect-y r))
+                 (dot/inch->dot/mm (rect-width r))
+                 (dot/inch->dot/mm (rect-height r)))))
 
 
 (defun paper-bounds  (paper-format paper-orientation)
   "Return the bounds for a view showing a page of the given paper format and orientation, in millimeters."
-  (destructuring-bind (width height)(paper-size-and-printable-area paper-format paper-orientation)
-    (make-rect :x 0.0 :y 0.0 :width width :height height)))
+  (make-rect :x 0.0 :y 0.0 :size (paper-size-and-printable-area paper-format paper-orientation)))
 
 (defun paper-frame (view-or-window  paper-format paper-orientation &optional (zoom 1.0))
   "Return the frame for a view showing a page of the given paper format and orientation, in view-or-windows coordinates."
   (let* ((size       (paper-size-and-printable-area paper-format paper-orientation))
          (resolution (dot/inch->dot/mm (device-resolution view-or-window)))
          (frame      (make-rect :x 0.0 :y 0.0
-                                :width  (* zoom (first  size) (size-width  resolution))
-                                :height (* zoom (second size) (size-height resolution)))))
+                                :width  (* zoom (width  size) (size-width  resolution))
+                                :height (* zoom (height size) (size-height resolution)))))
     (format *trace-output* "resolution = ~S dot/mm~%" resolution)
     (format *trace-output* "paper-size = ~S mm~%" size)
     (format *trace-output* "paper-frame = ~S dot~%" frame)

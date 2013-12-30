@@ -87,13 +87,14 @@ according to the Alexis Bosch's synchrone musical notation.
   (:file "keymap"     :depends-on ("package" "format"))
   (:file "command"    :depends-on ("package" "format" "keymap"))
   (:file "views"      :depends-on ("package" "format" "keymap"))
+  (:file "text"       :depends-on ("package" "views"))
   (:file "abview"     :depends-on ("package" "format" "command"
                                    "geometry" "graphic"))
   (:file "abwindow"   :depends-on ("package" "format" "command" "views" "macros"
                                    "geometry" "graphic" "abview"))
 
   (:file "main"       :depends-on ("package" "format" "macros" "geometry" "abview"
-                                   "abwindow" "views"))
+                                   "abwindow" "views" "text"))
   ))
 
 ;;;; THE END ;;;;

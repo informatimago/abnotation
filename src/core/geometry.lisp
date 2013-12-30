@@ -73,11 +73,24 @@
 (defgeneric width  (object))
 (defgeneric height (object))
 
+(defgeneric (setf right)  (new-value object))
+(defgeneric (setf left)   (new-value object))
+(defgeneric (setf bottom) (new-value object))
+(defgeneric (setf top)    (new-value object))
+(defgeneric (setf width)  (new-value object))
+(defgeneric (setf height) (new-value object))
+
 (defgeneric origin (object)
   (:documentation "The point origin of the coordinates of the ``OBJECT``."))
 
 (defgeneric (setf origin) (new-value object)
   (:documentation "Change the origin of the ``OBJECT``."))
+
+(defgeneric extent (object)
+  (:documentation "The size of the ``OBJECT``."))
+
+(defgeneric (setf extent) (new-value object)
+  (:documentation "Change the size of the ``OBJECT``."))
 
 (defgeneric bounds (object)
   (:documentation "
@@ -198,6 +211,15 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defmethod width  ((p point)) 0.0)
 (defmethod height ((p point)) 0.0)
 (defmethod origin ((p point)) p)
+(defmethod extent ((p point)) (size 0.0 0.0))
+(defmethod (setf left) (new-value (p point))
+  (setf (point-x p) new-value))
+(defmethod (setf right) (new-value (p point))
+  (setf (point-x p) new-value))
+(defmethod (setf top) (new-value (p point))
+  (setf (point-y p) new-value))
+(defmethod (setf bottom) (new-value (p point))
+  (setf (point-y p) new-value))
 (defmethod (setf origin) (new-value (p point))
   (setf (point-x p) (point-x new-value)
         (point-y p) (point-y new-value))
@@ -220,8 +242,13 @@ u2 = - det[v0,v1]/det[v1,v2]
 
 (defmethod width  ((s size)) (size-width  s))
 (defmethod height ((s size)) (size-height s))
-(defmethod bounds  ((s size)) (make-rect :x 0.0 :y 0.0 :size s))
+(defmethod extent ((s size)) s)
+(defmethod bounds ((s size)) (make-rect :x 0.0 :y 0.0 :size s))
 
+(defmethod (setf width) (new-value (s size))
+  (setf (size-width s) new-value))
+(defmethod (setf height) (new-value (s size))
+  (setf (size-height s) new-value))
 
 ;;;---------------------------------------------------------------------
 ;;; RECT
@@ -287,13 +314,43 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defmethod width  ((r rect)) (rect-width  r))
 (defmethod height ((r rect)) (rect-height r))
 (defmethod origin ((r rect)) (rect-origin r))
+(defmethod extent ((r rect)) (rect-size   r))
+
+(defmethod (setf left) (new-value (r rect))
+  (setf (rect-x r) (coordinate new-value)))
+(defmethod (setf bottom) (new-value (r rect))
+  (setf (rect-y r) (coordinate new-value)))
+
+(defmethod (setf right) (new-value (r rect))
+  (setf (rect-width r) (coordinate (- new-value (left r))))
+  new-value)
+(defmethod (setf top) (new-value (r rect))
+  (setf (rect-height r) (coordinate (- new-value (bottom r))))
+  new-value)
+
+(defmethod (setf width) (new-value (r rect))
+  (setf (rect-width r) (coordinate new-value)))
+(defmethod (setf height) (new-value (r rect))
+  (setf (rect-height r) (coordinate new-value)))
+
 (defmethod (setf origin) (new-value (r rect))
   (setf (rect-x r) (point-x new-value)
         (rect-y r) (point-y new-value))
   new-value)
+
+(defmethod (setf extent) (new-value (r rect))
+  (setf (rect-width r) (size-width new-value)
+        (rect-height r) (size-height new-value))
+  new-value)
+
 (defmethod bounds ((r rect)) (rect 0.0 0.0 (width r) (height r)))
 (defmethod frame ((r rect)) r)
-
+(defmethod (setf frame) ((new-value rect) (r rect))
+  (setf (rect-x r) (rect-x new-value)
+        (rect-y r) (rect-y new-value)
+        (rect-width r) (rect-width new-value)
+        (rect-height r) (rect-height new-value))
+  new-value)
 
 (defun rect-to-list (rect)
   (list (rect-x rect)
@@ -343,10 +400,14 @@ If inset-x/y is positive the result is smaller, if it's negative, then the resul
             (- (min (right a) (right b)) x)
             (- (min (top a) (top b)) y)))))
 
-(defun left-side   (rect) (rect (left  rect) (bottom rect) 1 (height rect)))
-(defun right-side  (rect) (rect (right rect) (bottom rect) 1 (height rect)))
-(defun bottom-side (rect) (rect (left  rect) (bottom rect) (width rect) 1))
-(defun top-side    (rect) (rect (left  rect) (top    rect) (width rect) 1))
+(defmethod left-side   (object &optional (thickness 1))
+  (rect (left  object) (bottom object) thickness (height object)))
+(defmethod right-side  (object &optional (thickness 1))
+  (rect (right object) (bottom object) thickness (height object)))
+(defmethod bottom-side (object &optional (thickness 1))
+  (rect (left  object) (bottom object) (width object) thickness))
+(defmethod top-side    (object &optional (thickness 1))
+  (rect (left  object) (top    object) (width object) thickness))
 
 
 (defun rect-expand (rect point)

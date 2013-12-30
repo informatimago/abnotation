@@ -31,13 +31,25 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
-;;;;    
 (in-package "ABNOTATION.CORE")
+
 ;; ((setf tempo-and-notes) (abnotation-sequence partition)):
 ;; [load midi] --> (list (or note tempo)) --> [splice-measure] --> (list tempo->measure->sound)
 ;;
 ;; (list tempo->measure->sound) --> [layout] --> (and boxes
 ;;                                                    page->line->measure->sound)
+
+
+;; measure-box.width  = (or manual-adjustment (max (* tempo measure-speed) (max sound-box.width)))
+;; measure-box.height = (or manual-adjustment (max sound-box.height))
+;; 
+;; line-box.width       = (- printable-area.width left-margin manual-adjustment)
+;; (accumulate (measure) (< (sum measure-box.width) line-box.width))
+;; top-ledger.top       = (reduce max  (measures line) :key measure.top)
+;; bottom-ledger.bottom = (reduce min (measures line) :key measure.bottom)
+;; line-box.height      = (- top-ledger.top bottom-ledger.bottom)accu
+;; (accumulate (line) (< (sum (+ interline line.height)) page.height))
+
 
 
 ;; (defgeneric layout (object children))
@@ -94,9 +106,67 @@
 ;; ---
 ;; ---
 
-(defmethod lay-partition-out ((partition partition))
+(defmethod layout-partition-from-tempos ((partition partition))
+  (let ((measure-speed (default-measure-speed partition))
+        (measures '()))
+    ;; compute measure widths:
+    (dolist (tempo (tempos partition))
+      (let* ((duration (measure-duration tempo))
+             (width (* measure-speed duration)))
+        (dolist (measure (measures tempo))
+          (setf (box-size measure) (size width (* 58/8 (staff-height partition))))
+          (push measure measures))))
+    ;; spread measures over lines
+    (setf measures (nreverse measures))
+    (setf (measures partition) measures)
+    (let ((pages '()) (pageno 0) page          
+          (lines '()) (lineno 0) line)
+      (labels ((new-page ()
+                         (setf page (make-instance 'page :number (incf pageno)))
+                         (push page pages)
+                         (attach 'partition-contains partition page))
+               (new-line ()
+                         (setf line (make-instance 'line :number (incf lineno)))
+                         (print line)
+                         (setf (box-size line) (size (width (box page))
+                                                     (* 58/8 (staff-height (partition page)))))
+                         (print line)
+                         (push line lines)))
+        (new-page)
+        (new-line)
+        (attach 'page-contains page line)
+        (loop
+         :with page-height = (height (box page))
+         :with lines-height = (+ 20 #|title header|# (height (box line)))
+         :while measures
+         :do (loop
+              :with line-width = (width (box line))
+              :with measures-width = 10 #|(width (clef line))|#
+              :while measures
+              :do (let ((measure (first measures)))
+                    (if (< (+ (width (box measure)) measures-width)
+                           line-width)
+                      (progn
+                        (setf (left (box measure)) measures-width)
+                        (incf measures-width (width (box measure)))
+                        (attach 'line-contains-vertically line measure)
+                        (pop measures))
+                      (progn
+                        (new-line)
+                        (if (< (+ (height (box line)) lines-height)
+                               page-height)
+                          (progn
+                            (setf (bottom (box line)) (- page-height lines-height))
+                            (incf lines-height (height (box line)))
+                            (attach 'page-contains page line))
+                          (progn
+                            (new-page)
+                            (attach 'page-contains page line)
+                            (setf lines-height (+ 20 #|title header|# (height (box line)))
+                                  page-height  (height (box page))
+                                  (bottom (box line)) (- page-height lines-height)))))))))))))
 
-  )
+
 
 
 ;;;; THE END ;;;;

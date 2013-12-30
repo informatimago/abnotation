@@ -152,6 +152,7 @@
     [window setInitialFirstResponder:partition-subview]
     (compute-frame-and-bounds partition-subview)
     (setf (partition partition-subview) (partition window))
+    ;; (layout-partition-from-file (partition window))
     (format window "Hello World!~%")
     window))
 
@@ -186,7 +187,7 @@
                                          :partition partition)))
             (push window *windows*)
             [window makeKeyAndOrderFront:window]
-            (lay-partition-out partition)))
+            (layout-partition-from-tempos partition)))
       (error (err)
              (message "~A" err)))
     path))

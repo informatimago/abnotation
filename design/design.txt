@@ -332,71 +332,73 @@ Impression
 
 - choix du nombre de portées par ligne, avec les clefs: (𝄞 𝄢 𝄞𝄢 𝄞𝄸𝄞𝄢 𝄞𝄢𝄢𝄹 𝄞𝄸𝄞𝄢𝄢𝄹)
   (sol fa sol+fa sol15ma+sol+fa sol+fa+fa15mb sol15ma+sol+fa+fa15mb)  ::
-   122                    re                           \        ledger.maximum
-   121                 --do--                9          |       ledger.top
-   119                  si                              | 
-   117               --la--                            /        ledger.minimum = ledger.bottom                 
-   115     15         sol                    8                     \     staff.maximum 
-   113  -------------fa-------------------------                    |    staff.top     
-   112              mi                                              |
-   110  -----------re---------------------------                    |
-   108            do                         8                      |
-   107  ---------si-----------------------------                    |
-   105          la                                                  |
-   103  ---o--sol----------------------------7-- clé de sol15ma     |
-   101          fa                                                  |
-   100  ---------mi-----------------------------                    |    staff.bottom  
-    98            re                                               /     staff.minimum
-    96           --do--                      7          \ ledger.maximum = ledger.top  
-    95              si                                   |                           
-    93             --la--                                / ledger.minumum = ledger.bottom
-    91                sol                    6            
-    89  -------------fa-------------------------
-    88              mi   
-    86  -----------re---------------------------
-    84            do                         6
-    83  ---------si-----------------------------
-    81          la                              
-    79  ---o--sol--- ------------------------5-- clé de sol
-    77          fa                              
-    76  ---------mi-----------------------------           
-    74            re                            
-    72           --do--                      5  
-    71          si                              
-    69  -------la-------------------------------
-    67        sol                            4 
-    65  ---)-fa--------------------------------- clé de fa
-    64        mi                              
-    62  -------re-------------------------------
-    60          do                           4
-    59  ---------si-----------------------------
-    57            la    
-    55  -----------sol-----------------------3--
-    53               fa  
-    52            --mi--                                      
-    50             re                            
-    48          --do--                       3      
-    47          si                              
-    45  -------la-------------------------------
-    43        sol                            2  
-    41  ---)-fa--------------------------------- clé de fa15mb
-    40        mi                              
-    38  -------re-------------------------------
-    36          do                           2
-    35  ---------si-----------------------------
-    33            la    
-    31  -----------sol--------------------------
-    29      15      fa  
-    28             --mi--                             \
-    26                re                               |
-    24               --do--                  1         |
-    23                  si                            /
+
+     pitch   lane
+       122   59               re                           \        ledger.maximum
+       121   58            --do--                9          |       ledger.top
+       119   57             si                              | 
+       117   56          --la--                            /        ledger.minimum = ledger.bottom  
+       115   55           sol                    8                     \     staff.maximum 
+       113  -54----------fa-------------------------                    |    staff.top     
+       112   53         mi                                              |
+       110  -52--------re---------------------------                    |
+       108   51       do                         8                      |
+       107  -50------si-----------------------------                    |
+       105   49     la                                                  |
+       103  -48o--sol----------------------------7-- clé de sol15ma     |
+       101   47     fa                                                  |
+       100  -46 -----mi-----------------------------                    |    staff.bottom  
+        98   45       re                                               /     staff.minimum
+        96   44      --do--                      7          \ ledger.maximum = ledger.top  
+        95   43         si                                   |                           
+        93   42        --la--                                / ledger.minumum = ledger.bottom
+        91   41           sol                    6            
+        89  -40----------fa-------------------------
+        88   39         mi   
+        86  -38--------re---------------------------
+        84   37       do                         6
+        83  -36------si-----------------------------
+        81   35     la                              
+        79  -34o--sol--- ------------------------5-- clé de sol
+        77   33     fa                             
+        76  -32------mi-----------------------------           
+        74   31       re                            
+        72   30      --do--                      5  
+        71   29     si                              
+        69  -28----la-------------------------------
+        67   27   sol                            4 
+        65  -26)-fa--------------------------------- clé de fa
+        64   25   mi                              
+        62  -24----re-------------------------------
+        60   23     do                           4
+        59  -22 -----si-----------------------------
+        57   21       la    
+        55  -20--------sol-----------------------3--
+        53   19          fa  
+        52   18       --mi--                                      
+        50   17        re                            
+        48   16     --do--                       3      
+        47   15     si                              
+        45  -14----la-------------------------------
+        43   13   sol                            2  
+        41  -12)-fa--------------------------------- clé de fa15mb
+        40   11   mi                              
+        38  -10----re-------------------------------
+        36   09     do                           2
+        35  -08------si-----------------------------
+        33   07       la    
+        31  -06--------sol--------------------------
+        29   05 15      fa  
+        28   04        --mi--                             \
+        26   03           re                               |
+        24   02          --do--                  1         |
+     22 23   01             si                            /
 
             
-    a0 = 21
-    c1 = 24
-    c8 = 108
-    c9 = 128
+     a0 = 21
+     c1 = 24
+     c8 = 108
+     c9 = 128
 
 
 - hauteur d'une portée: 3, 5 ou 7 mm (imprimée).
@@ -575,28 +577,30 @@ durations
 CLIM Regions
 ================================================================================
 
-(clim:bounding-rectangle* pen)
 (clim:make-point x y)
+v (clim:point-y point)
+v (clim:pointp x)
+
 v (clim:make-rotation-transformation angle)
 v (clim:make-scaling-transformation kx ky)
 v (clim:make-translation-transformation x y)
-v (clim:point-y point)
-v (clim:pointp x)
-(clim:region-difference path1 path2)
-(clim:region-union path1 path2)
+(climi::make-slanting-transformation slant)
 v (clim:transform-region tr region)
+
+clim:region
+(clim:bounding-rectangle* pen)
+(clim:region-difference region1 region2)
+(clim:region-union region1 region2)
 (climi::bezier-area :segments segments)
 (climi::bezier-curve :segments segments)
 (climi::close-path path)
 (climi::convolve-regions *pen* path)
 (climi::make-bezier-curve points)
 (climi::make-bezier-segment p0 p1 p2 p3)
-(climi::make-slanting-transformation slant)
 (climi::part-way p0 p1 alpha)
 (climi::path-end path)
 (climi::path-start path)
 (climi::reverse-path path)
-clim:region
 
 
 
