@@ -36,26 +36,27 @@
 
 (defmethod set-color ((color ns:ns-color))
   [color set]
-  [color setFill]
+  [color setFill] 
   [color setStroke])
+
 
 (defmethod set-color ((color symbol))
   (set-color (ecase color
-               (:black [NSColor blackColor])
-               (:blue [NSColor blueColor])
-               (:brown [NSColor brownColor])
-               (:clear [NSColor clearColor])
-               (:cyan [NSColor cyanColor])
-               (:dark-Gray [NSColor darkGrayColor])
-               (:gray [NSColor grayColor])
-               (:green [NSColor greenColor])
+               (:black      [NSColor blackColor])
+               (:blue       [NSColor blueColor])
+               (:brown      [NSColor brownColor])
+               (:clear      [NSColor clearColor])
+               (:cyan       [NSColor cyanColor])
+               (:dark-Gray  [NSColor darkGrayColor])
+               (:gray       [NSColor grayColor])
+               (:green      [NSColor greenColor])
                (:light-Gray [NSColor lightGrayColor])
-               (:magenta [NSColor magentaColor])
-               (:orange [NSColor orangeColor])
-               (:purple [NSColor purpleColor])
-               (:red [NSColor redColor])
-               (:white [NSColor whiteColor])
-               (:yellow [NSColor yellowColor]))))
+               (:magenta    [NSColor magentaColor])
+               (:orange     [NSColor orangeColor])
+               (:purple     [NSColor purpleColor])
+               (:red        [NSColor redColor])
+               (:white      [NSColor whiteColor])
+               (:yellow     [NSColor yellowColor]))))
 
 (defmethod set-color ((color vector))
   (set-color [NSColor colorWithCalibratedRed: (aref color 0)
@@ -71,13 +72,14 @@
 
 (defmethod draw-string ((string string) (where point) &key attributes)
   (if attributes
-    
-    (let ((attributes [NSMutableDictionary dictionary]))
-      [attributes setObject:[NSFont fontWithName:(to-objc "Maestro") size:(coordinate 12.0)]
+    (let ((dictionary [NSMutableDictionary dictionary]))
+      [dictionary setObject:[NSFont fontWithName:(to-objc (getf attributes :font "Maestro"))
+                                    size:(coordinate (getf attributes :size 12.0))]
                   forKey:(to-objc "NSFont")]
-      [(to-objc string) drawAtPoint:(to-objc where) withAttributes: attributes])
+      [(to-objc string) drawAtPoint:(to-objc where) withAttributes:dictionary])
     
     [(to-objc string) drawAtPoint:(to-objc where) withAttributes: [NSDictionary dictionary]]))
+
 
 (defmethod draw-string ((string string) (where rect) &key (attributes [NSDictionary dictionary]))
   [(to-objc string) drawInRect:(to-objc where) withAttributes:attributes])
@@ -89,11 +91,15 @@
 (defmethod fill-path ((path cocoa-bezier-path))
   [(bezier-path path) fill])
 
+(defmethod set-stroke-width ((path cocoa-bezier-path) width)
+  [(bezier-path path) setLineWidth:(coordinate width)])
 
-(defmethod stroke-path ((path path))
-  )
 
-(defmethod fill-path ((path path))
-  )
+(defmethod draw-clef ((clef keyword) (where point) size)
+  (draw-string (string (ecase clef
+                         ((:bass15mb :bass)     (code-char 63))
+                         ((:treble15ma :treble) (code-char 38))))
+               where :attributes (list :font "Maestro" :size size)))
+
 
 ;;;; THE END ;;;;

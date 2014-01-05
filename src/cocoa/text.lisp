@@ -45,7 +45,8 @@
                options:0]))
 
 
-(defmethod compute-box-size ((element text))
+(defmethod compute-box-size ((element text) partition)
+  (declare (ignore partition))
   (let ((r (box-for-rtf-text (rtf element))))
     (setf (slot-value element 'box) (dot/inch->dot/mm r))))
 

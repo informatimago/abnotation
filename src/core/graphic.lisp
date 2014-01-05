@@ -37,8 +37,13 @@
 (defgeneric set-color (color))
 (defgeneric set-font (font-name size))
 (defgeneric draw-string (string where &key &allow-other-keys))
+
+(defgeneric set-stroke-width (path width))
 (defgeneric stroke-path (path))
 (defgeneric fill-path (path))
 
+
+
+(defgeneric draw-clef (clef where size))
 
 ;;;; THE END ;;;;

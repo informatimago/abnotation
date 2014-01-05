@@ -76,13 +76,13 @@
   ((box :initarg :box :accessor box :type rect)))
 
 (defgeneric (setf box-size) (new-size graphic-element))
-(defgeneric compute-box-size (element))
+(defgeneric compute-box-size (element partition))
 
 
 (defclass offsetable-element (graphic-element)
   ((offset :initarg :offset :initform (size 0 0) :accessor offset :type size)))
 
-(defmethod box ((element offsetable-element))
+(defmethod offset-box ((element offsetable-element))
   (let ((offset (offset element)))
     (rect-offset (slot-value element 'box) (size-width offset) (size-height offset))))
 
@@ -98,6 +98,7 @@
 (defclass text (annotation)
   ((rtf :initarg :rtf :accessor rtf :type string :initform ""
         :documentation "RTF string.")))
+
 
 (define-association annotation
   ((element :type element
@@ -213,7 +214,7 @@ Otherwise it's a - - - - tenue."))
                (setf  (slot-value element 'number-annotation)
                       (let ((number-text (make-instance 'text :rtf (format nil *number-annotation-rtf-format*
                                                                            (number element)))))
-                        (compute-box-size number-text)
+                        (compute-box-size number-text nil)
                         number-text)))))
 
 (defgeneric renumber (element)
@@ -324,8 +325,8 @@ segments, one on each successive measure."))
   ())
 
 (defmethod (setf box) :after (new-box (staff staff))
-  (setf (box (clef staff)) (rect (left (box staff)) (bottom (box staff))
-                                 10.0 (height (box staff)))))
+  (setf (box (clef staff)) (rect (left new-box) (bottom new-box)
+                                 10.0 (height new-box))))
 
 
 (defclass clef (graphic-element)
@@ -399,7 +400,7 @@ segments, one on each successive measure."))
                           :type real
                           :documentation "Unit: millimeter, values: 3, 5, 7 mm")
    (interline             :initarg :interline :accessor interline
-                          :type real
+                          :type real :initform 5.0
                           :documentation "Unit: millimeter, the height between lines on a page.")))
 
 (defparameter *papers*
@@ -441,8 +442,7 @@ segments, one on each successive measure."))
   (setf (box page) (paper-printable-area partition)))
 
 (defmethod did-link ((association (eql 'page-contains)) (page page) (line line))
-  (setf (box-size line) (size (width (box page))
-                              (* 58/8 (staff-height (partition page))))))
+  (compute-box-size line (partition page)))
 
 (defgeneric title-annotation (element)
   (:method ((page page))
@@ -458,7 +458,7 @@ segments, one on each successive measure."))
                                       :rtf (format nil *title-annotation-rtf-format*
                                                    (title partition)
                                                    (author partition)))))
-                       (compute-box-size title)
+                       (compute-box-size title partition)
                        title)))))
 
 (defclass tempo (element)
@@ -635,6 +635,7 @@ segments, one on each successive measure."))
            (height (* 58/8 (staff-height partition))))
       (setf (box-size measure) (size width height))
       (setf (box-size line) (size (width (box page)) height)))
+    (layout-partition-from-tempos partition)
     partition))
 
 

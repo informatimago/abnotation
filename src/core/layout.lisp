@@ -106,6 +106,42 @@
 ;; ---
 ;; ---
 
+(defmethod compute-box-size ((band band) (partition partition))
+  (let* ((line        (line band))
+         (lane-height (/ (staff-height partition) 4))
+         (lanes       (- (maximum-lane band) (minimum-lane band) -1))
+         (height      (* 1/2 (1+ lanes) lane-height)))
+    (setf (box-size band) (size (width (box line)) height))))
+
+(defmethod compute-box-size ((line line) (partition partition))
+  (let* ((lane-height (/ (staff-height partition) 4))
+         (lanes       (- (maximum-lane (first (last (bands line))))
+                         (minimum-lane (first (bands line)))
+                         -1))
+         (height      (* 1/2 (1+ lanes) lane-height)))
+    (unless (= 1 (number line))
+      (incf height (interline partition)))
+    ;; (format *trace-output*
+    ;;         "lane-height ~S  lanes ~S  height ~S  interline ~S~%"
+    ;;         (coerce lane-height 'double-float)
+    ;;         (coerce lanes 'double-float)
+    ;;         (coerce height 'double-float)
+    ;;         (interline partition))
+    (setf (box-size line) (size (width (box (page line))) height))))
+
+
+
+(defun remove-pages (partition)
+  (dolist (page (pages partition))
+    (dolist (line (lines page))
+      (dolist (measure (measures line))
+        (dolist (sound (sounds measure))
+          (detach 'measure-contains measure sound))
+        (detach 'line-contains-vertically line measure))
+      (detach 'page-contains page line))
+    (detach 'partition-contains partition page)))
+
+
 (defmethod layout-partition-from-tempos ((partition partition))
   (let ((measure-speed (default-measure-speed partition))
         (measures '()))
@@ -118,27 +154,33 @@
           (push measure measures))))
     ;; spread measures over lines
     (setf measures (nreverse measures))
-    (setf (measures partition) measures)
+    ;; (setf (measures partition) measures)
+    (remove-pages partition)
     (let ((pages '()) (pageno 0) page          
-          (lines '()) (lineno 0) line)
-      (labels ((new-page ()
+          (lines '()) (lineno 0) line
+          (page-height 0)
+          (lines-height 0))
+      (labels ((new-line ()
+                         (setf line (make-instance 'line :number (incf lineno)))
+                         (push line lines)
+                         (dolist (band (create-bands (staff-set partition)))
+                           (attach 'line-contains-horizontally line band)))
+               (new-page ()
                          (setf page (make-instance 'page :number (incf pageno)))
                          (push page pages)
-                         (attach 'partition-contains partition page))
-               (new-line ()
-                         (setf line (make-instance 'line :number (incf lineno)))
-                         (print line)
-                         (setf (box-size line) (size (width (box page))
-                                                     (* 58/8 (staff-height (partition page)))))
-                         (print line)
-                         (push line lines)))
-        (new-page)
+                         (attach 'partition-contains partition page)
+                         (attach 'page-contains page line)
+                         (compute-box-size line partition)
+                         (setf page-height  (height (box page))
+                               lines-height (+ 20 #|title header|# (height (box line)))
+                               (bottom (box line)) (- page-height lines-height))
+                         (format *trace-output* "bottom line = ~S / ~S~%"
+                                 (coerce (- page-height lines-height) 'double-float)
+                                 (bottom (box line)))))
         (new-line)
-        (attach 'page-contains page line)
         (loop
-         :with page-height = (height (box page))
-         :with lines-height = (+ 20 #|title header|# (height (box line)))
          :while measures
+         :initially (new-page)
          :do (loop
               :with line-width = (width (box line))
               :with measures-width = 10 #|(width (clef line))|#
@@ -149,6 +191,7 @@
                       (progn
                         (setf (left (box measure)) measures-width)
                         (incf measures-width (width (box measure)))
+                        (setf (line measure) nil)
                         (attach 'line-contains-vertically line measure)
                         (pop measures))
                       (progn
@@ -156,17 +199,15 @@
                         (if (< (+ (height (box line)) lines-height)
                                page-height)
                           (progn
-                            (setf (bottom (box line)) (- page-height lines-height))
-                            (incf lines-height (height (box line)))
-                            (attach 'page-contains page line))
-                          (progn
-                            (new-page)
+                            (setf (page line) nil)
                             (attach 'page-contains page line)
-                            (setf lines-height (+ 20 #|title header|# (height (box line)))
-                                  page-height  (height (box page))
-                                  (bottom (box line)) (- page-height lines-height)))))))))))))
-
-
+                            (compute-box-size line partition)
+                            (incf lines-height (height (box line)))
+                            (setf (bottom (box line)) (- page-height lines-height))
+                            (format *trace-output* "bottom line = ~S / ~S~%"
+                                    (coerce (- page-height lines-height) 'double-float)
+                                    (bottom (box line))))
+                          (new-page)))))))))))
 
 
 ;;;; THE END ;;;;

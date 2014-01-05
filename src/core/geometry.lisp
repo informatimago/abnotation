@@ -612,4 +612,39 @@ Stack up or down the ``OBJECTS`` based on the position of the first one.
 (defun pile-down (objects &key (align :left) (spacing 0))
   (stack-objects objects :direction :down :align align :spacing spacing))
 
+;;;---------------------------------------------------------------------
+
+
+(defun test/tlbr/rect ()
+  (let ((r (rect 0 0 0 0)))
+    (setf (bottom r) 24)
+    (assert (= (bottom r) 24))
+    (setf (left r) 24)
+    (assert (= (left r) 24))
+    (setf (top r) 42)
+    (assert (= (top r) 42))
+    (setf (right r) 42)
+    (assert (= (right r) 42)))
+  :success)
+
+(test/tlbr/rect)
+
+
+
+(defmethod print-object ((p point) stream)
+  (format stream "(point ~,2F ~,2F)" (point-x p) (point-y p))
+  p)
+
+(defmethod print-object ((s size) stream)
+  (format stream "(size ~,2F ~,2F)" (size-width s) (size-height s))
+  s)
+
+(defmethod print-object ((r rect) stream)
+  (format stream "(rect ~,2F ~,2F ~,2F ~,2F)"
+          (rect-x r) (rect-y r)
+          (rect-width r) (rect-height r))
+  r)
+
+
+
 ;;;; THE END ;;;;

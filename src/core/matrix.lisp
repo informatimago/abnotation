@@ -172,12 +172,12 @@
         (A3 (AREF MATRIX 3))
         (A4 (AREF MATRIX 4))
         (A5 (AREF MATRIX 5)))
-    (MAKE-MATRIX (+ (* A0 SX) (* A3 0.0))
-                 (+ (* A1 SX) (* A4 0.0))
-                 (+ (* A2 SX) (* A5 0.0) 0.0)
-                 (+ (* A0 0.0) (* A3 SY))
-                 (+ (* A1 0.0) (* A4 SY))
-                 (+ (* A2 0.0) (* A5 SY) 0.0))))
+    (MAKE-MATRIX (* A0 SX)
+                 (* A1 SX)
+                 (* A2 SX)
+                 (* A3 SY)
+                 (* A4 SY)
+                 (* A5 SY))))
 
 
 (defun matrix-translate (matrix tx ty)
@@ -190,12 +190,12 @@
         (A3 (AREF MATRIX 3))
         (A4 (AREF MATRIX 4))
         (A5 (AREF MATRIX 5)))
-    (MAKE-MATRIX (+ (* A0 1.0) (* A3 0.0))
-                 (+ (* A1 1.0) (* A4 0.0))
-                 (+ (* A2 1.0) (* A5 0.0) TX)
-                 (+ (* A0 0.0) (* A3 1.0))
-                 (+ (* A1 0.0) (* A4 1.0))
-                 (+ (* A2 0.0) (* A5 1.0) TY))))
+    (MAKE-MATRIX A0
+                 A1
+                 (+ A2 TX)
+                 A3
+                 A4
+                 (+ A5 TY))))
 
 
 (defun matrix-rotate    (matrix radians)
@@ -245,11 +245,20 @@
         (a3 (aref matrix 3))
         (a4 (aref matrix 4))
         (a5 (aref matrix 5)))
-   (point (+ (* dx a0) (* dy a1))
+    (size (+ (* dx a0) (* dy a1))
           (+ (* dx a3) (* dy a4)))))
 
-
-
+(defun transform-rect (matrix x y w h)
+  (let ((a0 (aref matrix 0))
+        (a1 (aref matrix 1))
+        (a2 (aref matrix 2))
+        (a3 (aref matrix 3))
+        (a4 (aref matrix 4))
+        (a5 (aref matrix 5)))
+    (rect (+ (* x a0) (* y a1) a2)
+          (+ (* x a3) (* y a4) a5)
+          (+ (* w a0) (* h a1))
+          (+ (* w a3) (* h a4)))))
 
 
 (defconstant +epsilon+ 1e-12)

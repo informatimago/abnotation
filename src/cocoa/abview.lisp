@@ -6,8 +6,8 @@
          slots: ((partition         :initarg :partition
                                     :initform nil
                                     :accessor partition)
-                 (page              :initform nil
-                                    :accessor page)
+                 (page-number       :initform 0
+                                    :accessor page-number)
                  (layout            :initform nil
                                     :accessor layout)
                  (paper-format      :initarg :paper-format
@@ -43,9 +43,14 @@
 
 
 
-(defmethod (setf partition) :after (partition (self ab-view))
-  (setf (page self) (elt (pages partition) 0)))
+(defmethod (setf partition) :after (partition (view ab-view))
+  (setf (page-number view) (max (page-number view) (length (pages partition)))))
 
+(defmethod page ((view ab-view))
+  (or (nth (page-number view) (pages (partition view)))
+      (progn
+        (setf (page-number view) 0)
+        (first (pages (partition view))))))
 
 (defmethod draw ((view ab-view) &optional dirty-rect)
   (let ((*path-class* 'cocoa-bezier-path)
@@ -53,17 +58,7 @@
     (when partition
       (let ((page (page view)))
         (when page
-          (draw page dirty-rect)))))
-  (let* ((*path-class* 'cocoa-bezier-path)
-         (p (create-path)))
-    (assert (typep p 'cocoa-bezier-path))
-    
-    (move-to-coordinates p nil 20 20)
-    (curve-to-coordinates p nil 20 190 190 190 190 20)
-    (close-subpath p)
-    [(bezier-path p) stroke])
-  (draw (rect 10 10 190 277))
-  (values))
+          (draw page dirty-rect))))))
 
 
 
