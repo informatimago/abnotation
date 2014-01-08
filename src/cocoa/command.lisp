@@ -116,4 +116,103 @@ OPTIONS: from one to tree key string options. The strings are used as
 
 
 
+
+(defun load-midi-file (path)
+  "load a MIDI file [menu, (drag-and-drop midi-file)]"
+  #|->partition|#)
+
+(defun write-midi-file (partition path)
+  "export a MIDI file [menu]")
+
+(defun load-partition-file (path)
+  "load an abnotation partition file [menu, (drag-and-drop midi-file)]"
+  #|->partition|#)
+
+(defun write-partition-file (partition path)
+  "save an abnotation partition file [menu]")
+
+  
+
+(defgeneric select (element)
+  (:documentation "Select an element.
+- sélections [graphique (simple clic, shift-click, command-click), & bindings]
+  + annotation (texte ou image)
+  + note
+    * head
+    * accidental
+    * beam
+    * dynamic
+    * tenue
+  + cluster
+    idem note
+  + measure
+  + line
+  + page
+  + partition
+"))
+
+
+;; - sur l'objet sélectionné:
+;;   + ajout d'une annotation (image ou texte) (tous sauf annotations elles mêmes) [menu].
+;;   + suppression de l'annotation [menu].
+;;   + ajustement de la position (line, ledger, staff, clef, sound, beam,
+;;     dynamic, tenue, head, accidental, annotation) [click-and-drag, ou saisie offset (+/-9.99 mm)]
+;;   + cut de l'objet [menu].
+;;   + copy de l'objet [menu].
+;;   + delete de l'objet [menu].
+;;   + paste of an object -> insertion [menu].
+;;   + paste of an image or text -> add/replace the annotation [menu].
+
+
+
+;; - sur la partitions (paramètres globaux):
+;;   + changement de la taille du papier et orientation. [menu]
+;;   + changement de la hauteur des portées (3 mm, 5 mm, 7 mm). [menu]
+;;   + changement du nombre de portées par ligne et clefs. [menu]
+;;   + changement de la police des numéros de page. [menu]
+;;   + changement de la police des numéros de ligne. [menu]
+;;   + changement de la police des numéros de mesure. [menu]
+;;   + édition des métadonnées (titre, auteur, annotation).
+
+
+;; - sur measure(s) sélectionnée(s):
+;;   + ajustement de la largeur (measure) [click-and-drag on corner, ou saisie durée (9.99 s)].
+;;   + changement du tempo second/measure (ajustement de la largeur automatique).
+;;   + ajustement de la position du numéro.
+;; 
+;; - édition de notes:
+;; 
+;;   + click-and-drag on the head to change the pitch and start of the
+;;     note. (if multiple selection, transpose or offset all the
+;;     selection). This may add or remove accidentals.
+;; 
+;;   + click-and-drag on the right part of the beam to change the duration of the note.
+;;     (variation to shift the following notes or not). This may add or remove a tenue.
+;; 
+;;   + add a dynamic [popup-menu]
+;; 
+;;   + click-and-drag on the dynamic to change it.
+
+;; - insertion d'une page
+;; - insertion d'une ligne
+;; - insertiotn d'une mesure
+;; - insertion d'une note (en cluster ou en séquence)
+
+;; - selection of an image annotation
+;; - cut/copy/paste/delete of the image annotation
+;; - selection of a text annotation
+;; - edition of rich text annotation (font).
+
+
+;; Other features
+;; --------------------------------------------------------------------------------
+;; 
+;; - get a histogram of the dynamics
+;; - specify the ranges for the various dynamics annotations: 𝆏𝆏𝆏 𝆏𝆏 𝆏 𝆐𝆑 𝆐𝆑 𝆑 𝆑𝆑 𝆑𝆑𝆑
+;; - selection of digits or letters to annotate the dynamics.
+;; - identification of ranges of monotone dynamics changes.   𝆒   𝆓
+;; 
+;; - representation of the partition as an editable, textual, lispy structure.
+
+
 ;;;; THE END ;;;;

@@ -42,7 +42,7 @@
 
 ;; measure-box.width  = (or manual-adjustment (max (* tempo measure-speed) (max sound-box.width)))
 ;; measure-box.height = (or manual-adjustment (max sound-box.height))
-;; 
+;;
 ;; line-box.width       = (- printable-area.width left-margin manual-adjustment)
 ;; (accumulate (measure) (< (sum measure-box.width) line-box.width))
 ;; top-ledger.top       = (reduce max  (measures line) :key measure.top)
