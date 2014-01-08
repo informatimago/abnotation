@@ -51,7 +51,7 @@
 ;; (accumulate (line) (< (sum (+ interline line.height)) page.height))
 
 
-(defgeneric compute-bounds (element)
+(defgeneric compute-box-size (element)
   (:documentation "Compute the size of the element.
 cluster <- head, accidentals, tenue, duration
 measure <- tempo staff (line)
@@ -60,13 +60,16 @@ page <- paper size
 "))
 
 (defgeneric layout (element)
-  (:documentation "Compute the position of the elements relative to its container:
-note -> measure
+  (:documentation "Compute the position of the element relative to its container:
+sounds (notes or clusters) also create the associated elements (head, accidental, & segments).
+sound -> measure
 measure -> line
 line -> page
 page ->
 "))
 
+(defmethod layout :before (element)
+  (compute-box-size element))
 
 (defgeneric move-over (element)
   (:documentation "Adjust the associations of the element according to required layout for the new attribute values.
@@ -81,7 +84,7 @@ page ->
 
 (defgeneric draw  (element &optional clip-rect)
   (:documentation "Draw the element (at least the part within the clip-rect).
-Drawing is done by creating and stroking or filling bezier paths.")
+Drawing is done by creating and stroking or filling bezier paths."))
 
 
 #|
@@ -187,15 +190,105 @@ C- spreading measures over to lines and lines to pages.
 ;; ---
 ;; ---
 
-(defmethod compute-box-size ((band band) (partition partition))
+
+
+(defmethod compute-box-size ((head head))
+  (let* ((partition (partition (page (line (measure head)))))
+         (height    (lane-height partition))
+         (excentricity 1.2))
+    (setf (box-size head) (size (* excentricity height) height))))
+
+(defmethod layout ((head head))
+  (let* ((measure     (measure head))
+         (partition   (partition (page (line measure))))
+         (lane-height (lane-height partition))
+         (lane        (lane (pitch (sound head)))))
+    (setf (box-origin head) (point (- (start-time (sound head))
+                                      (start-time measure)
+                                      (width (box head)))
+                                   (* 0.5 lane lane-height)))))
+
+
+
+(defmethod compute-box-size ((accidental accidental))
+  (let* ((partition (partition (page (line (measure head)))))
+         (height    (lane-height partition))
+         (excentricity 1.2))
+    (setf (box-size head) (size (* excentricity height) (* excentricity height)))))
+
+(defmethod layout ((accidental accidental))
+  (let* ((measure     (measure head))
+         (partition   (partition (page (line measure))))
+         (lane-height (lane-height partition))
+         (lane        (lane (pitch (sound head)))))
+    (setf (box-origin head) (point (- (start-time (sound head))
+                                      (start-time measure))
+                                   (* 0.5 lane lane-height)))))
+
+
+
+(defun segment-width (segment)
+  (let ((measure (measure segment)))
+    (cond
+      ((first-segment-p segment measure)
+       (- (end-time measure) (start-time segment)))
+      ((last-segment-p segment measure)
+       (- (end-time segment) (start-time measure)))
+      (t
+       (measure-duration measure)))))
+
+(defun tenue-height (segment)
+  "height of a tenue line (in millimeter)."
+  ;; TODO: should depend on the height of the staves
+  0.1)
+
+(defun dynamic-height (segment)
+  "height of a dynamic (in millimeter)."
+  ;; TODO: should depend on the height of the staves
+  3.0)
+
+(defun beam-height (segment)
+  "height of a beam line (in millimeter)."
+  ;; TODO: should depend on the height of the staves
+  0.5)
+
+;; beam dynamic<> and tenue, and annotation, could span several measures/lines/pages.
+(defmethod compute-box-size ((segment tenue-segment))
+  (setf (box-size segment) (size (segment-width segment)
+                                 (tenue-height segment))))
+
+(defmethod compute-box-size ((segment dynamic-segment))
+  (setf (box-size segment) (size (segment-width segment)
+                                 (dynamic-height segment))))
+
+(defmethod compute-box-size ((segment beam-segment))
+  (setf (box-size segment) (size (segment-width segment)
+                                 (beam-height segment))))
+
+
+
+
+(defmethod compute-box-size ((measure measure))
+  (let* ((partition     (partition (page (line measure))))
+         (measure-speed (default-measure-speed partition))
+         (tempo         (tempo measure))
+         (duration      (measure-duration tempo))
+         (width         (* measure-speed duration)))
+    (setf (box-size measure) (size width (* 58/8 (staff-height partition))))))
+
+  
+(defmethod compute-box-size ((band band))
   (let* ((line        (line band))
+         (partition   (partition (page line)))
          (lane-height (/ (staff-height partition) 4))
          (lanes       (- (maximum-lane band) (minimum-lane band) -1))
          (height      (* 1/2 (1+ lanes) lane-height)))
     (setf (box-size band) (size (width (box line)) height))))
 
-(defmethod compute-box-size ((line line) (partition partition))
-  (let* ((lane-height (/ (staff-height partition) 4))
+ 
+(defmethod compute-box-size ((line line))
+  (let* ((partition   (partition (page line)))
+         (lane-height (/ (staff-height partition) 4))
          (lanes       (- (maximum-lane (first (last (bands line))))
                          (minimum-lane (first (bands line)))
                          -1))
@@ -211,7 +304,14 @@ C- spreading measures over to lines and lines to pages.
     (setf (box-size line) (size (width (box (page line))) height))))
 
 
+(defmethod compute-box-size ((page page))
+  (setf (box page) (paper-printable-area (partition page))))  
+  
 
+
+
+
+  
 (defun remove-pages (partition)
   (dolist (page (pages partition))
     (dolist (line (lines page))

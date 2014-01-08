@@ -75,8 +75,13 @@
 (defclass graphic-element (element)
   ((box :initarg :box :initform (rect 0 0 0 0) :accessor box :type rect)))
 
-(defgeneric (setf box-size) (new-size graphic-element))
-(defgeneric compute-box-size (element partition))
+(defgeneric (setf box-size)   (new-size graphic-element)
+  (:method (new-size (element graphic-element))
+    (setf (rect-size (box element)) new-size)))
+
+(defgeneric (setf box-origin) (new-position graphic-element)
+  (:method (new-position (element graphic-element))
+    (setf (rect-origin (box element)) new-position)))
 
 
 (defclass offsetable-element (graphic-element)
@@ -100,7 +105,7 @@
         :documentation "RTF string.")))
 
 
-(define-association annotation
+(define-association annotate
   ((element :type element
             :multiplicity #|1|# 0-1
             :kind :aggregation)
@@ -109,9 +114,12 @@
 
 
 (defclass sound (element)
-  ((start-time :initarg :start-time :accessor start-time )
+  ((start-time :initarg :start-time :accessor start-time)
    (duration  :initarg :duration :accessor duration)
    (dynamic :initarg :dynamic :accessor dynamic :initform :mf)))
+
+(defmethod end-time ((sound sound))
+  (+ (start-time sound) (duration sound)))
 
 (defclass note (sound)
   ((pitch :initarg :pitch :accessor pitch)))
@@ -148,6 +156,7 @@
          :multiplicity #|1|# 0-1)))
 
 ;; beam dynamic<> and tenue, and annotation, could span several measures/lines/pages.
+
 (defclass beam-segment (offsetable-element)
   ())
 (defclass dynamic-segment (offsetable-element)
@@ -161,12 +170,14 @@
                   :ordered t)
    (sound :type sound
           :multiplicity #|1|# 0-1)))
+
 (define-association sound-dynamics
   ((dynamic-segments :type dynamic-segment
                      :multiplicity 0-*
                      :ordered t)
    (sound :type sound
           :multiplicity #|1|# 0-1)))
+
 (define-association sound-tenues
   ((tenue-segments :type tenue-segment
                    :multiplicity 0-*
@@ -175,6 +186,23 @@
           :multiplicity #|1-*|# 0-*))
   (:documentation "When a tenue has several sounds, then it's a ------ tenue.
 Otherwise it's a - - - - tenue."))
+
+
+(defun first-segment-p (segment)
+  (let ((measure (measure segment))
+        (sound (sound segment)))
+    (time-in-measure-p (start-time sound) measure)))
+
+(defun intermediate-segment-p (segment)
+  (let ((measure (measure segment))
+        (sound (sound segment)))
+    (and (not (time-in-measure-p (start-time sound) measure))
+         (not (time-in-measure-p (end-time   sound) measure)))))
+
+(defun last-segment-p (segment)
+  (let ((measure (measure segment))
+        (sound (sound segment)))
+    (time-in-measure-p (end-time sound) measure)))
 
 
 (defclass numbered ()
@@ -214,7 +242,7 @@ Otherwise it's a - - - - tenue."))
                (setf  (slot-value element 'number-annotation)
                       (let ((number-text (make-instance 'text :rtf (format nil *number-annotation-rtf-format*
                                                                            (number element)))))
-                        (compute-box-size number-text nil)
+                        (compute-box-size number-text)
                         number-text)))))
 
 (defgeneric renumber (element)
@@ -229,6 +257,9 @@ Otherwise it's a - - - - tenue."))
 
 (defmethod end-time ((measure measure))
   (+ (start-time measure) (measure-duration (tempo measure))))
+
+(defmethod time-in-measure-p (time (measure measure))
+  (and (<= (start-time measure) time (end-time measure))))
 
 (defmethod (setf box-size) (new-size (measure measure))
   (let ((width (if (slot-boundp measure 'adjusted-width)
@@ -254,9 +285,12 @@ segments, one on each successive measure."))
 (defclass line (offsetable-element numbered)
   ())
 
+(defun lane-height (partition)
+  (/ (staff-height partition) 8))
+
 (defmethod (setf box) :after (new-box (line line))
   (let ((y 0)
-        (lane-height (/ (staff-height (partition (page line))) 8)))
+        (lane-height (lane-height (partition (page line)))))
    (dolist (band (bands line))
      (setf (box band) (rect 0 y (width new-box)
                             (* (- (maximum-lane band) (minimum-lane band) -1)
@@ -439,10 +473,10 @@ segments, one on each successive measure."))
           :ordered t)))
 
 (defmethod did-link ((association (eql 'partition-contains)) (partition partition) (page page))
-  (setf (box page) (paper-printable-area partition)))
+  (compute-box-size page))
 
 (defmethod did-link ((association (eql 'page-contains)) (page page) (line line))
-  (compute-box-size line (partition page)))
+  (compute-box-size line))
 
 (defgeneric title-annotation (element)
   (:method ((page page))
@@ -458,7 +492,8 @@ segments, one on each successive measure."))
                                       :rtf (format nil *title-annotation-rtf-format*
                                                    (title partition)
                                                    (author partition)))))
-                       (compute-box-size title partition)
+                       (attach 'annotate partition title)
+                       (compute-box-size title)
                        title)))))
 
 (defclass tempo (element)
