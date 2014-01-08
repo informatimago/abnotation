@@ -33,17 +33,27 @@
 ;;;;**************************************************************************
 
 (in-package "ABNOTATION.COCOA")
-
+(objcl:set-objective-cl-syntax)
 
 (defvar *window* nil)
 
+(defun check-prerequisites ()
+  (when (oclo:nullp [NSFont fontWithName:(to-objc "Maestro")
+                            size:(coordinate 12.0)])
+    (ask-user "Missing font"
+              "The required font \"Maestro\" is not installed. Please install it and try again."
+              :quit "Quit")
+    (throw 'grandes-gazongues 1)))
+
 (defun main ()
-  (setf *path-class* 'cocoa-bezier-path)
-  (when *window*
-    [*window* close])
-  (setf *window*  (create-abwindow (make-rect :x 10 :y 100 :width 1000 :height 700)))
-  [*window* makeKeyAndOrderFront:*window*]
-  *window*)
+  (catch 'grandes-gazongues
+    (check-prerequisites)
+    (setf *path-class* 'cocoa-bezier-path)
+    (when *window*
+      [*window* close])
+    (setf *window*  (create-abwindow (make-rect :x 10 :y 100 :width 1000 :height 700)))
+    [*window* makeKeyAndOrderFront:*window*]
+    *window*))
 
 ;; (format *window* "~{~A~%~}" (loop for i below 20 collect i))
 ;; [*window* orderOut:*window*]

@@ -51,6 +51,87 @@
 ;; (accumulate (line) (< (sum (+ interline line.height)) page.height))
 
 
+(defgeneric compute-bounds (element)
+  (:documentation "Compute the size of the element.
+cluster <- head, accidentals, tenue, duration
+measure <- tempo staff (line)
+line <- staff page
+page <- paper size
+"))
+
+(defgeneric layout (element)
+  (:documentation "Compute the position of the elements relative to its container:
+note -> measure
+measure -> line
+line -> page
+page ->
+"))
+
+
+(defgeneric move-over (element)
+  (:documentation "Adjust the associations of the element according to required layout for the new attribute values.
+cluster -> move over to another measure (perhaps add new measures).
+measure -> move over to another line (perhaps add new lines).
+line -> move over to another page (perhaps add new pages).
+page ->
+"))
+
+(defgeneric did-change (element)
+  (:documentation "Indicates the UI that the model element changed and needs to be redisplayed (if visible)."))
+
+(defgeneric draw  (element &optional clip-rect)
+  (:documentation "Draw the element (at least the part within the clip-rect).
+Drawing is done by creating and stroking or filling bezier paths.")
+
+
+#|
+
+A- drawing notes in a measure.
+------------------------------------------------------------
+
+Each measure can have its own tempo: when editing notes in a measure,
+we can put this edited measure in its own tempo and adjust it while
+notes are added/removed/changed, and when edition is complete, we can
+re-adjust the tempo and recompute the distribution of notes over the
+measures.
+
+Changes to the model should send a message to the controler/view so
+that display is updated when the measure is visible.
+
+
+A1: compute the measure duration (tempo)
+- some notes can spread over to the following measures (usual case),
+- some notes can be marked to stay within the measure (while editing).
+
+
+A2: layout of notes is absolute, given the start and duration of the
+measure, and the data of the note.
+
+
+
+B- spreading notes over to measures.
+------------------------------------------------------------
+
+Starting from virgin state: DONE.
+
+But we need to adjust also from an existing set of measures.  
+
+Changes:
+
+- move notes (forward backward time interval) ==> reassign notes to
+  measures.
+
+- change the tempo of a measure => change the start time of the
+  following measures ==> reassign notes to measures.
+
+
+
+C- spreading measures over to lines and lines to pages.
+------------------------------------------------------------
+
+
+|#
+
 
 ;; (defgeneric layout (object children))
 ;; 
@@ -174,7 +255,7 @@
                          (setf page-height  (height (box page))
                                lines-height (+ 20 #|title header|# (height (box line)))
                                (bottom (box line)) (- page-height lines-height))
-                         (format *trace-output* "bottom line = ~S / ~S~%"
+                         (format *trace-output* "bottom line = ~S =/= ~S~%"
                                  (coerce (- page-height lines-height) 'double-float)
                                  (bottom (box line)))))
         (new-line)
@@ -186,28 +267,26 @@
               :with measures-width = 10 #|(width (clef line))|#
               :while measures
               :do (let ((measure (first measures)))
-                    (if (< (+ (width (box measure)) measures-width)
-                           line-width)
-                      (progn
-                        (setf (left (box measure)) measures-width)
-                        (incf measures-width (width (box measure)))
-                        (setf (line measure) nil)
-                        (attach 'line-contains-vertically line measure)
-                        (pop measures))
-                      (progn
-                        (new-line)
-                        (if (< (+ (height (box line)) lines-height)
-                               page-height)
+                    (when (<= line-width (+ (width (box measure)) measures-width))
+                      (new-line)
+                      (if (< (+ (height (box line)) lines-height)
+                             page-height)
                           (progn
                             (setf (page line) nil)
                             (attach 'page-contains page line)
                             (compute-box-size line partition)
                             (incf lines-height (height (box line)))
                             (setf (bottom (box line)) (- page-height lines-height))
-                            (format *trace-output* "bottom line = ~S / ~S~%"
+                            (format *trace-output* "bottom line = ~S =?= ~S~%"
                                     (coerce (- page-height lines-height) 'double-float)
                                     (bottom (box line))))
-                          (new-page)))))))))))
+                          (new-page)))
+                    ;; attach measure to line:
+                    (setf (left (box measure)) measures-width)
+                    (incf measures-width (width (box measure)))
+                    (setf (line measure) nil)
+                    (attach 'line-contains-vertically line measure)
+                    (pop measures))))))))
 
 
 ;;;; THE END ;;;;

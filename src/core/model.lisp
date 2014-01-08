@@ -73,7 +73,7 @@
 
 
 (defclass graphic-element (element)
-  ((box :initarg :box :accessor box :type rect)))
+  ((box :initarg :box :initform (rect 0 0 0 0) :accessor box :type rect)))
 
 (defgeneric (setf box-size) (new-size graphic-element))
 (defgeneric compute-box-size (element partition))

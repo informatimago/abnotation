@@ -116,10 +116,13 @@
 
 (defconstant +degree+ (/ pi 180))
 (defmethod draw ((element head) &optional clip-rect)
-  (format *trace-output* "Drawing head ~S~%" (box element))
-  (fill-path (elliptical-arc (center-x box) (center-y box)
-                             (width box) (height box)
-                             (* 10 +degree+) 0.0d0 2pi 2 1.0d-6 *transform*)))
+  (declare (ignore clip-rect))
+  (let ((box (box element)))
+    (format *trace-output* "Drawing head ~S~%" (box element))
+    (fill-path (elliptical-arc (rect-center-x box) (rect-center-y box)
+                               (width box) (height box)
+                               (* 10 +degree+) 0.0d0 2pi 2 1.0d-6 *transform*))))
+
 
 (defmethod draw ((element accidental) &optional clip-rect)
   (format *trace-output* "Drawing accidental ~S~%" (box element))
