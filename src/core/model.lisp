@@ -157,12 +157,22 @@
 
 ;; beam dynamic<> and tenue, and annotation, could span several measures/lines/pages.
 
-(defclass beam-segment (offsetable-element)
+
+(defclass segment (offsetable-element)
   ())
-(defclass dynamic-segment (offsetable-element)
+
+(defclass beam-segment (segment)
   ())
-(defclass tenue-segment (offsetable-element)
+(defclass dynamic-segment (segment)
   ())
+(defclass tenue-segment (segment)
+  ())
+
+(define-association measure-segments
+    ((measure :type measure
+              :multiplicity #|1|# 0-1)
+     (segments :type segment
+               :multiplicity 0-*)))
 
 (define-association sound-beams
   ((beam-segments :type beam-segment
@@ -255,6 +265,8 @@ Otherwise it's a - - - - tenue."))
    (adjusted-width :initarg :adjusted-width :accessor adjusted-width :type coordinate)
    (front-kerning  :initarg :front-kerning  :accessor front-kerning  :type coordinate)))
 
+
+
 (defmethod end-time ((measure measure))
   (+ (start-time measure) (measure-duration (tempo measure))))
 
@@ -272,13 +284,13 @@ Otherwise it's a - - - - tenue."))
     new-size))
 
 (define-association measure-contains
-  ((measures :type measure
-             :multiplicity #|1-*|# 0-*)
+  ((measure :type measure
+             :multiplicity #|1|# 0-1)
    (sounds :type sound
            :multiplicity 0-*
            :ordered t))
   (:documentation "A sound can span over several measures.  The head
-is on the first one, but the heam, dynamic and tenue can have several
+is on the first one, but the beam, dynamic and tenue can have several
 segments, one on each successive measure."))
 
 
@@ -492,7 +504,7 @@ segments, one on each successive measure."))
                                       :rtf (format nil *title-annotation-rtf-format*
                                                    (title partition)
                                                    (author partition)))))
-                       (attach 'annotate partition title)
+                       (attach 'annotate (first (pages partition)) title)
                        (compute-box-size title)
                        title)))))
 
@@ -518,6 +530,29 @@ segments, one on each successive measure."))
   (declare (ignore new-tempo))
   (setf (needs-saving partition) t))
 
+
+(define-association measure-sequence
+  ((previous :type measure
+             :multiplicity 0-1)
+   (next     :type measure
+             :multiplicity 0-1))
+  (:documentation "The measures are ordered in a doubly-linked list."))
+
+(define-association line-sequence
+  ((previous :tyoe line
+             :multiplicity 0-1)
+   (next     :type line
+             :multiplicity 0-1))
+  (:documentation "The lines are ordered in a doubly-linked list."))
+
+(define-association page-sequence
+  ((previous :tyoe page
+             :multiplicity 0-1)
+   (next     :type page
+             :multiplicity 0-1))
+  (:documentation "The page are ordered in a doubly-linked list."))
+
+;; (defmethod container (()))
 
 
 (defmacro define-print-object (class &rest slots)

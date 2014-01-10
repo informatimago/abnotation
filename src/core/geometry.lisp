@@ -186,7 +186,8 @@ u2 = - det[v0,v1]/det[v1,v2]
 (deftype coordinate ()
   (or (and (find-package "NS") (find-symbol "CGFLOAT" "NS"))  ;; can be 32-bit or 64-bit float.
       'single-float))
-(setf *read-default-float-format* 'coordinate)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *read-default-float-format* 'coordinate))
 (defun coordinate (value) (coerce value 'coordinate))
 (declaim (inline coordinate))
 

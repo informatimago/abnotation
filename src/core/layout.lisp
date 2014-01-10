@@ -193,13 +193,13 @@ C- spreading measures over to lines and lines to pages.
 
 
 (defmethod compute-box-size ((head head))
-  (let* ((partition (partition (page (line (measure head)))))
+  (let* ((partition (partition (page (line (measure (sound head))))))
          (height    (lane-height partition))
          (excentricity 1.2))
     (setf (box-size head) (size (* excentricity height) height))))
 
 (defmethod layout ((head head))
-  (let* ((measure     (measure head))
+  (let* ((measure     (measure (sound head)))
          (partition   (partition (page (line measure))))
          (lane-height (lane-height partition))
          (lane        (lane (pitch (sound head)))))
@@ -209,22 +209,24 @@ C- spreading measures over to lines and lines to pages.
                                    (* 0.5 lane lane-height)))))
 
 
+(defun lane-bottom (pitch partition)
+  "The bottom of a lane at pitch in a line of the partition."
+  (let ((lane-height (lane-height partition))
+        (lane        (lane pitch)))
+   (* 0.5 lane lane-height)))
 
 (defmethod compute-box-size ((accidental accidental))
-  (let* ((partition (partition (page (line (measure head)))))
+  (let* ((partition (partition (page (line (measure (sound head))))))
          (height    (lane-height partition))
          (excentricity 1.2))
     (setf (box-size head) (size (* excentricity height) (* excentricity height)))))
 
 (defmethod layout ((accidental accidental))
-  (let* ((measure     (measure head))
-         (partition   (partition (page (line measure))))
-         (lane-height (lane-height partition))
-         (lane        (lane (pitch (sound head)))))
+  (let* ((measure     (measure (sound head)))
+         (partition   (partition (page (line measure)))))
     (setf (box-origin head) (point (- (start-time (sound head))
                                       (start-time measure))
-                                   (* 0.5 lane lane-height)))))
-
+                                   (lane-bottom (pitch (sound head)) partition)))))
 
 
 (defun segment-width (segment)
@@ -253,18 +255,46 @@ C- spreading measures over to lines and lines to pages.
   0.5)
 
 ;; beam dynamic<> and tenue, and annotation, could span several measures/lines/pages.
-(defmethod compute-box-size ((segment tenue-segment))
-  (setf (box-size segment) (size (segment-width segment)
-                                 (tenue-height segment))))
 
-(defmethod compute-box-size ((segment dynamic-segment))
-  (setf (box-size segment) (size (segment-width segment)
-                                 (dynamic-height segment))))
+(defun tenue-offset (partition)
+  "Position of the tenue above the maximum lane."
+  ;; TODO: should depend on the height of the staves
+  0.2)
 
 (defmethod compute-box-size ((segment beam-segment))
   (setf (box-size segment) (size (segment-width segment)
                                  (beam-height segment))))
 
+(defmethod layout ((segment tenue-segment))
+  (let* ((line (line (measure segment)))
+         (partition (partition (page line))))
+   (setf (box-origin segment) (point (segment-width segment)
+                                     (+ (lane-bottom (maximum-lane line) partition)
+                                        (lane-height partition)
+                                        ;; TODO: tenue offsets depend on the sound, they can be configured manually.
+                                        (tenue-offset partition))))))
+
+
+(defmethod compute-box-size ((segment tenue-segment))
+  (setf (box-size segment) (size (segment-width segment)
+                                 (tenue-height segment))))
+
+(defmethod layout ((segment tenue-segment))
+  (let* ((line (line (measure segment)))
+         (partition (partition (page line))))
+   (setf (box-origin segment) (point (segment-width segment)
+                                     (+ (lane-bottom (pitch (sound segment)) partition)
+                                        (* 0.35 (lane-height partition)))))))
+
+
+(defmethod compute-box-size ((segment dynamic-segment))
+  (setf (box-size segment) (size (segment-width segment)
+                                 (dynamic-height segment))))
+
+(defmethod layout ((segment dynamic-segment))
+  (setf (box-origin segment) (point (segment-width segment)
+                                    (- (lane-bottom 0 partition)
+                                       (height (box segment))))))
 
 
 
@@ -275,6 +305,10 @@ C- spreading measures over to lines and lines to pages.
          (duration      (measure-duration tempo))
          (width         (* measure-speed duration)))
     (setf (box-size measure) (size width (* 58/8 (staff-height partition))))))
+
+(defmethod layout ((measure mesaure))
+  (setf (box-origin measure)
+        () (point 0 0)))
 
   
 (defmethod compute-box-size ((band band))
@@ -351,7 +385,7 @@ C- spreading measures over to lines and lines to pages.
                          (push page pages)
                          (attach 'partition-contains partition page)
                          (attach 'page-contains page line)
-                         (compute-box-size line partition)
+                         (compute-box-size line)
                          (setf page-height  (height (box page))
                                lines-height (+ 20 #|title header|# (height (box line)))
                                (bottom (box line)) (- page-height lines-height))
@@ -374,7 +408,7 @@ C- spreading measures over to lines and lines to pages.
                           (progn
                             (setf (page line) nil)
                             (attach 'page-contains page line)
-                            (compute-box-size line partition)
+                            (compute-box-size line)
                             (incf lines-height (height (box line)))
                             (setf (bottom (box line)) (- page-height lines-height))
                             (format *trace-output* "bottom line = ~S =?= ~S~%"
