@@ -565,7 +565,7 @@ specified by the midi EVENT.
               (loop ; fill a measure
                 :for note = (first notes)
                 :while (and note (< (note-on-time note) end-time))
-                :do (attach 'measure-contains measure (make-note (pop notes))))
+                :do (attach 'measure-contains-sounds measure (make-note (pop notes))))
               (setf start-time end-time)
               (when (and next-tempo-change (<= next-tempo-change start-time))
                 (setf current-measure-duration (cdr (pop measure-durations))

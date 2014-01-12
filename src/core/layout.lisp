@@ -122,10 +122,10 @@ But we need to adjust also from an existing set of measures.
 Changes:
 
 - move notes (forward backward time interval) ==> reassign notes to
-  measures.
+measures.
 
 - change the tempo of a measure => change the start time of the
-  following measures ==> reassign notes to measures.
+following measures ==> reassign notes to measures.
 
 
 
@@ -203,17 +203,19 @@ C- spreading measures over to lines and lines to pages.
          (partition   (partition (page (line measure))))
          (lane-height (lane-height partition))
          (lane        (lane (pitch (sound head)))))
-    (setf (box-origin head) (point (- (start-time (sound head))
-                                      (start-time measure)
-                                      (width (box head)))
-                                   (* 0.5 lane lane-height)))))
+    (setf (box-origin head)
+          (vector+ (point (- (start-time (sound head))
+                             (start-time measure)
+                             (width (box head)))
+                          (* 0.5 lane lane-height))
+                   (offset head)))))
 
 
 (defun lane-bottom (pitch partition)
   "The bottom of a lane at pitch in a line of the partition."
   (let ((lane-height (lane-height partition))
         (lane        (lane pitch)))
-   (* 0.5 lane lane-height)))
+    (* 0.5 lane lane-height)))
 
 (defmethod compute-box-size ((accidental accidental))
   (let* ((partition (partition (page (line (measure (sound head))))))
@@ -224,9 +226,11 @@ C- spreading measures over to lines and lines to pages.
 (defmethod layout ((accidental accidental))
   (let* ((measure     (measure (sound head)))
          (partition   (partition (page (line measure)))))
-    (setf (box-origin head) (point (- (start-time (sound head))
-                                      (start-time measure))
-                                   (lane-bottom (pitch (sound head)) partition)))))
+    (setf (box-origin head)
+          (vector+ (point (- (start-time (sound head))
+                             (start-time measure))
+                          (lane-bottom (pitch (sound head)) partition))
+                   (offset accidental)))))
 
 
 (defun segment-width (segment)
@@ -268,11 +272,13 @@ C- spreading measures over to lines and lines to pages.
 (defmethod layout ((segment tenue-segment))
   (let* ((line (line (measure segment)))
          (partition (partition (page line))))
-   (setf (box-origin segment) (point (segment-width segment)
-                                     (+ (lane-bottom (maximum-lane line) partition)
-                                        (lane-height partition)
-                                        ;; TODO: tenue offsets depend on the sound, they can be configured manually.
-                                        (tenue-offset partition))))))
+    (setf (box-origin segment)
+          (vector+ (point (segment-width segment)
+                          (+ (lane-bottom (maximum-lane line) partition)
+                             (lane-height partition)
+                             ;; TODO: tenue offsets depend on the sound, they can be configured manually.
+                             (tenue-offset partition)))
+                   (offset segment)))))
 
 
 (defmethod compute-box-size ((segment tenue-segment))
@@ -282,9 +288,11 @@ C- spreading measures over to lines and lines to pages.
 (defmethod layout ((segment tenue-segment))
   (let* ((line (line (measure segment)))
          (partition (partition (page line))))
-   (setf (box-origin segment) (point (segment-width segment)
-                                     (+ (lane-bottom (pitch (sound segment)) partition)
-                                        (* 0.35 (lane-height partition)))))))
+    (setf (box-origin segment)
+          (vector+ (point (segment-width segment)
+                          (+ (lane-bottom (pitch (sound segment)) partition)
+                             (* 0.35 (lane-height partition))))
+                   (offset segment)))))
 
 
 (defmethod compute-box-size ((segment dynamic-segment))
@@ -292,9 +300,11 @@ C- spreading measures over to lines and lines to pages.
                                  (dynamic-height segment))))
 
 (defmethod layout ((segment dynamic-segment))
-  (setf (box-origin segment) (point (segment-width segment)
-                                    (- (lane-bottom 0 partition)
-                                       (height (box segment))))))
+  (setf (box-origin segment)
+        (vector+ (point (segment-width segment)
+                        (- (lane-bottom 0 partition)
+                           (height (box segment))))
+                 (offset segment))))
 
 
 
@@ -306,11 +316,13 @@ C- spreading measures over to lines and lines to pages.
          (width         (* measure-speed duration)))
     (setf (box-size measure) (size width (* 58/8 (staff-height partition))))))
 
-(defmethod layout ((measure mesaure))
+(defmethod layout ((measure measure))
   (setf (box-origin measure)
-        () (point 0 0)))
+        (if (first-element-in-container-p measure)
+            (point 0 0)
+            (point (right (box (previous measure))) 0))))
 
-  
+
 (defmethod compute-box-size ((band band))
   (let* ((line        (line band))
          (partition   (partition (page line)))
@@ -319,7 +331,14 @@ C- spreading measures over to lines and lines to pages.
          (height      (* 1/2 (1+ lanes) lane-height)))
     (setf (box-size band) (size (width (box line)) height))))
 
- 
+(defmethod layout ((band band))
+  (let* ((line        (line band))
+         (partition   (partition (page line)))
+         (lane-height (/ (staff-height partition) 4))
+         (base        (* 1/2 (minimum-lane band) lane-height)))
+    (setf (box-origin band) (point 0 base))))
+
+
 (defmethod compute-box-size ((line line))
   (let* ((partition   (partition (page line)))
          (lane-height (/ (staff-height partition) 4))
@@ -337,15 +356,27 @@ C- spreading measures over to lines and lines to pages.
     ;;         (interline partition))
     (setf (box-size line) (size (width (box (page line))) height))))
 
+(defmethod layout ((line line))
+  (setf (box-origin line)
+        (vector+ (point 0 (- (if (first-element-in-container-p line)
+                                 (top (box (container line)))
+                                 (bottom (box (previous line))))
+                             (height (box line))))
+                 offset)))
+
+
 
 (defmethod compute-box-size ((page page))
-  (setf (box page) (paper-printable-area (partition page))))  
-  
+  (setf (box page) (paper-printable-area (partition page))))
+
+(defmethod layout ((page page))
+  (setf (box page) (paper-printable-area (partition page))))
 
 
 
 
-  
+
+
 (defun remove-pages (partition)
   (dolist (page (pages partition))
     (dolist (line (lines page))
@@ -376,51 +407,51 @@ C- spreading measures over to lines and lines to pages.
           (page-height 0)
           (lines-height 0))
       (labels ((new-line ()
-                         (setf line (make-instance 'line :number (incf lineno)))
-                         (push line lines)
-                         (dolist (band (create-bands (staff-set partition)))
-                           (attach 'line-contains-horizontally line band)))
+                 (setf line (make-instance 'line :number (incf lineno)))
+                 (push line lines)
+                 (dolist (band (create-bands (staff-set partition)))
+                   (attach 'line-contains-horizontally line band)))
                (new-page ()
-                         (setf page (make-instance 'page :number (incf pageno)))
-                         (push page pages)
-                         (attach 'partition-contains partition page)
-                         (attach 'page-contains page line)
-                         (compute-box-size line)
-                         (setf page-height  (height (box page))
-                               lines-height (+ 20 #|title header|# (height (box line)))
-                               (bottom (box line)) (- page-height lines-height))
-                         (format *trace-output* "bottom line = ~S =/= ~S~%"
-                                 (coerce (- page-height lines-height) 'double-float)
-                                 (bottom (box line)))))
+                 (setf page (make-instance 'page :number (incf pageno)))
+                 (push page pages)
+                 (attach 'partition-contains partition page)
+                 (attach 'page-contains page line)
+                 (compute-box-size line)
+                 (setf page-height  (height (box page))
+                       lines-height (+ 20 #|title header|# (height (box line)))
+                       (bottom (box line)) (- page-height lines-height))
+                 (format *trace-output* "bottom line = ~S =/= ~S~%"
+                         (coerce (- page-height lines-height) 'double-float)
+                         (bottom (box line)))))
         (new-line)
         (loop
-         :while measures
-         :initially (new-page)
-         :do (loop
-              :with line-width = (width (box line))
-              :with measures-width = 10 #|(width (clef line))|#
-              :while measures
-              :do (let ((measure (first measures)))
-                    (when (<= line-width (+ (width (box measure)) measures-width))
-                      (new-line)
-                      (if (< (+ (height (box line)) lines-height)
-                             page-height)
-                          (progn
-                            (setf (page line) nil)
-                            (attach 'page-contains page line)
-                            (compute-box-size line)
-                            (incf lines-height (height (box line)))
-                            (setf (bottom (box line)) (- page-height lines-height))
-                            (format *trace-output* "bottom line = ~S =?= ~S~%"
-                                    (coerce (- page-height lines-height) 'double-float)
-                                    (bottom (box line))))
-                          (new-page)))
-                    ;; attach measure to line:
-                    (setf (left (box measure)) measures-width)
-                    (incf measures-width (width (box measure)))
-                    (setf (line measure) nil)
-                    (attach 'line-contains-vertically line measure)
-                    (pop measures))))))))
+          :while measures
+          :initially (new-page)
+          :do (loop
+                :with line-width = (width (box line))
+                :with measures-width = 10 #|(width (clef line))|#
+                :while measures
+                :do (let ((measure (first measures)))
+                      (when (<= line-width (+ (width (box measure)) measures-width))
+                        (new-line)
+                        (if (< (+ (height (box line)) lines-height)
+                               page-height)
+                            (progn
+                              (setf (page line) nil)
+                              (attach 'page-contains page line)
+                              (compute-box-size line)
+                              (incf lines-height (height (box line)))
+                              (setf (bottom (box line)) (- page-height lines-height))
+                              (format *trace-output* "bottom line = ~S =?= ~S~%"
+                                      (coerce (- page-height lines-height) 'double-float)
+                                      (bottom (box line))))
+                            (new-page)))
+                      ;; attach measure to line:
+                      (setf (left (box measure)) measures-width)
+                      (incf measures-width (width (box measure)))
+                      (setf (line measure) nil)
+                      (attach 'line-contains-vertically line measure)
+                      (pop measures))))))))
 
 
 ;;;; THE END ;;;;

@@ -87,9 +87,6 @@
 (defclass offsetable-element (graphic-element)
   ((offset :initarg :offset :initform (size 0 0) :accessor offset :type size)))
 
-(defmethod offset-box ((element offsetable-element))
-  (let ((offset (offset element)))
-    (rect-offset (slot-value element 'box) (size-width offset) (size-height offset))))
 
 (defclass annotation (offsetable-element)
   ())
@@ -168,12 +165,6 @@
 (defclass tenue-segment (segment)
   ())
 
-(define-association measure-segments
-    ((measure :type measure
-              :multiplicity #|1|# 0-1)
-     (segments :type segment
-               :multiplicity 0-*)))
-
 (define-association sound-beams
   ((beam-segments :type beam-segment
                   :multiplicity 0-*
@@ -198,21 +189,7 @@
 Otherwise it's a - - - - tenue."))
 
 
-(defun first-segment-p (segment)
-  (let ((measure (measure segment))
-        (sound (sound segment)))
-    (time-in-measure-p (start-time sound) measure)))
 
-(defun intermediate-segment-p (segment)
-  (let ((measure (measure segment))
-        (sound (sound segment)))
-    (and (not (time-in-measure-p (start-time sound) measure))
-         (not (time-in-measure-p (end-time   sound) measure)))))
-
-(defun last-segment-p (segment)
-  (let ((measure (measure segment))
-        (sound (sound segment)))
-    (time-in-measure-p (end-time sound) measure)))
 
 
 (defclass numbered ()
@@ -261,9 +238,9 @@ Otherwise it's a - - - - tenue."))
 
 
 (defclass measure (graphic-element numbered)
-  ((stat-time      :initarg :start-time     :accessor start-time     :initform 0)
-   (adjusted-width :initarg :adjusted-width :accessor adjusted-width :type coordinate)
-   (front-kerning  :initarg :front-kerning  :accessor front-kerning  :type coordinate)))
+  ((stat-time      :initarg :start-time     :accessor start-time     :initform 0.0)
+   (adjusted-width :initarg :adjusted-width :accessor adjusted-width :initform 0.0 :type coordinate)
+   (front-kerning  :initarg :front-kerning  :accessor front-kerning  :initform 0.0 :type coordinate)))
 
 
 
@@ -272,6 +249,16 @@ Otherwise it's a - - - - tenue."))
 
 (defmethod time-in-measure-p (time (measure measure))
   (and (<= (start-time measure) time (end-time measure))))
+
+(defun find-measure-containing-time (time measure)
+  (cond
+    ((< time (start-time measure))
+     (let ((previous-measure (previous measure)))
+       (and previous-measure (find-measure-containing-time time previous-measure))))
+    ((<= (end-time measure) time)
+     (let ((next-measure (next measure)))
+       (and next-measure (find-measure-containing-time time next-measure))))
+    (t measure)))
 
 (defmethod (setf box-size) (new-size (measure measure))
   (let ((width (if (slot-boundp measure 'adjusted-width)
@@ -283,15 +270,24 @@ Otherwise it's a - - - - tenue."))
       (setf (slot-value measure 'box) (rect 0 0 width height)))
     new-size))
 
-(define-association measure-contains
+(define-association measure-contains-sounds
   ((measure :type measure
-             :multiplicity #|1|# 0-1)
+            :multiplicity #|1|# 0-1)
    (sounds :type sound
            :multiplicity 0-*
            :ordered t))
   (:documentation "A sound can span over several measures.  The head
 is on the first one, but the beam, dynamic and tenue can have several
 segments, one on each successive measure."))
+
+
+(define-association measure-contains-segments
+    ((measure :type measure
+              :multiplicity #|1|# 0-1)
+     (segments :type segment
+               :multiplicity 0-*)))
+
+
 
 
 (defclass line (offsetable-element numbered)
@@ -539,20 +535,93 @@ segments, one on each successive measure."))
   (:documentation "The measures are ordered in a doubly-linked list."))
 
 (define-association line-sequence
-  ((previous :tyoe line
+  ((previous :type line
              :multiplicity 0-1)
    (next     :type line
              :multiplicity 0-1))
   (:documentation "The lines are ordered in a doubly-linked list."))
 
 (define-association page-sequence
-  ((previous :tyoe page
+  ((previous :type page
              :multiplicity 0-1)
    (next     :type page
              :multiplicity 0-1))
   (:documentation "The page are ordered in a doubly-linked list."))
 
-;; (defmethod container (()))
+(defmethod next ((sound sound))
+  (loop :for sounds :on (sounds (measure sound))
+        :until (eql (car sounds) sound)
+        :finally (return (or (cadr sounds)
+                             (loop
+                               :with measure = (next (measure sound))
+                               :while (and measure (endp (sounds measure)))
+                               :do (setf measure (next measure))
+                               :finally (return (and measure (first (sounds measure)))))))))
+
+(defmethod previous ((sound sound))
+  (let ((sounds (sounds (measure sound))))
+    (if (eql sound (first sounds))
+        (loop
+          :with measure = (previous (measure sound))
+          :while (and measure (endp (sounds measure)))
+          :do (setf measure (previous measure))
+          :finally (return (and measure (first (sounds measure)))))
+        (loop :for sounds :on 
+              :until (eql (cadr sounds) sound)
+              :finally (return (car sounds))))))
+
+
+
+
+(defgeneric container (element)
+  (:method ((nul null))         nil)
+  (:method ((segment segment))  (measure segment))
+  (:method ((sound sound))      (measure sound))
+  (:method ((measure measure))  (line measure))
+  (:method ((line line))        (page line))
+  (:method ((page page))        (partition page)))
+
+
+(defun first-segment-p (segment)
+  (let ((measure (measure segment))
+        (sound (sound segment)))
+    (time-in-measure-p (start-time sound) measure)))
+
+(defun intermediate-segment-p (segment)
+  (let ((measure (measure segment))
+        (sound (sound segment)))
+    (and (not (time-in-measure-p (start-time sound) measure))
+         (not (time-in-measure-p (end-time   sound) measure)))))
+
+(defun last-segment-p (segment)
+  (let ((measure (measure segment))
+        (sound (sound segment)))
+    (time-in-measure-p (end-time sound) measure)))
+
+
+(defun first-element-in-container-p (element)
+  (not (eql (container (previous element))
+            (container element))))
+
+(defun last-element-in-container-p (element)
+  (not (eql (container element)
+            (container (next element)))))
+
+
+(defun head (element)
+  (loop
+    :for previous = (previous element)
+    :while previous
+    :do (setf element previous)
+    :finally (return element)))
+
+(defun tail (element)
+  (loop
+    :for next = (next element)
+    :while next
+    :do (setf element next)
+    :finally (return element)))
+
 
 
 (defmacro define-print-object (class &rest slots)
@@ -715,5 +784,69 @@ segments, one on each successive measure."))
 (defparameter *staves/bass-trebble15ma*     '(2 nil))
 (defparameter *staves/bass15mb-trebble*     '(0 7))
 (defparameter *staves/bass15mb-trebble15ma* '(0 nil))
+
+
+(defclass cursor ()
+  ((partition :initarg :partition :initform nil :accessor partition)
+   (page      :initarg :page      :initform nil :accessor page)
+   (line      :initarg :line      :initform nil :accessor line)
+   (measure   :initarg :measure   :initform nil :accessor measure)
+   (sound     :initarg :sound     :initform nil :accessor sound)
+   (item      :initarg :item      :initform nil :accessor item)))
+
+(defmethod initialize-instance :after ((cursor cursor) &key &allow-other-keys)
+  (when (item    cursor) (setf (sound     cursor) (sound     (item    cursor))))
+  (when (sound   cursor) (setf (measure   cursor) (measure   (sound   cursor))))
+  (when (measure cursor) (setf (line      cursor) (line      (measure cursor))))
+  (when (line    cursor) (setf (page      cursor) (page      (line    cursor))))
+  (if (page    cursor)
+      (setf (partition cursor) (partition (page    cursor)))
+      (if (partition cursor)
+          (setf (page    cursor) (first (pages    (partition cursor)))
+                (line    cursor) (first (lines    (page      cursor)))
+                (measure cursor) (first (measures (line      cursor)))
+                (sound   cursor) (first (sounds   (measure   cursor)))))))
+
+
+(defmethod forward-sound ((cursor cursor))
+  (if (sound cursor)
+      ()
+      )
+  )
+
+
+
+
+
+(defmethod add-new-page ((partition partition))
+  )
+
+(defmethod add-new-line ((page page))
+  )
+
+(defmethod add-new-measure ((line line))
+  )
+
+
+
+(defmethod insert-sound ((sound sound) (measure measure))
+  )
+
+(defmethod add-note ((note note) (sound sound))
+  )
+
+
+
+(defmethod insert-new-page-before ((page page))
+  )
+
+(defmethod insert-new-line-before ((line line))
+  )
+
+(defmethod insert-new-measure-before ((measure measure))
+  )
+
+
+
 
 ;;;; THE END ;;;;
