@@ -47,6 +47,15 @@
     measures))
 
 
+(define-condition internal-error (simple-error)
+  ((datum :initarg :datum :reader internal-error-datum)))
+
+
+(defmethod add-measures-until (time (measure measure))
+  (let ((tempo (tempo measure))))
+  )
+
+
 (defmethod insert-sound ((sound sound) (measure measure))
   (flet ((insert (sound measure)
            (attach 'measure-contains-sounds measure sound)))
@@ -57,17 +66,19 @@
            (let ((m (find-measure-containing-time time measure)))
              (if m
                  (insert sound m)
-                 
-                 )))
+                 (error 'internal-error
+                        :datum (list  :time time :measure measure)
+                        :format-control "Cannot find a measure containing time ~S before ~S"
+                        :format-arguments (list time measure)))))
+
+
           ((<= (end-time measure) time)
            (let ((m (find-measure-containing-time time measure)))
              (if m
                  (insert sound m)
-                 (loop
-                   :with m = (tail measure)
-                   :
-                   )
-                 )))
+                 (progn
+                   (add-measures-until (end-time sound) measure)
+                   (insert sound  (find-measure-containing-time time measure))))))
           (t
            (insert sound measure)))))))
 

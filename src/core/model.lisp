@@ -527,6 +527,22 @@ segments, one on each successive measure."))
   (setf (needs-saving partition) t))
 
 
+;; TODO: see with ordered associations.
+
+(defgeneric next (eleement))
+(defgeneric previous (element))
+
+(defgeneric first-element (element))
+(defgeneric last-element (element))
+
+
+(define-association tempo-sequence
+  ((previous :type tempo
+             :multiplicity 0-1)
+   (next     :type tempo
+             :multiplicity 0-1))
+  (:documentation "The tempos are ordered in a doubly-linked list."))
+
 (define-association measure-sequence
   ((previous :type measure
              :multiplicity 0-1)
@@ -579,7 +595,8 @@ segments, one on each successive measure."))
   (:method ((sound sound))      (measure sound))
   (:method ((measure measure))  (line measure))
   (:method ((line line))        (page line))
-  (:method ((page page))        (partition page)))
+  (:method ((page page))        (partition page))
+  (:method ((tempo tempo))      (partition tempo)))
 
 
 (defun first-segment-p (segment)
@@ -606,6 +623,7 @@ segments, one on each successive measure."))
 (defun last-element-in-container-p (element)
   (not (eql (container element)
             (container (next element)))))
+
 
 
 (defun head (element)
