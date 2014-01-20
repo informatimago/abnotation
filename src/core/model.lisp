@@ -480,12 +480,6 @@ segments, one on each successive measure."))
           :multiplicity 0-*
           :ordered t)))
 
-(defmethod did-link ((association (eql 'partition-contains)) (partition partition) (page page))
-  (compute-box-size page))
-
-(defmethod did-link ((association (eql 'page-contains)) (page page) (line line))
-  (compute-box-size line))
-
 (defgeneric title-annotation (element)
   (:method ((page page))
            (and (= 1 (number page))
@@ -529,11 +523,8 @@ segments, one on each successive measure."))
 
 ;; TODO: see with ordered associations.
 
-(defgeneric next (eleement))
+(defgeneric next (element))
 (defgeneric previous (element))
-
-(defgeneric first-element (element))
-(defgeneric last-element (element))
 
 
 (define-association tempo-sequence
@@ -626,19 +617,60 @@ segments, one on each successive measure."))
 
 
 
-(defun head (element)
-  (loop
-    :for previous = (previous element)
-    :while previous
-    :do (setf element previous)
-    :finally (return element)))
+(defgeneric head (element)
+  (:method (element)
+    (loop
+      :for current = element :then previous
+      :for previous = (previous current)
+      :while previous
+      :finally (return current))))
 
-(defun tail (element)
-  (loop
-    :for next = (next element)
-    :while next
-    :do (setf element next)
-    :finally (return element)))
+(defgeneric tail (element)
+  (:method (element)
+    (loop
+      :for current = element :then next
+      :for next = (next current)
+      :while next
+      :finally (return current))))
+
+
+
+;; (define-association annotate
+;; (define-association groups
+;; (define-association note-head
+;; (define-association note-accidental
+;; (define-association sound-beams
+;; (define-association sound-dynamics
+;; (define-association sound-tenues
+;; (define-association measure-contains-sounds
+;; (define-association measure-contains-segments
+;; (define-association line-contains-vertically
+;; (define-association line-contains-horizontally
+;; (define-association band-contains
+;; (define-association gives-pitch
+;; (define-association page-contains
+;; (define-association partition-contains
+;; (define-association partition-tempo
+;; (define-association gives-tempo
+;;
+;; (define-association tempo-sequence
+;; (define-association measure-sequence
+;; (define-association line-sequence
+;; (define-association page-sequence
+;; 
+;; (:method ((segment segment))  (measure segment))  measure-contains-segments
+;; (:method ((sound sound))      (measure sound))    measure-contains-sounds      
+;; (:method ((measure measure))  (line measure))     line-contains-vertically     measure-sequence
+;; (:method ((line line))        (page line))        page-contains                line-sequence
+;; (:method ((page page))        (partition page))   partition-contains           page-sequence
+;; (:method ((tempo tempo))      (partition tempo))  gives-tempo                  tempo-sequence
+
+
+(defmethod did-link ((association (eql 'partition-contains)) (partition partition) (page page))
+  (compute-box-size page))
+
+(defmethod did-link ((association (eql 'page-contains)) (page page) (line line))
+  (compute-box-size line))
 
 
 
