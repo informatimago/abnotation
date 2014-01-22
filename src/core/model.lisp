@@ -110,7 +110,7 @@
                :multiplicity 0-1)))
 
 
-(defclass sound (element)
+(defclass sound (element node)
   ((start-time :initarg :start-time :accessor start-time)
    (duration  :initarg :duration :accessor duration)
    (dynamic :initarg :dynamic :accessor dynamic :initform :mf)))
@@ -237,7 +237,7 @@ Otherwise it's a - - - - tenue."))
            (setf (slot-value element 'number-annotation) nil)))
 
 
-(defclass measure (graphic-element numbered)
+(defclass measure (graphic-element numbered node span)
   ((stat-time      :initarg :start-time     :accessor start-time     :initform 0.0)
    (adjusted-width :initarg :adjusted-width :accessor adjusted-width :initform 0.0 :type coordinate)
    (front-kerning  :initarg :front-kerning  :accessor front-kerning  :initform 0.0 :type coordinate)))
@@ -270,15 +270,19 @@ Otherwise it's a - - - - tenue."))
       (setf (slot-value measure 'box) (rect 0 0 width height)))
     new-size))
 
-(define-association measure-contains-sounds
-  ((measure :type measure
-            :multiplicity #|1|# 0-1)
-   (sounds :type sound
-           :multiplicity 0-*
-           :ordered t))
-  (:documentation "A sound can span over several measures.  The head
-is on the first one, but the beam, dynamic and tenue can have several
-segments, one on each successive measure."))
+(defmethod sounds ((measure measure))
+  (span-contents measure))
+(defmethod measure ((sound sound))
+  (span sound))
+;; (define-association measure-contains-sounds
+;;   ((measure :type measure
+;;             :multiplicity #|1|# 0-1)
+;;    (sounds :type sound
+;;            :multiplicity 0-*
+;;            :ordered t))
+;;   (:documentation "A sound can span over several measures.  The head
+;; is on the first one, but the beam, dynamic and tenue can have several
+;; segments, one on each successive measure."))
 
 
 (define-association measure-contains-segments
@@ -290,7 +294,7 @@ segments, one on each successive measure."))
 
 
 
-(defclass line (offsetable-element numbered)
+(defclass line (offsetable-element numbered node span)
   ())
 
 (defun lane-height (partition)
@@ -311,13 +315,17 @@ segments, one on each successive measure."))
     (setf (box line) (rect 0 0 (width new-size) (height new-size))))
   new-size)
 
-(define-association line-contains-vertically
-  ((line :type line
-         :multiplicity #|1|# 0-1
-         :kind :aggregation)
-   (measures :type measure
-             :multiplicity 0-*
-             :ordered t)))
+;; (define-association line-contains-vertically
+;;   ((line :type line
+;;          :multiplicity #|1|# 0-1
+;;          :kind :aggregation)
+;;    (measures :type measure
+;;              :multiplicity 0-*
+;;              :ordered t)))
+(defmethod line ((measure measure))
+  (span measure))
+(defmethod measures ((line line))
+  (span-contents line))
 
 
 (defclass band (graphic-element)
@@ -396,19 +404,24 @@ segments, one on each successive measure."))
 (defmethod minimum-lane ((element staff)) (minimum-lane (clef element)))
 
 
-(defclass page (graphic-element numbered)
+(defclass page (graphic-element numbered node span)
   ())
 
-(define-association page-contains
-  ((page :type page
-         :multiplicity #|1|# 0-1
-         :kind :aggregation)
-   (lines :type line
-          :multiplicity 0-*
-          :ordered t)))
+;; (define-association page-contains
+;;   ((page :type page
+;;          :multiplicity #|1|# 0-1
+;;          :kind :aggregation)
+;;    (lines :type line
+;;           :multiplicity 0-*
+;;           :ordered t)))
+
+(defmethod lines ((page page))
+  (span-contents page))
+(defmethod page ((line line))
+  (span line))
 
 
-(defclass partition ()
+(defclass partition (span)
   ((title                 :initarg :title                 :accessor title
                           :type string                    :initform "untitled")
    (author                :initarg :author                :accessor author
@@ -472,13 +485,19 @@ segments, one on each successive measure."))
   partition)
 
 
-(define-association partition-contains
-  ((partition :type partition
-              :multiplicity #|1|# 0-1
-              :kind :aggregation)
-   (pages :type page
-          :multiplicity 0-*
-          :ordered t)))
+;; (define-association partition-contains
+;;   ((partition :type partition
+;;               :multiplicity #|1|# 0-1
+;;               :kind :aggregation)
+;;    (pages :type page
+;;           :multiplicity 0-*
+;;           :ordered t)))
+
+(defmethod pages ((partition partition))
+  (span-contents partition))
+(defmethod partition ((page page))
+  (span page))
+
 
 (defgeneric title-annotation (element)
   (:method ((page page))
@@ -666,11 +685,11 @@ segments, one on each successive measure."))
 ;; (:method ((tempo tempo))      (partition tempo))  gives-tempo                  tempo-sequence
 
 
-(defmethod did-link ((association (eql 'partition-contains)) (partition partition) (page page))
-  (compute-box-size page))
-
-(defmethod did-link ((association (eql 'page-contains)) (page page) (line line))
-  (compute-box-size line))
+;; (defmethod did-link ((association (eql 'partition-contains)) (partition partition) (page page))
+;;   (compute-box-size page))
+;; 
+;; (defmethod did-link ((association (eql 'page-contains)) (page page) (line line))
+;;   (compute-box-size line))
 
 
 
@@ -813,11 +832,11 @@ segments, one on each successive measure."))
     ;; (attach 'band-contains band note)
     (dolist (band (create-bands staff-set))
       (attach 'line-contains-horizontally line band))
-    (attach 'partition-contains partition page)
-    (attach 'page-contains page line)
+    (span-append-node partition page) ; (attach 'partition-contains partition page)
+    (span-append-node page line)      ; (attach 'page-contains page line)
     (attach 'partition-tempo partition tempo)
     (attach 'gives-tempo tempo measure)
-    (attach 'line-contains-vertically line measure)
+    (span-append-node line measure)   ; (attach 'line-contains-vertically line measure)
     (let* ((measure-speed (default-measure-speed partition))
            (duration (measure-duration tempo))
            (width (* measure-speed duration))
@@ -852,10 +871,10 @@ segments, one on each successive measure."))
   (if (page    cursor)
       (setf (partition cursor) (partition (page    cursor)))
       (if (partition cursor)
-          (setf (page    cursor) (first (pages    (partition cursor)))
-                (line    cursor) (first (lines    (page      cursor)))
-                (measure cursor) (first (measures (line      cursor)))
-                (sound   cursor) (first (sounds   (measure   cursor)))))))
+          (setf (page    cursor) (head (partition cursor))
+                (line    cursor) (head (page      cursor))
+                (measure cursor) (head (line      cursor))
+                (sound   cursor) (head (measure   cursor))))))
 
 
 (defmethod forward-sound ((cursor cursor))

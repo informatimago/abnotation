@@ -72,6 +72,7 @@ according to the Alexis Bosch's synchrone musical notation.
     #+asdf-unicode :encoding #+asdf-unicode :utf-8
     :components
     ((:file "package"        :depends-on ())
+     (:file "span"           :depends-on ("package"))
      (:file "macros"         :depends-on ("package"))
      (:file "geometry"       :depends-on ("package" "macros"))
      (:file "matrix"         :depends-on ("package" "geometry"))
@@ -79,7 +80,7 @@ according to the Alexis Bosch's synchrone musical notation.
      (:file "bezier"         :depends-on ("package" "geometry" "matrix"))
      (:file "elliptical-arc" :depends-on ("package" "geometry" "matrix" "bezier"))
      (:file "graphic"        :depends-on ("package" "bezier" "elliptical-arc"))
-     (:file "model"          :depends-on ("package" "macros"))
+     (:file "model"          :depends-on ("package" "macros" "span"))
      (:file "file"           :depends-on ("package" "macros" "model" "midi"))
      (:file "midi"           :depends-on ("package" "macros" "model"))
      (:file "layout"         :depends-on ("package" "macros" "model" "bezier"))

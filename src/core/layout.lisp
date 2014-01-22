@@ -378,6 +378,7 @@ C- spreading measures over to lines and lines to pages.
 
 
 (defun remove-pages (partition)
+  #+TODO
   (dolist (page (pages partition))
     (dolist (line (lines page))
       (dolist (measure (measures line))
@@ -414,9 +415,10 @@ C- spreading measures over to lines and lines to pages.
                (new-page ()
                  (setf page (make-instance 'page :number (incf pageno)))
                  (push page pages)
-                 (attach 'partition-contains partition page)
-                 (attach 'page-contains page line)
+                 (span-append-node partition page) ; (attach 'partition-contains partition page)
+                 (span-append-node page line) ;  (attach 'page-contains page line)
                  (compute-box-size line)
+                 (compute-box-size page)
                  (setf page-height  (height (box page))
                        lines-height (+ 20 #|title header|# (height (box line)))
                        (bottom (box line)) (- page-height lines-height))
@@ -437,8 +439,7 @@ C- spreading measures over to lines and lines to pages.
                         (if (< (+ (height (box line)) lines-height)
                                page-height)
                             (progn
-                              (setf (page line) nil)
-                              (attach 'page-contains page line)
+                              (span-append-node page (remove-node line)) ; (setf (page line) nil) (attach 'page-contains page line)
                               (compute-box-size line)
                               (incf lines-height (height (box line)))
                               (setf (bottom (box line)) (- page-height lines-height))
@@ -449,8 +450,7 @@ C- spreading measures over to lines and lines to pages.
                       ;; attach measure to line:
                       (setf (left (box measure)) measures-width)
                       (incf measures-width (width (box measure)))
-                      (setf (line measure) nil)
-                      (attach 'line-contains-vertically line measure)
+                      (span-append-node line (remove-node measure)) ; (setf (line measure) nil) (attach 'line-contains-vertically line measure)
                       (pop measures))))))))
 
 

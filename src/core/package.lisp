@@ -63,14 +63,67 @@
            "BEAM-OFFSETS" "BEAM-HANG-SIT-OFFSET"))
 
 
-(defpackage "ABNOTATION.CORE"
-  (:use "COMMON-LISP"
-        "MIDI"
-        "COM.INFORMATIMAGO.CLEXT.ASSOCIATION"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.QUEUE"
-        "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+(defpackage "ABNOTATION.SPAN"
+  (:use "COMMON-LISP")
+  (:shadow "TAILP")
+  (:export
+   "HEAD" "TAIL" "NEXT" "PREVIOUS" "OWNER" "SPAN" "HEAD" "TAIL"
+   "OWNER" "OWNED-SPAN" "OWNER" "NODE" "SPAN" "PREVIOUS" "NEXT"
+   "PLACE-HOLDER-NODE" "MAKE-EMPTY-SPAN" "MAKE-SPAN" "EMPTYP"
+   "HEADP" "TAILP" "HEAD-IN-SPAN-P" "TAIL-IN-SPAN-P"
+   "SPAN-CONTENTS" "SPAN-NTH" "SPAN-LENGTH" "SPLIT-SPAN-BEFORE"
+   "SPLIT-SPAN-AFTER" "FORWARD-SLURP-SPAN" "BACKWARD-SLURP-SPAN"
+   "SPAN-PREPEND-NODE" "SPAN-APPEND-NODE" "REMOVE-NODE"
+   "INSERT-NODE-AFTER" "INSERT-NODE-BEFORE"
+   "SPAN-POSITION-IF" "SPAN-POSITION"
+   "FIND-NODE-IF" )
   
+  (:documentation
+   "
+
+This module exports a double-linked list type.  This is a structure
+optimized for insertions and deletions in any place, each node keeping
+a pointer to both the previous and the next node.  Furthermore, spans keep
+references to the head list.
+
+
+License:
+
+    AGPL3
+    
+    Copyright Pascal J. Bourguignon 2001 - 2013
+    
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.
+    If not, see <http://www.gnu.org/licenses/>
+
+"))
+
+
+(defpackage "ABNOTATION.CORE"
+
+  (:use "COMMON-LISP")
   (:shadow "NUMBER")
+
+  (:use
+   "MIDI"
+   "COM.INFORMATIMAGO.CLEXT.ASSOCIATION"
+   "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.QUEUE"
+   "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY")
+
+  (:use "ABNOTATION.SPAN")
+  (:shadowing-import-from "ABNOTATION.SPAN" "TAILP")
+  
 
   (:export ; macros
    "APPENDF" "NCONCF" "DELETEF" "ADD-TO-LIST"
