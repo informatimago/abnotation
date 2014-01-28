@@ -92,11 +92,22 @@
 (defclass place-holder-node (node)
   ())
 
+(defclass indirect-node (node)
+  ((item     :initarg :item     :initform nil :accessor item)))
+
+(defmethod item ((node place-holder-node))
+  nil)
+
+(defmethod item ((node node))
+  node)
+
+
 (defmethod initialize-instance :after ((span span) &key &allow-other-keys)
   (unless (and (slot-boundp span 'head) (slot-value span 'head))
     (let ((place-holder (make-instance 'place-holder-node)))
       (setf (head span) place-holder
-            (tail span) place-holder))))
+            (tail span) place-holder)
+      (%update-node-span span))))
 
 (defun make-empty-span ()
   (make-instance 'span))
@@ -115,6 +126,16 @@
                  (return span))
       (make-empty-span)))
 
+(defmacro dospan ((variable span &optional result) &body body)
+  (let ((vcurrent (gensym)))
+    `(do ((,vcurrent (head ,span) (next ,vcurrent)))
+         ((progn
+            (unless (typep ,vcurrent 'place-holder-node)
+              (let ((,variable ,vcurrent))
+                ,@body))
+            (tail-in-span-p ,vcurrent))
+          ,result))))
+
 
 (defgeneric emptyp (span)
   (:method ((span span))
@@ -128,6 +149,7 @@
   (:method ((node node))
     (null (next node))))
 
+
 (defgeneric head-in-span-p (node)
   (:method ((node node))
     (eql node (head (span node)))))
@@ -137,13 +159,69 @@
     (eql node (tail (span node)))))
 
 
+(defgeneric previous-span (span)
+  (:method ((span span))
+    (let ((previous (previous (head span))))
+      (when previous
+        (span previous)))))
+
+(defgeneric next-span (span)
+  (:method ((span span))
+    (let ((next (next (tail span))))
+      (when next
+        (span next)))))
+
+(defgeneric first-span-p (span)
+  (:method ((span span))
+    (not (previous-span span))))
+
+(defgeneric last-span-p (span)
+  (:method ((span span))
+    (not (next-span span))))
+
+(defgeneric first-span (span)
+  (:method ((span span))
+    (loop
+      :until (first-span-p span)
+      :do (setf span (previous-span span))
+      :finally (return span))))
+
+(defgeneric last-span (span)
+  (:method ((span span))
+    (loop
+      :until (last-span-p span)
+      :do (setf span (next-span span))
+      :finally (return span))))
+
+(defgeneric span-list (span)
+  (:documentation "Returns the list of chained spans ordered from the first to the last.")
+  (:method ((nul null))
+    nil)
+  (:method ((span span))
+    (loop
+      :for current = (first-span span) :then (next-span current)
+      :collect current
+      :until (last-span-p current))))
+
+(defgeneric join-spans (left right)
+  (:documentation "Concatenates the two doubly-linked lists referenced by the spans left and right.")
+  (:method ((left span) (right span))
+    (let ((fl (first-span left))
+          (fr (first-span right)))
+      (assert (not (eql fl fr)))
+      (let ((ll (last-span left)))
+        (setf (next (tail ll)) (head fr)
+              (previous (head fr)) (tail ll))
+        left))))
+
+
 (defgeneric span-contents (span)
   (:method ((span span))
     (unless (emptyp span)
       (loop
         :for current = (head span) :then (next current)
-        :collect current
-        :until (eql current (tail span))))))
+        :unless (typep current 'place-holder-node) :collect current
+        :until (tail-in-span-p current)))))
 
 (defgeneric span-nth (index span)
   (:method (index (span span))
@@ -151,7 +229,8 @@
       (loop
         :for node = (head span) :then (next node)
         :do (assert node)
-        :until (or (zerop index) (eql node (tail span)))
+        :until (or (zerop index) (tail-in-span-p node))
+        :unless (typep node 'place-holder-node) 
         :do (decf index)
         :finally (return (when (zerop index)
                            node))))))
@@ -163,8 +242,9 @@
         (loop
           :for node = (head span) :then (next node)
           :do (assert node)
+          :unless (typep node 'place-holder-node) 
           :count 1
-          :until (eql node (tail span))))))
+          :until (tail-in-span-p node)))))
 
 
 
@@ -173,7 +253,7 @@
     (loop
       :for current = (head span) :then (next current)
       :do (setf (span current) span)
-      :until (eql current (tail span)))))
+      :until (tail-in-span-p current))))
 
 
 (defgeneric split-span-before (span node-or-index)
@@ -345,7 +425,7 @@
   (:method ((node node) (next node))
     (setf (span node) (span next))
     (%insert-node-before node next)
-    (when (eql next (head (span previous)))
+    (when (eql next (head (span next)))
       (setf (head (span next)) node))
     node))
 
@@ -355,7 +435,8 @@
     (loop
       :for node = head :then (next node)
       :while node
-      :when (funcall predicate node)
+      :when (and (not (typep node 'place-holder-node))
+                 (funcall predicate node))
         :do (return-from find-node-if node))))
 
 
@@ -402,45 +483,18 @@
 
 
 
-(defun first-segment-p (segment)
-  (let ((measure (measure segment))
-        (sound (sound segment)))
-    (time-in-measure-p (start-time sound) measure)))
-
-(defun intermediate-segment-p (segment)
-  (let ((measure (measure segment))
-        (sound (sound segment)))
-    (and (not (time-in-measure-p (start-time sound) measure))
-         (not (time-in-measure-p (end-time   sound) measure)))))
-
-(defun last-segment-p (segment)
-  (let ((measure (measure segment))
-        (sound (sound segment)))
-    (time-in-measure-p (end-time sound) measure)))
-
-
-(defun first-element-in-container-p (element)
-  (not (eql (container (previous element))
-            (container element))))
-
-(defun last-element-in-container-p (element)
-  (not (eql (container element)
-            (container (next element)))))
-
-
-
-(defclass partition (element)
-  ((pages  :type owned-span)
-   (tempos :type owned-span)))
-
-(defclass line (graphic-elment numbered node span)
-  ())
-
-(defclass tempo (elment node span)
-  ())
-
-(defclass measure (graphic-elment numbered node span)
-  ())
+;; (defclass partition (element)
+;;   ((pages  :type owned-span)
+;;    (tempos :type owned-span)))
+;; 
+;; (defclass line (graphic-elment numbered node span)
+;;   ())
+;; 
+;; (defclass tempo (elment node span)
+;;   ())
+;; 
+;; (defclass measure (graphic-elment numbered node span)
+;;   ())
 
 
 
@@ -481,10 +535,82 @@
     (assert (head-in-span-p (first nodes)))
     (assert (tail-in-span-p (first (last nodes))))
     (assert (every (lambda (node) (eql span (span node))) (span-contents span)))
+    (assert (eql span (first-span span)))
+    (assert (eql span (last-span span)))
+    (assert (null (previous-span span)))
+    (assert (null (next-span span)))
+    (assert (first-span-p span))
+    (assert (last-span-p span))
+    (assert (equal (list span) (span-list span)))
     (loop
       :for node :in nodes
       :for index :from 0
       :do (assert (eql node (span-nth index span)))))
+  :success)
+
+
+(defun check-span-list (spans)
+  (flet ((equiv (a b) (or (and a b) (and (not a) (not b)))))
+    (let ((first (first spans))
+          (last  (first (last spans))))
+      (dolist (span spans)
+        (assert (eql first (first-span span)))
+        (assert (eql last  (last-span  span)))
+        (assert (equal spans (span-list span))))
+      (loop
+        :for (previous current) :on (cons nil spans)
+        :when current
+          :do (assert (eql previous (previous-span current))))
+      (loop
+        :for (current next) :on (append spans (list nil))
+        :when current
+          :do (assert (eql next (next-span current))))
+      (let ((first   (first spans))
+            (last    (first (last spans)))
+            (others  (butlast (rest spans))))
+        (assert (first-span-p first))
+        (dolist (span (cons first others))
+          (assert (not (last-span-p span))))
+        (assert (last-span-p last))
+        (dolist (span (cons last others))
+          (assert (not (first-span-p span)))))))
+  :success)
+
+
+(defun test/join-spans ()
+  (flet ((check-join (s1 s2)
+           (let* ((j  (join-spans s1 s2))
+                  (n1 (span-contents s1))
+                  (n2 (span-contents s2))
+                  (c  (reduce (function append) (span-list j) :key (function span-contents))))
+             (assert (eql s1 j))
+             (assert (equal (list s1 s2) (span-list s1)))
+             (assert (equal (list s1 s2) (span-list s2)))
+             (assert (equal c (append n1 n2))))))
+    (check-join (make-empty-span)
+                (make-empty-span))
+    (check-join (make-span (list (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)))
+                (make-empty-span))
+    (check-join (make-empty-span)
+                (make-span (list (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node))))
+    (check-join (make-span (list (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)))
+                (make-span (list (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)
+                                 (make-instance 'test/node)))))
   :success)
 
 
@@ -501,7 +627,8 @@
             (assert (= i (span-length a)))
             (assert (equalp nodes (append (span-contents a) (span-contents b))))
             (assert (every (lambda (node) (eql a (span node))) (span-contents a)))
-            (assert (every (lambda (node) (eql b (span node))) (span-contents b)))))
+            (assert (every (lambda (node) (eql b (span node))) (span-contents b)))
+            (check-span-list (list a b))))
     :do (let* ((nodes (list (make-instance 'test/node)
                             (make-instance 'test/node)
                             (make-instance 'test/node)
@@ -542,7 +669,6 @@
       :do (span-prepend-node span node))
     (assert (equal (reverse nodes) (span-contents span))))
   :success)
-
 
 (defun test/forward-slurp-span ()
   (let* ((nodes (list (make-instance 'test/node)
@@ -590,7 +716,8 @@
             (assert (= 2 (span-length r4)))
             (assert (equal nodes (append (span-contents r1)
                                          (span-contents r2)
-                                         (span-contents r4)))))))
+                                         (span-contents r4))))
+            (check-span-list (list r1 r2 r3 r4)))))
   :success)
 
 (defun test/backward-slurp-span ()
@@ -639,7 +766,8 @@
             (assert (= 2 (span-length r4)))
             (assert (equal nodes (append (span-contents r1)
                                          (span-contents r3)
-                                         (span-contents r4)))))))
+                                         (span-contents r4))))
+            (check-span-list (list r1 r2 r3 r4)))))
   :success)
 
 
@@ -680,13 +808,16 @@
         :do (print current)
         :while (previous current)))
 
-(progn
+(defun test ()
   (test/spans)
   (test/split-spans)
   (test/span-append-node)
   (test/span-prepend-node)
   (test/forward-slurp-span)
-  (test/backward-slurp-span))
+  (test/backward-slurp-span)
+  (test/join-spans))
+
+(test)
 
 
 
