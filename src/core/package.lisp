@@ -71,20 +71,24 @@
    "OWNER" "OWNED-SPAN" "OWNER" "NODE" "SPAN" "PREVIOUS" "NEXT"
    "PLACE-HOLDER-NODE" "MAKE-EMPTY-SPAN" "MAKE-SPAN" "EMPTYP"
    "HEADP" "TAILP" "HEAD-IN-SPAN-P" "TAIL-IN-SPAN-P"
+   "PREVIOUS-SPAN" "NEXT-SPAN" "FIRST-SPAN-P" "LAST-SPAN-P"
+   "FIRST-SPAN" "LAST-SPAN" "SPAN-LIST" "JOIN-SPANS"
    "SPAN-CONTENTS" "SPAN-NTH" "SPAN-LENGTH" "SPLIT-SPAN-BEFORE"
    "SPLIT-SPAN-AFTER" "FORWARD-SLURP-SPAN" "BACKWARD-SLURP-SPAN"
    "SPAN-PREPEND-NODE" "SPAN-APPEND-NODE" "REMOVE-NODE"
    "INSERT-NODE-AFTER" "INSERT-NODE-BEFORE"
    "SPAN-POSITION-IF" "SPAN-POSITION"
-   "FIND-NODE-IF" )
+   "FIND-NODE-IF" "DOSPAN")
   
   (:documentation
    "
 
-This module exports a double-linked list type.  This is a structure
+This package exports a double-linked list type.  This is a structure
 optimized for insertions and deletions in any place, each node keeping
-a pointer to both the previous and the next node.  Furthermore, spans keep
-references to the head list.
+a pointer to both the previous and the next node.
+
+The list is subdivided into a partition of contiguous spans. Each span
+keeps a reference to its head and tail.
 
 
 License:
@@ -210,7 +214,7 @@ License:
    "STAFF-SET" "START-TIME" "TEMPO" "TEMPOS" "TEXT" "TITLE" "RTF"
    "TOP-PITCH" 
    "TEMPO-AND-NOTES" "NEEDS-SAVING"
-   "BOX" "COMPUTE-BOX-SIZE" "BOX-SIZE" "OFFSET"
+   "BOX" "COMPUTE-BOX-SIZE" "BOX-SIZE" "OFFSET" "LAYOUT"
    "CURSOR" "ITEM")
 
   (:export ; midi stuff

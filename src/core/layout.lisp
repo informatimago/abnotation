@@ -68,7 +68,7 @@ line -> page
 page ->
 "))
 
-(defmethod layout :before (element)
+(defmethod layout :before ((element graphic-element))
   (compute-box-size element))
 
 (defgeneric move-over (element)
@@ -102,7 +102,7 @@ Changes to the model should send a message to the controler/view so
 that display is updated when the measure is visible.
 
 
-A1: compute the measure duration (tempo)
+A1: measure duration
 - some notes can spread over to the following measures (usual case),
 - some notes can be marked to stay within the measure (while editing).
 
@@ -218,27 +218,28 @@ C- spreading measures over to lines and lines to pages.
     (* 0.5 lane lane-height)))
 
 (defmethod compute-box-size ((accidental accidental))
-  (let* ((partition (partition (page (line (measure (sound head))))))
+  (let* ((partition (partition (page (line (measure (sound accidental))))))
          (height    (lane-height partition))
          (excentricity 1.2))
-    (setf (box-size head) (size (* excentricity height) (* excentricity height)))))
+    (setf (box-size accidental) (size (* excentricity height) (* excentricity height)))))
 
 (defmethod layout ((accidental accidental))
-  (let* ((measure     (measure (sound head)))
+  (let* ((sound       (sound accidental))
+         (measure     (measure sound))
          (partition   (partition (page (line measure)))))
-    (setf (box-origin head)
-          (vector+ (point (- (start-time (sound head))
+    (setf (box-origin accidental)
+          (vector+ (point (- (start-time sound)
                              (start-time measure))
-                          (lane-bottom (pitch (sound head)) partition))
+                          (lane-bottom (pitch sound) partition))
                    (offset accidental)))))
 
 
 (defun segment-width (segment)
   (let ((measure (measure segment)))
     (cond
-      ((first-segment-p segment measure)
+      ((first-segment-p segment)
        (- (end-time measure) (start-time segment)))
-      ((last-segment-p segment measure)
+      ((last-segment-p segment)
        (- (end-time segment) (start-time measure)))
       (t
        (measure-duration measure)))))
@@ -246,16 +247,19 @@ C- spreading measures over to lines and lines to pages.
 (defun tenue-height (segment)
   "height of a tenue line (in millimeter)."
   ;; TODO: should depend on the height of the staves
+  (declare (ignore segment))
   0.1)
 
 (defun dynamic-height (segment)
   "height of a dynamic (in millimeter)."
   ;; TODO: should depend on the height of the staves
+  (declare (ignore segment))
   3.0)
 
 (defun beam-height (segment)
   "height of a beam line (in millimeter)."
   ;; TODO: should depend on the height of the staves
+  (declare (ignore segment))
   0.5)
 
 ;; beam dynamic<> and tenue, and annotation, could span several measures/lines/pages.
@@ -263,6 +267,7 @@ C- spreading measures over to lines and lines to pages.
 (defun tenue-offset (partition)
   "Position of the tenue above the maximum lane."
   ;; TODO: should depend on the height of the staves
+  (declare (ignore partition))
   0.2)
 
 (defmethod compute-box-size ((segment beam-segment))
@@ -300,27 +305,30 @@ C- spreading measures over to lines and lines to pages.
                                  (dynamic-height segment))))
 
 (defmethod layout ((segment dynamic-segment))
-  (setf (box-origin segment)
-        (vector+ (point (segment-width segment)
-                        (- (lane-bottom 0 partition)
-                           (height (box segment))))
-                 (offset segment))))
+  (let ((partition     (partition (page (line (measure segment))))))
+    (setf (box-origin segment)
+          (vector+ (point (segment-width segment)
+                          (- (lane-bottom 0 partition)
+                             (height (box segment))))
+                   (offset segment)))))
 
 
 
 (defmethod compute-box-size ((measure measure))
   (let* ((partition     (partition (page (line measure))))
          (measure-speed (default-measure-speed partition))
-         (tempo         (tempo measure))
-         (duration      (measure-duration tempo))
+         (duration      (duration measure))
          (width         (* measure-speed duration)))
     (setf (box-size measure) (size width (* 58/8 (staff-height partition))))))
 
 (defmethod layout ((measure measure))
-  (setf (box-origin measure)
-        (if (first-element-in-container-p measure)
-            (point 0 0)
-            (point (right (box (previous measure))) 0))))
+  (let ((line (line measure)))
+    (setf (box-origin measure)
+          (if (first-element-in-container-p measure)
+              (point (measure-left-position line) 0)
+              (point (right (box (previous measure))) 0)))
+    (dolist (sounds (sounds measure))
+      (layout sound))))
 
 
 (defmethod compute-box-size ((band band))
@@ -338,6 +346,24 @@ C- spreading measures over to lines and lines to pages.
          (base        (* 1/2 (minimum-lane band) lane-height)))
     (setf (box-origin band) (point 0 base))))
 
+(defmethod layout ((staff staff))
+  (when (next-method-p) (call-next-method))
+  (layout (clef staff)))
+
+
+(defmethod compute-box-size ((clef clef))
+  (setf (box-size clef) (size 10.0 (height (box (staff clef))))))
+
+(defmethod layout ((clef clef))
+  (setf (box-origin clef) (point 0.0 0.0))0)
+
+
+(defmethod measure-left-position ((line line))
+  (reduce (function max) (bands line)
+          :key (lambda (band)
+                 (typecase band
+                   (staff (right (box (clef band))))
+                   (t 0)))))
 
 (defmethod compute-box-size ((line line))
   (let* ((partition   (partition (page line)))
@@ -359,10 +385,14 @@ C- spreading measures over to lines and lines to pages.
 (defmethod layout ((line line))
   (setf (box-origin line)
         (vector+ (point 0 (- (if (first-element-in-container-p line)
-                                 (top (box (container line)))
+                                 (top (box (page line)))
                                  (bottom (box (previous line))))
                              (height (box line))))
-                 offset)))
+                 (offset line)))
+  (dolist (band (bands line))
+    (layout band))
+  (dolist (measure (measures line))
+    (layout measure)))
 
 
 
@@ -370,14 +400,22 @@ C- spreading measures over to lines and lines to pages.
   (setf (box page) (paper-printable-area (partition page))))
 
 (defmethod layout ((page page))
-  (setf (box page) (paper-printable-area (partition page))))
+  (setf (box page) (paper-printable-area (partition page)))
+  (dolist (line (lines page))
+    (layout line)))
 
 
 
+(defmethod compute-box-size ((partition partition))
+  (values))
 
+(defmethod layout ((partition partition))
+  (dolist (page (pages partition))
+    (layout page)))
 
 
 (defun remove-pages (partition)
+  (declare (ignore partition))
   #+TODO
   (dolist (page (pages partition))
     (dolist (line (lines page))

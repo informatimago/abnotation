@@ -53,10 +53,10 @@
 ;;                     ^                             ^                             
 ;;                     |                             |
 ;;                     |                     +-------+--------+
-;;  +------------------|----* tempo 1----+   |                |
-;;  |                  |                 | image             text
-;;  |  +------------+--+-----+---------+ |
-;;  |  |            |        |         | *
+;;                     |                     |                |
+;;                     |                   image             text
+;;     +------------+--+-----+---------+  
+;;     |            |        |         |  
 ;; partition 1--* page 1--* line 1--* measure 1---* sound
 ;;                           | \                      ^
 ;;                           *  *                     |
@@ -114,6 +114,29 @@
   ((start-time :initarg :start-time :accessor start-time)
    (duration  :initarg :duration :accessor duration)
    (dynamic :initarg :dynamic :accessor dynamic :initform :mf)))
+
+
+;; (defmethod next ((sound sound))
+;;   (loop :for sounds :on (sounds (measure sound))
+;;         :until (eql (car sounds) sound)
+;;         :finally (return (or (cadr sounds)
+;;                              (loop
+;;                                :with measure = (next (measure sound))
+;;                                :while (and measure (endp (sounds measure)))
+;;                                :do (setf measure (next measure))
+;;                                :finally (return (and measure (first (sounds measure)))))))))
+;; 
+;; (defmethod previous ((sound sound))
+;;   (let ((sounds (sounds (measure sound))))
+;;     (if (eql sound (first sounds))
+;;         (loop
+;;           :with measure = (previous (measure sound))
+;;           :while (and measure (endp (sounds measure)))
+;;           :do (setf measure (previous measure))
+;;           :finally (return (and measure (first (sounds measure)))))
+;;         (loop :for sounds :on 
+;;               :until (eql (cadr sounds) sound)
+;;               :finally (return (car sounds))))))
 
 (defmethod end-time ((sound sound))
   (+ (start-time sound) (duration sound)))
@@ -238,14 +261,27 @@ Otherwise it's a - - - - tenue."))
 
 
 (defclass measure (graphic-element numbered node span)
-  ((stat-time      :initarg :start-time     :accessor start-time     :initform 0.0)
+  ((stat-time      :initarg :start-time     :accessor start-time     :initform 0)
+   (duration       :initarg :duration       :accessor duration       :initform 1)
    (adjusted-width :initarg :adjusted-width :accessor adjusted-width :initform 0.0 :type coordinate)
    (front-kerning  :initarg :front-kerning  :accessor front-kerning  :initform 0.0 :type coordinate)))
 
-
-
 (defmethod end-time ((measure measure))
-  (+ (start-time measure) (measure-duration (tempo measure))))
+  (+ (start-time measure) (duration measure)))
+
+
+  
+(defun update-next-measure-start-time (measure)
+  (when (next measure)
+    (setf (start-time (next measure)) (end-time measure))))
+
+(defmethod (setf start-time) :after (new-value (measure measure))
+  (declare (ignore new-value))
+  (update-next-measure-start-time measure))
+(defmethod (setf duration) :after (new-value (measure measure))
+  (declare (ignore new-value))
+  (update-next-measure-start-time measure))
+
 
 (defmethod time-in-measure-p (time (measure measure))
   (and (<= (start-time measure) time (end-time measure))))
@@ -374,17 +410,13 @@ Otherwise it's a - - - - tenue."))
 (defclass staff (band)
   ())
 
-(defmethod (setf box) :after (new-box (staff staff))
-  (setf (box (clef staff)) (rect (left new-box) (bottom new-box)
-                                 10.0 (height new-box))))
-
 
 (defclass clef (graphic-element)
-  ((name :initarg :name :reader name)
-   (line :initarg :line :reader line
-         :documentation "The line of the staff on which the clef is aligned (1-5, 1=bottom).")
+  ((name  :initarg :name :reader name)
+   (trait :initarg :trait :reader trait
+          :documentation "The line of the staff on which the clef is aligned (1-5, 1=bottom).")
    (pitch :initarg :pitch :reader pitch
-          :documentation "The pitch of the clef = the note on (line clef).")
+          :documentation "The pitch of the clef = the note on (trait clef).")
    (minimum-lane :initarg :minimum-lane :reader minimum-lane)
    (bottom-lane  :initarg :bottom-lane  :reader bottom-lane)
    (top-lane     :initarg :top-lane     :reader top-lane)
@@ -414,7 +446,6 @@ Otherwise it's a - - - - tenue."))
 ;;    (lines :type line
 ;;           :multiplicity 0-*
 ;;           :ordered t)))
-
 (defmethod lines ((page page))
   (span-contents page))
 (defmethod page ((line line))
@@ -492,7 +523,6 @@ Otherwise it's a - - - - tenue."))
 ;;    (pages :type page
 ;;           :multiplicity 0-*
 ;;           :ordered t)))
-
 (defmethod pages ((partition partition))
   (span-contents partition))
 (defmethod partition ((page page))
@@ -517,96 +547,27 @@ Otherwise it's a - - - - tenue."))
                        (compute-box-size title)
                        title)))))
 
-(defclass tempo (element)
-  ((measure-duration :initarg :measure-duration :accessor measure-duration)))
-
-(define-association partition-tempo
-  ((partition :type partition
-              :multiplicity #|1|# 0-1
-              :kind :aggregation)
-   (tempos :type tempo
-           :multiplicity 0-*
-           :ordered t)))
-
-(define-association gives-tempo
-  ((tempo :type tempo
-          :multiplicity #|1|# 0-1)
-   (measures :type measure
-             :multiplicity 0-*
-             :ordered t)))
-
-(defmethod (setf tempos) :after (new-tempo (partition partition))
-  (declare (ignore new-tempo))
-  (setf (needs-saving partition) t))
-
-
-;; TODO: see with ordered associations.
-
-(defgeneric next (element))
-(defgeneric previous (element))
-
-
-(define-association tempo-sequence
-  ((previous :type tempo
-             :multiplicity 0-1)
-   (next     :type tempo
-             :multiplicity 0-1))
-  (:documentation "The tempos are ordered in a doubly-linked list."))
-
-(define-association measure-sequence
-  ((previous :type measure
-             :multiplicity 0-1)
-   (next     :type measure
-             :multiplicity 0-1))
-  (:documentation "The measures are ordered in a doubly-linked list."))
-
-(define-association line-sequence
-  ((previous :type line
-             :multiplicity 0-1)
-   (next     :type line
-             :multiplicity 0-1))
-  (:documentation "The lines are ordered in a doubly-linked list."))
-
-(define-association page-sequence
-  ((previous :type page
-             :multiplicity 0-1)
-   (next     :type page
-             :multiplicity 0-1))
-  (:documentation "The page are ordered in a doubly-linked list."))
-
-(defmethod next ((sound sound))
-  (loop :for sounds :on (sounds (measure sound))
-        :until (eql (car sounds) sound)
-        :finally (return (or (cadr sounds)
-                             (loop
-                               :with measure = (next (measure sound))
-                               :while (and measure (endp (sounds measure)))
-                               :do (setf measure (next measure))
-                               :finally (return (and measure (first (sounds measure)))))))))
-
-(defmethod previous ((sound sound))
-  (let ((sounds (sounds (measure sound))))
-    (if (eql sound (first sounds))
-        (loop
-          :with measure = (previous (measure sound))
-          :while (and measure (endp (sounds measure)))
-          :do (setf measure (previous measure))
-          :finally (return (and measure (first (sounds measure)))))
-        (loop :for sounds :on 
-              :until (eql (cadr sounds) sound)
-              :finally (return (car sounds))))))
-
-
-
 
 (defgeneric container (element)
   (:method ((nul null))         nil)
   (:method ((segment segment))  (measure segment))
-  (:method ((sound sound))      (measure sound))
-  (:method ((measure measure))  (line measure))
-  (:method ((line line))        (page line))
-  (:method ((page page))        (partition page))
-  (:method ((tempo tempo))      (partition tempo)))
+  (:method ((node node))        (span node)))
+
+
+(defgeneric first-element-in-container-p (element)
+  (:method ((node node))
+    (headp node))
+  (:method ((segment segment))
+    (not (eql (container (previous segment))
+              (container segment)))))
+
+(defgeneric last-element-in-container-p (element)
+  (:method ((node node))
+    (tailp node))
+  (:method ((segment segment))
+    (not (eql (container segment)
+              (container (next segment))))))
+
 
 
 (defun first-segment-p (segment)
@@ -626,70 +587,28 @@ Otherwise it's a - - - - tenue."))
     (time-in-measure-p (end-time sound) measure)))
 
 
-(defun first-element-in-container-p (element)
-  (not (eql (container (previous element))
-            (container element))))
-
-(defun last-element-in-container-p (element)
-  (not (eql (container element)
-            (container (next element)))))
 
 
 
-(defgeneric head (element)
-  (:method (element)
-    (loop
-      :for current = element :then previous
-      :for previous = (previous current)
-      :while previous
-      :finally (return current))))
-
-(defgeneric tail (element)
-  (:method (element)
-    (loop
-      :for current = element :then next
-      :for next = (next current)
-      :while next
-      :finally (return current))))
 
 
 
-;; (define-association annotate
-;; (define-association groups
-;; (define-association note-head
-;; (define-association note-accidental
-;; (define-association sound-beams
-;; (define-association sound-dynamics
-;; (define-association sound-tenues
-;; (define-association measure-contains-sounds
-;; (define-association measure-contains-segments
-;; (define-association line-contains-vertically
-;; (define-association line-contains-horizontally
-;; (define-association band-contains
-;; (define-association gives-pitch
-;; (define-association page-contains
-;; (define-association partition-contains
-;; (define-association partition-tempo
-;; (define-association gives-tempo
-;;
-;; (define-association tempo-sequence
-;; (define-association measure-sequence
-;; (define-association line-sequence
-;; (define-association page-sequence
+;; (defgeneric head (element)
+;;   (:method (element)
+;;     (loop
+;;       :for current = element :then previous
+;;       :for previous = (previous current)
+;;       :while previous
+;;       :finally (return current))))
 ;; 
-;; (:method ((segment segment))  (measure segment))  measure-contains-segments
-;; (:method ((sound sound))      (measure sound))    measure-contains-sounds      
-;; (:method ((measure measure))  (line measure))     line-contains-vertically     measure-sequence
-;; (:method ((line line))        (page line))        page-contains                line-sequence
-;; (:method ((page page))        (partition page))   partition-contains           page-sequence
-;; (:method ((tempo tempo))      (partition tempo))  gives-tempo                  tempo-sequence
+;; (defgeneric tail (element)
+;;   (:method (element)
+;;     (loop
+;;       :for current = element :then next
+;;       :for next = (next current)
+;;       :while next
+;;       :finally (return current))))
 
-
-;; (defmethod did-link ((association (eql 'partition-contains)) (partition partition) (page page))
-;;   (compute-box-size page))
-;; 
-;; (defmethod did-link ((association (eql 'page-contains)) (page page) (line line))
-;;   (compute-box-size line))
 
 
 
@@ -701,19 +620,23 @@ Otherwise it's a - - - - tenue."))
 (define-print-object text    box offset rtf)
 (define-print-object note    start-time duration dynamic pitch)
 (define-print-object cluster start-time duration dynamic notes)
-(define-print-object measure box number sounds)
-(define-print-object line    box offset number bands measures)
-(define-print-object page    box number lines)
+(define-print-object measure box number
+  head tail)
+(define-print-object line    box offset number bands  
+  head tail)
+(define-print-object page    box number
+  head tail)
 (define-print-object ledger  box minimum-lane bottom-lane top-lane maximum-lane)
 (define-print-object staff   box clef)
-(define-print-object clef    box name line pitch)
+(define-print-object clef    box name trait pitch)
 (define-print-object tempo   measure-duration measures)
 (define-print-object partition
-  title author file staff-set pages tempos
+  title author file staff-set
   page-number-font line-number-font measure-number-font
   paper-format paper-orientation
   paper-size paper-printable-area
-  staff-height interline)
+  staff-height interline
+  head tail)
 
 
 ;; (loop for i from 20 to 120
@@ -762,18 +685,22 @@ Otherwise it's a - - - - tenue."))
 
 
 (defun create-bands (staff-set)
-  (let ((clefs (list (make-instance 'clef :name :bass15mb   :line 4 :pitch  41
-                                    :minimum-lane 5 :bottom-lane 6
-                                    :maximum-lane 15 :top-lane 14)
-                     (make-instance 'clef :name :bass       :line 4 :pitch  65
-                                    :minimum-lane 19  :bottom-lane 20
-                                    :maximum-lane 29  :top-lane 28)
-                     (make-instance 'clef :name :treble     :line 2 :pitch  79
-                                    :minimum-lane 31  :bottom-lane 32
-                                    :maximum-lane 41 :top-lane 40)
-                     (make-instance 'clef :name :treble15ma :line 2 :pitch 103
-                                    :minimum-lane 45  :bottom-lane 46
-                                    :maximum-lane 55 :top-lane 54))))
+  (let ((clefs (list (make-instance 'clef :name :bass15mb
+                                          :trait 4 :pitch 41
+                                          :minimum-lane  5 :bottom-lane  6
+                                          :maximum-lane 15 :top-lane    14)
+                     (make-instance 'clef :name :bass
+                                          :trait 4 :pitch 65
+                                          :minimum-lane 19  :bottom-lane 20
+                                          :maximum-lane 29  :top-lane    28)
+                     (make-instance 'clef :name :treble
+                                          :trait 2 :pitch 79
+                                          :minimum-lane 31 :bottom-lane 32
+                                          :maximum-lane 41 :top-lane    40)
+                     (make-instance 'clef :name :treble15ma
+                                          :trait 2 :pitch 103
+                                          :minimum-lane 45 :bottom-lane 46
+                                          :maximum-lane 55 :top-lane    54))))
     (subseq (list (make-instance 'ledger
                       :minimum-lane 1 :bottom-lane 2
                       :maximum-lane 4 :top-lane 4)
@@ -824,7 +751,6 @@ Otherwise it's a - - - - tenue."))
                          :paper-orientation paper-orientation
                          :staff-height staff-height))
          (*partition* partition)
-         (tempo      (make-instance 'tempo :measure-duration 1))
          (page       (make-instance 'page :number 1))
          (line       (make-instance 'line :number 1))
          (measure    (make-instance 'measure :number 1)))
@@ -834,16 +760,14 @@ Otherwise it's a - - - - tenue."))
       (attach 'line-contains-horizontally line band))
     (span-append-node partition page) ; (attach 'partition-contains partition page)
     (span-append-node page line)      ; (attach 'page-contains page line)
-    (attach 'partition-tempo partition tempo)
-    (attach 'gives-tempo tempo measure)
     (span-append-node line measure)   ; (attach 'line-contains-vertically line measure)
-    (let* ((measure-speed (default-measure-speed partition))
-           (duration (measure-duration tempo))
-           (width (* measure-speed duration))
-           (height (* 58/8 (staff-height partition))))
-      (setf (box-size measure) (size width height))
-      (setf (box-size line) (size (width (box page)) height)))
-    (layout-partition-from-tempos partition)
+    #-(and) (let* ((measure-speed (default-measure-speed partition))
+                   (duration (duration measure))
+                   (width (* measure-speed duration))
+                   (height (* 58/8 (staff-height partition))))
+              (setf (box-size measure) (size width height))
+              (setf (box-size line) (size (width (box page)) height)))
+    (layout partition)
     partition))
 
 
@@ -874,7 +798,8 @@ Otherwise it's a - - - - tenue."))
           (setf (page    cursor) (head (partition cursor))
                 (line    cursor) (head (page      cursor))
                 (measure cursor) (head (line      cursor))
-                (sound   cursor) (head (measure   cursor))))))
+                ;; (sound   cursor) (head (measure   cursor))
+                ))))
 
 
 (defmethod forward-sound ((cursor cursor))

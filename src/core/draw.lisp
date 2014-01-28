@@ -62,6 +62,7 @@
     (stroke-path p)))
 
 
+(defvar *thick* 0.1 #|mm|#)
 (defmethod draw ((r rect) &optional clip-rect)
   (declare (ignore clip-rect))
   (let* ((p      (create-path))
@@ -69,7 +70,7 @@
          (right  (rect-right  r))
          (top    (rect-top    r))
          (bottom (rect-bottom r))
-         (thick  0.1 #|mm|#)) 
+         (thick  *thick*)) 
     (move-to-coordinates p *transform* left bottom)
     (line-to-coordinates p *transform* left top)
     (line-to-coordinates p *transform* right top)
@@ -83,19 +84,40 @@
     (close-subpath p)
     (fill-path p)))
 
+(defmethod fill-rect ((r rect) &optional clip-rect)
+  (declare (ignore clip-rect))
+  (let* ((p      (create-path))
+         (left   (rect-left   r))
+         (right  (rect-right  r))
+         (top    (rect-top    r))
+         (bottom (rect-bottom r))) 
+    (move-to-coordinates p *transform* left bottom)
+    (line-to-coordinates p *transform* left top)
+    (line-to-coordinates p *transform* right top)
+    (line-to-coordinates p *transform* right bottom)
+    (line-to-coordinates p *transform* left bottom)
+    (close-subpath p)
+    (fill-path p)))
+
 
 
 (defgeneric debug-color (element)
-  (:method (element)           :red)
+  (:method ((element t))       :light-gray)
+  (:method ((element page))    :dark-gray)
   (:method ((element staff))   :yellow)
   (:method ((element clef))    :green)
   (:method ((element line))    :blue)
-  (:method ((element measure)) :cyan))
+  (:method ((element measure)) :cyan)
+  (:method ((element sound))   :orange))
 
 
 (defmethod draw :before ((element graphic-element) &optional clip-rect)
   (set-color (debug-color element))
-  (draw (box element) clip-rect))
+  (if (eq :yellow (debug-color element))
+      (let ((*thick* 0.5))
+        (format *trace-output* "Yellow box: ~S~%" (box element))
+        (draw (box element) clip-rect))
+      (draw (box element) clip-rect)))
 
 (defmethod draw :after ((element graphic-element) &optional clip-rect)
   (when (annotation element)
@@ -165,12 +187,17 @@
 
 (defmethod draw ((clef clef) &optional clip-rect)
   (format *trace-output* "Drawing clef ~A ~S~%" (name clef) (box clef))
-  (with-bounds-and-clip-rect ((box clef) clip-rect)
-    (let ((where (transform-point *transform* 0 0)))
-      (draw-clef (name clef) where (height (box clef)))
-      (set-color :blue)
-      (draw-point 0 0 0.5))))
-
+  (let* ((partition (partition (page (line (staff clef)))))
+         (height    (* (ecase (trait clef) ;; TODO: clean this horrible hack.
+                         (4 -3)
+                         (2 -7))
+                       (lane-height partition)))
+         (font-size (* 0.75 (height (box clef)))))
+    (with-bounds-and-clip-rect ((box clef) clip-rect)
+      (let ((where (transform-point *transform* 0 height))) 
+        (draw-clef (name clef) where font-size) 
+        (set-color :green)
+        (draw-point 0 0 0.5)))))
 
 (defmethod draw ((staff staff) &optional clip-rect)
   (format *trace-output* "Drawing staff ~A ~A-~A ~S~%"
@@ -223,7 +250,7 @@
         (set-color :gray)
         (stroke-path p)))
     ;; Draw lines:
-    (with-bounds-and-clip-rect (printable-area clip-rect)
+    (with-bounds-and-clip-rect ((box page) clip-rect)
       (dolist (line (lines page))
         (draw line clip-rect))
       (draw (number-annotation page) clip-rect)

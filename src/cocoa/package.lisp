@@ -134,10 +134,12 @@
         "COM.INFORMATIMAGO.OBJCL.WRAPPER"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.CIRCULAR"
         "COM.INFORMATIMAGO.COMMON-LISP.CESARUM.UTILITY"
+        "ABNOTATION.SPAN"
         "ABNOTATION.CORE"
         "ABNOTATION.COMMAND")
+  (:shadowing-import-from "ABNOTATION.SPAN" "TAILP")
   (:shadowing-import-from "ABNOTATION.CORE" "NUMBER")
-  (:shadowing-import-from "ABNOTATION.IO" "FORMAT")
+  (:shadowing-import-from "ABNOTATION.IO"   "FORMAT")
   (:export "MAIN"))
 
 
