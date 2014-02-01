@@ -629,7 +629,6 @@ Otherwise it's a - - - - tenue."))
 (define-print-object ledger  box minimum-lane bottom-lane top-lane maximum-lane)
 (define-print-object staff   box clef)
 (define-print-object clef    box name trait pitch)
-(define-print-object tempo   measure-duration measures)
 (define-print-object partition
   title author file staff-set
   page-number-font line-number-font measure-number-font

@@ -529,9 +529,8 @@ specified by the midi EVENT.
 
 
 
-(defun create-tempos-and-measures-for-notes (measure-durations notes total-duration)
-  (let ((tempos                   '())
-        (measures                 '())
+(defun create-measures-for-notes (measure-durations notes total-duration)
+  (let ((measures                 (make-empty-span))
         (min-time                 (note-on-time (first notes)))
         (start-time               (car (first measure-durations)))
         (current-measure-duration (cdr (first measure-durations))))
@@ -539,14 +538,9 @@ specified by the midi EVENT.
     (when (< min-time start-time)
       (decf start-time (* (ceiling (- start-time min-time) current-measure-duration)
                           current-measure-duration)))
-    (flet ((make-tempo (duration)
-             (let ((tempo (make-instance 'tempo :measure-duration duration)))
-               (push tempo tempos)
-               tempo))
-           (make-measure (tempo mnumber start-time)
-             (let ((measure (make-instance 'measure :number mnumber :start-time start-time)))
-               (attach 'gives-tempo tempo measure)
-               (push measure measures)
+    (flet ((make-measure (duration mnumber start-time)
+             (let ((measure (make-instance 'measure :number mnumber :start-time start-time :duration duration)))
+               (span-append-node measures measure)
                measure))
            (make-note (midi-note)
              (make-instance 'note
@@ -555,10 +549,10 @@ specified by the midi EVENT.
                  :dynamic (initial-velocity midi-note)
                  :pitch (key midi-note))))
       (loop ; make each measure
+       ;; TODO: if a tempo change occurs in the middle of a measure, we should make it shorter and start over from the tempo change.
         :with next-tempo-change = (car (first measure-durations))
-        :with tempo = (make-tempo current-measure-duration)
         :for mnumber :from 1
-        :for measure = (make-measure tempo mnumber start-time)
+        :for measure = (make-measure current-measure-duratiaon  mnumber start-time)
         :for end-time = (end-time measure)
         :while (< end-time total-duration)
         :do (progn 
@@ -568,9 +562,8 @@ specified by the midi EVENT.
                 :do (attach 'measure-contains-sounds measure (make-note (pop notes))))
               (setf start-time end-time)
               (when (and next-tempo-change (<= next-tempo-change start-time))
-                (setf current-measure-duration (cdr (pop measure-durations))
-                      tempo (make-tempo current-measure-duration))))))
-    (values (nreverse tempos) (nreverse measures))))
+                (setf current-measure-duration (cdr (pop measure-durations)))))))
+    measures))
 
 
 ;; (create-tempos-and-measures-for-notes '((10.0 . 2.0))
@@ -588,7 +581,7 @@ specified by the midi EVENT.
 
 
 
-(defmethod (setf tempo-and-notes) ((sequence abnotation-sequence) (partition partition))
+(defmethod append-midi-sequence ((partition partition) (sequence abnotation-sequence))
   (let* ((measure-durations (sort (queue-elements (measures sequence))
                                   (function <)
                                   :key (function car)))
@@ -596,12 +589,12 @@ specified by the midi EVENT.
                                   (function <)
                                   :key (function note-on-time)))
          (last-note         (car (last notes)))
-         (total-duration    (coerce (note-off-time last-note) 'double-float)))
-    (multiple-value-bind (tempos measures) (create-tempos-and-measures-for-notes
-                                            measure-durations notes total-duration)
-      (declare (ignore measures))
-      (setf (tempos partition) tempos))
+         (total-duration    (coerce (note-off-time last-note) 'double-float))
+         (page (tail partition))
+         (line (tail page)))
+    (create-measures-for-notes measure-durations notes total-duration)
     sequence))
+
 
 
 ;; (let ((partition (create-partition *staves/bass15mb-trebble15ma*)))

@@ -187,7 +187,7 @@
                                          :partition partition)))
             (push window *windows*)
             [window makeKeyAndOrderFront:window]
-            (layout-partition-from-tempos partition)))
+            (layout partition)))
       (error (err)
              (message "~A" err)))
     path))

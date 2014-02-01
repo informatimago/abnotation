@@ -429,16 +429,17 @@ C- spreading measures over to lines and lines to pages.
 
 (defmethod layout-partition-from-tempos ((partition partition))
   (let ((measure-speed (default-measure-speed partition))
-        (measures '()))
+        ;; (measures '())
+        )
     ;; compute measure widths:
-    (dolist (tempo (tempos partition))
-      (let* ((duration (measure-duration tempo))
-             (width (* measure-speed duration)))
-        (dolist (measure (measures tempo))
-          (setf (box-size measure) (size width (* 58/8 (staff-height partition))))
-          (push measure measures))))
+    ;; (dolist (tempo (tempos partition))
+    ;;   (let* ((duration (measure-duration tempo))
+    ;;          (width (* measure-speed duration)))
+    ;;     (dolist (measure (measures tempo))
+    ;;       (setf (box-size measure) (size width (* 58/8 (staff-height partition))))
+    ;;       (push measure measures))))
     ;; spread measures over lines
-    (setf measures (nreverse measures))
+    ;; (setf measures (nreverse measures))
     ;; (setf (measures partition) measures)
     (remove-pages partition)
     (let ((pages '()) (pageno 0) page          
