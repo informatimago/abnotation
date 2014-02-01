@@ -56,13 +56,13 @@
 ;; com.informatimago.common-lisp.cesarum.dll:dll
 
 
- ;;         ____________            _          spans
- ;;        /            \           |
- ;;       []============[]==========[]        dll objects
- ;;       |             |           |           
- ;;   ____|_____      __|___     ___|__        spans
- ;;  /  |   |   \    /  |   \   /   |  \
- ;; []==[]==[]==[]==[]==[]==[]==[]==[]==[]     dll objects
+;;         ____________            _          spans
+;;        /            \           |
+;;       []============[]==========[]        dll objects
+;;       |             |           |           
+;;   ____|_____      __|___     ___|__        spans
+;;  /  |   |   \    /  |   \   /   |  \
+;; []==[]==[]==[]==[]==[]==[]==[]==[]==[]     dll objects
 
 
 
@@ -136,6 +136,10 @@
             (tail-in-span-p ,vcurrent))
           ,result))))
 
+(defgeneric mapspan (fun span)
+  (:method (fun (span span))
+    (dospan (node span)
+      (funcall fun node))))
 
 (defgeneric emptyp (span)
   (:method ((span span))
@@ -221,7 +225,7 @@
       (loop
         :for current = (head span) :then (next current)
         :unless (typep current 'place-holder-node) :collect current
-        :until (tail-in-span-p current)))))
+          :until (tail-in-span-p current)))))
 
 (defgeneric span-nth (index span)
   (:method (index (span span))
@@ -231,7 +235,7 @@
         :do (assert node)
         :until (or (zerop index) (tail-in-span-p node))
         :unless (typep node 'place-holder-node) 
-        :do (decf index)
+          :do (decf index)
         :finally (return (when (zerop index)
                            node))))))
 
@@ -243,7 +247,7 @@
           :for node = (head span) :then (next node)
           :do (assert node)
           :unless (typep node 'place-holder-node) 
-          :count 1
+            :count 1
           :until (tail-in-span-p node)))))
 
 
@@ -290,7 +294,54 @@
           (setf (tail span) node)
           (values span new-span)))))
 
-(defgeneric %delete-node (node)
+
+(defun check-exclusive-span-nodes (head1 tail1 head2 tail2)
+  (loop
+    :for node = head1 :then (next node)
+    :when (null node) :do (error "tail1 doen't follow head1")
+      :when (eq node head2) :do (error "head2 in head1-tail1")
+        :when (eq node tail2) :do (error "tail2 in head1-tail1")
+          :until (eq node tail1))
+  (loop
+    :for node = head2 :then (next node)
+    :when (null node) :do (error "tail2 doen't follow head2")
+      :when (eq node head1) :do (error "head1 in head2-tail2")
+        :when (eq node tail1) :do (error "tail1 in head2-tail2")
+          :until (eq node tail2)))
+
+
+(defgeneric %swap-nodes (head1 tail1 head2 tail2)
+  (:documentation "Swaps all the nodes between HEAD1 and TAIL1 with the nodes between HEAD2 and TAIL2. Returns HEAD1 and HEAD2.")
+  (:method ((head1 node) (tail1 node) (head2 node) (tail2 node))
+    (check-exclusive-span-nodes head1 tail1 head2 tail2)
+    (when (next tail1)
+      (setf (previous (next tail1)) tail2))
+    (when (next tail2)
+      (setf (previous (next tail2)) tail1))
+    (when (previous head1)
+      (setf (next (previous head1)) head2))
+    (when (previous head2)
+      (setf (next (previous head2)) head1))
+    (psetf (next tail1) (next tail2)
+           (next tail2) (next tail1)
+           (previous head1) (previous head2)
+           (previous head2) (previous head1))
+    (values head1 head2)))
+
+(defgeneric %unsplice-nodes (head tail)
+  (:documentation "Extracts all the nodes between HEAD and TAIL. Returns HEAD.")
+  (:method ((head node) (tail node))
+    (assert (find-node tail head))
+    (when (next tail)
+      (setf (previous (next tail)) (previous head)))
+    (when (previous head)
+      (setf (next (previous head)) (next tail)))
+    (setf (previous head) nil
+          (next tail) nil)
+    head))
+
+(defgeneric %extract-node (node)
+  (:documentation "Extracts the node from its dll.")
   (:method ((node node))
     (when (next node)
       (setf (previous (next node)) (previous node)))
@@ -301,6 +352,7 @@
     node))
 
 (defgeneric %insert-node-before (node next)
+  (:documentation "Inserts the node into the dll of NEXT.")
   (:method ((node node) (next node))
     (setf (previous node) (previous next))
     (when (previous next)
@@ -310,6 +362,7 @@
     node))
 
 (defgeneric %insert-node-after (node previous)
+  (:documentation "Inserts the node into the dll of PREVIOUS.")
   (:method ((node node) (previous node))
     (setf (next node) (next previous))
     (when (next previous)
@@ -325,12 +378,14 @@
            (next-span (and head (span head))))
       (when (and next-span (not (emptyp next-span)))
         (if (emptyp span)
+            ;; then tail is a place-holder-node
             (let ((next-tail (tail next-span)))
-              (%insert-node-after (%delete-node tail) next-tail)
+              (%insert-node-after (%extract-node tail) next-tail)
               (setf (head span) head
                     (tail span) next-tail
                     (head next-span) tail
                     (tail next-span) tail))
+            ;; else we need to create a new place-holder-node for the forward span.
             (let ((empty-node (make-instance 'place-holder-node))
                   (next-tail (tail next-span)))
               (%insert-node-after empty-node next-tail) 
@@ -349,7 +404,7 @@
       (when (and previous-span (not (emptyp previous-span)))
         (if (emptyp span)
             (let ((previous-head (head previous-span)))
-              (%insert-node-before (%delete-node head) previous-head)
+              (%insert-node-before (%extract-node head) previous-head)
               (setf (head span) previous-head
                     (tail span) tail
                     (head previous-span) head
@@ -363,6 +418,40 @@
         (%update-node-span span)
         (%update-node-span previous-span))
       span)))
+
+
+(defgeneric span-append-nodes-from-span (destination-span source-span)
+  (:documentation "The nodes are removed from the SOURCE-SPAN and appended to the DESTINATION-SPAN tail.
+Returns DESTINATION-SPAN.")
+  (:method ((destination-span span) (source-span span))
+    (check-span destination-span)
+    (check-span source-span)
+    (unless (emptyp source-span)
+      (let* ((headd (head destination-span))
+             (taild (tail destination-span))
+             (heads (head source-span))
+             (tails (tail source-span)))
+        (if (emptyp destination-span)
+            ;; then  destination-span contains a place-holder-node, we give it to source-span.
+            (progn (%swap-nodes headd taild heads tails)
+                   (setf (head DESTINATION-SPAN) heads
+                         (tail DESTINATION-SPAN) tails
+                         (head source-span) headd
+                         (tail source-span) taild))
+            ;; else let's make a place-holder-node for source-span
+            (let ((empty-node (make-instance 'place-holder-node)))
+              (span-append-node destination-span empty-node)
+              (%swap-nodes empty-node empty-node heads tails)
+              (setf (tail DESTINATION-SPAN) tails
+                    (head source-span) empty-node
+                    (tail source-span) empty-node)))
+        (check-span source-span :ignore-node-span-link t)
+        (check-span destination-span :ignore-node-span-link t) 
+        (%update-node-span source-span)
+        (%update-node-span destination-span)))
+    destination-span))
+
+
 
 
 (defgeneric span-prepend-node (span node)
@@ -379,6 +468,8 @@
               (head span) node))))
 
 (defgeneric span-append-node (span node)
+  (:documentation "Add the NODE at the tail of the SPAN and returns the NODE.
+Note: the tail of the span can be in the middle of the NODE dll.")
   (:method ((span span) (node node))
     (setf (span node) span)
     (if (emptyp span)
@@ -392,6 +483,7 @@
               (tail span) node))))
 
 (defgeneric remove-node (node)
+  (:documentation "Extracts the NODE from its span and returns it.")
   (:method ((node node))
     (let ((span (span node)))
       (when span
@@ -439,6 +531,19 @@
                  (funcall predicate node))
         :do (return-from find-node-if node))))
 
+(defgeneric find-node (target start-node &key direction test key)
+  (:method (target (start-node node) &key (direction :forward) (test (function eql)) (key (function identity)))
+    (let ((target-key (funcall key target))
+          (stepfun (if (eq direction :forward)
+                       (function next)
+                       (function previous))))
+      (loop
+        :for node = start-node :then (funcall stepfun node)
+        :while node
+        :when (and (not (typep node 'place-holder-node))
+                   (funcall test target-key (funcall key node)))
+          :do (return node)))))
+
 
 (defgeneric span-position-if (predicate span &key key start end)
   (:method (predicate (span span) &key (key (function identity)) (start 0) end)
@@ -461,7 +566,7 @@
   (:method ((node node) (span span) &key (test (function eql)) (key (function identity)) (start 0) end)
     (let ((value (funcall key node)))
       (span-position-if (lambda (node) (funcall test value (funcall key node)))
-                         span :key key :start start :end end))))
+                        span :key key :start start :end end))))
 
 
 
@@ -517,6 +622,60 @@
   node)
 
 
+(defun check-span (span &key ignore-node-span-link)
+  (check-type span span)
+  (check-type (head span) node)
+  (check-type (tail span) node)
+  (check-node-dll (head span))
+  (check-node-dll (tail span))
+  (when (previous (head span))
+    (assert (eq (head span) (next (previous (head span))))))
+  (when (next (tail span))
+    (assert (eq (tail span) (previous (next (tail span))))))
+  (loop
+    :for node = (head span) :then (next node)
+    :do (assert node () "tail not in head->next* chain.")
+        (when (previous node)
+          (assert (eq (next (previous node)) node)))
+        (when (next node)
+          (assert (eq (previous (next node)) node)))
+        (unless ignore-node-span-link
+          (assert (eq span (span node))))
+    :until (eq node (tail span)))
+  :success)
+
+(defun check-span-list (spans)
+  "Check that all the SPANS make up a span-list."
+  (flet ((equiv (a b) (or (and a b) (and (not a) (not b)))))
+    (let ((first (first spans))
+          (last  (first (last spans))))
+      (dolist (span spans)
+        (assert (eql first (first-span span)))
+        (assert (eql last  (last-span  span)))
+        (assert (equal spans (span-list span)))
+        (check-span span))
+      (loop
+        :for (previous current) :on (cons nil spans)
+        :when current
+          :do (assert (eql previous (previous-span current))))
+      (loop
+        :for (current next) :on (append spans (list nil))
+        :when current
+          :do (assert (eql next (next-span current))))
+      (let ((first   (first spans))
+            (last    (first (last spans)))
+            (others  (butlast (rest spans))))
+        (assert (first-span-p first))
+        (dolist (span (cons first others))
+          (assert (not (last-span-p span))))
+        (assert (last-span-p last))
+        (dolist (span (cons last others))
+          (assert (not (first-span-p span)))))))
+  :success)
+
+
+
+
 (defun test/spans ()
   (let ((empty (make-empty-span)))
     (assert (emptyp empty))
@@ -548,33 +707,6 @@
       :do (assert (eql node (span-nth index span)))))
   :success)
 
-
-(defun check-span-list (spans)
-  (flet ((equiv (a b) (or (and a b) (and (not a) (not b)))))
-    (let ((first (first spans))
-          (last  (first (last spans))))
-      (dolist (span spans)
-        (assert (eql first (first-span span)))
-        (assert (eql last  (last-span  span)))
-        (assert (equal spans (span-list span))))
-      (loop
-        :for (previous current) :on (cons nil spans)
-        :when current
-          :do (assert (eql previous (previous-span current))))
-      (loop
-        :for (current next) :on (append spans (list nil))
-        :when current
-          :do (assert (eql next (next-span current))))
-      (let ((first   (first spans))
-            (last    (first (last spans)))
-            (others  (butlast (rest spans))))
-        (assert (first-span-p first))
-        (dolist (span (cons first others))
-          (assert (not (last-span-p span))))
-        (assert (last-span-p last))
-        (dolist (span (cons last others))
-          (assert (not (first-span-p span)))))))
-  :success)
 
 
 (defun test/join-spans ()
@@ -669,6 +801,27 @@
       :do (span-prepend-node span node))
     (assert (equal (reverse nodes) (span-contents span))))
   :success)
+
+
+(defun test/span-append-nodes-from-span ()
+  (loop
+    :for c1 :below 4
+    :do (loop ; we need a free s1 each time.
+          :for n1 = (map-into (make-list c1) (lambda () (make-instance 'test/node)))
+          :for s1 = (make-span n1)
+          :for c2 :below 4
+          :for n2 = (map-into (make-list c2) (lambda () (make-instance 'test/node)))
+          :for s2 = (make-span n2)
+              ;; :do (terpri) (print (span-contents s1)) (print (span-contents s2)) (print '-->)
+          :do (let ((a (span-append-nodes-from-span s1 s2)))
+                ;; (print (span-contents a))
+                (assert (equal (append n1 n2) (span-contents a)))
+                (assert (eql a s1))
+                (assert (emptyp s2))
+                (check-span s1)
+                (check-span s2))))
+  :success)
+
 
 (defun test/forward-slurp-span ()
   (let* ((nodes (list (make-instance 'test/node)
@@ -793,10 +946,7 @@
     (assert (member node forward-nodes))
     :success))
 
-(defun check-span (span)
-  (check-node-dll (head span))
-  (check-node-dll (tail span))
-  :success)
+
 
 (defmethod dump ((span span))
   (print 'forward)
@@ -815,7 +965,8 @@
   (test/span-prepend-node)
   (test/forward-slurp-span)
   (test/backward-slurp-span)
-  (test/join-spans))
+  (test/join-spans)
+  (test/span-append-nodes-from-span))
 
 (test)
 
