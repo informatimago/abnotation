@@ -66,6 +66,10 @@
 
 
 
+;; A node belongs to at most one span (span node).
+;; In the DLL of nodes, all nodes should belong to a span.
+
+
 (defgeneric head (item))
 (defgeneric tail (item))
 (defgeneric next (item))
@@ -184,6 +188,7 @@
     (not (next-span span))))
 
 (defgeneric first-span (span)
+  (:documentation "Return first span in (SPAN-LIST SPAN).")
   (:method ((span span))
     (loop
       :until (first-span-p span)
@@ -191,6 +196,7 @@
       :finally (return span))))
 
 (defgeneric last-span (span)
+  (:documentation "Return last span in (SPAN-LIST SPAN).")
   (:method ((span span))
     (loop
       :until (last-span-p span)
@@ -198,7 +204,7 @@
       :finally (return span))))
 
 (defgeneric span-list (span)
-  (:documentation "Returns the list of chained spans ordered from the first to the last.")
+  (:documentation "Return the list of chained spans ordered from the first to the last.")
   (:method ((nul null))
     nil)
   (:method ((span span))
@@ -208,7 +214,7 @@
       :until (last-span-p current))))
 
 (defgeneric join-spans (left right)
-  (:documentation "Concatenates the two doubly-linked lists referenced by the spans left and right.")
+  (:documentation "Concatenate the two doubly-linked lists referenced by the spans left and right.")
   (:method ((left span) (right span))
     (let ((fl (first-span left))
           (fr (first-span right)))
@@ -220,6 +226,7 @@
 
 
 (defgeneric span-contents (span)
+  (:documentation "Return a list of all nodes in the SPAN.")
   (:method ((span span))
     (unless (emptyp span)
       (loop
@@ -227,7 +234,8 @@
         :unless (typep current 'place-holder-node) :collect current
           :until (tail-in-span-p current)))))
 
-(defgeneric span-nth (index span)
+(defgeneric span-nth (nth span)
+  (:documentation "Return the NTH node in the SPAN (place-holder-nodes are discounted).")
   (:method (index (span span))
     (when (and (<= 0 index) (head span))
       (loop
@@ -240,6 +248,7 @@
                            node))))))
 
 (defgeneric span-length (span)
+  (:documentation "Return the number of odes in the SPAN (place-holder-nodes are discounted).")
   (:method ((span span))
     (if (emptyp span)
         0
@@ -251,7 +260,6 @@
           :until (tail-in-span-p node)))))
 
 
-
 (defgeneric %update-node-span (span)
   (:method ((span span))
     (loop
@@ -261,6 +269,14 @@
 
 
 (defgeneric split-span-before (span node-or-index)
+  (:documentation "Split the SPAN into two spans.
+The new span goes from the head to the node designated by NODE-OR-INDEX exclusive.
+The SPAN is modified to start from the node designated by NODE-OR-INDEX to the tail.
+The modified span includes from NODE-OR-INDEX to TAIL.
+Return the new-span and the span.
+NODE-OR-INDEX designate a node in the SPAN; if it is an integer, then
+\(span-nth node-or-index span) is the designated node.
+")
   (:method ((span span) (index integer))
     (split-span-before span (span-nth index span)))
   (:method ((span span) (node node))
@@ -278,6 +294,14 @@
           (values new-span span)))))
 
 (defgeneric split-span-after (span node-or-index)
+  (:documentation "Split the SPAN into two spans.
+The SPAN is modified to exclude any node after node-or-index to the tail;
+the new span includes all the nodes after node-or-index to the tail.
+The modified span includes from HEAD to NODE-OR-INDEX. e
+Return the new-span and the span.
+NODE-OR-INDEX designate a node in the SPAN; if it is an integer, then
+\(span-nth node-or-index span) is the designated node.
+")
   (:method ((span span) (index integer))
     (split-span-after span (span-nth index span)))
   (:method ((span span) (node node))
@@ -372,6 +396,8 @@
     node))
 
 (defgeneric forward-slurp-span (span)
+  (:documentation "When SPAN is not the last one, the nodes of the following span are appended to SPAN.
+The following span is emptied, but left in the chain (a place-holder node marks its place).")
   (:method ((span span))
     (let* ((tail (tail span))
            (head (next tail))
@@ -385,7 +411,7 @@
                     (tail span) next-tail
                     (head next-span) tail
                     (tail next-span) tail))
-            ;; else we need to create a new place-holder-node for the forward span.
+            ;; else we need to create a new place-holder-node for the following span.
             (let ((empty-node (make-instance 'place-holder-node))
                   (next-tail (tail next-span)))
               (%insert-node-after empty-node next-tail) 
@@ -396,7 +422,10 @@
         (%update-node-span next-span))
       span)))
 
+
 (defgeneric backward-slurp-span (span)
+  (:documentation "When SPAN is not the first one, the nodes of the previous span are preppended to SPAN.
+The previous span is emptied, but left in the chain (a place-holder node marks its place).")
   (:method ((span span))
     (let* ((head (head span))
            (tail (previous head))
@@ -422,7 +451,9 @@
 
 (defgeneric span-append-nodes-from-span (destination-span source-span)
   (:documentation "The nodes are removed from the SOURCE-SPAN and appended to the DESTINATION-SPAN tail.
-Returns DESTINATION-SPAN.")
+Returns DESTINATION-SPAN.
+PRE: (null (intersection (span-contents destination-span) (span-contents source-span)))
+")
   (:method ((destination-span span) (source-span span))
     (check-span destination-span)
     (check-span source-span)
@@ -453,37 +484,8 @@ Returns DESTINATION-SPAN.")
 
 
 
-
-(defgeneric span-prepend-node (span node)
-  (:method ((span span) (node node))
-    (setf (span node) span)
-    (if (emptyp span)
-        (setf (previous node) (previous (head span))
-              (next node) (next (tail span))
-              (head span) node
-              (tail span) node)
-        (setf (previous node) (previous (head span))
-              (previous (head span)) node
-              (next node) (head span)
-              (head span) node))))
-
-(defgeneric span-append-node (span node)
-  (:documentation "Add the NODE at the tail of the SPAN and returns the NODE.
-Note: the tail of the span can be in the middle of the NODE dll.")
-  (:method ((span span) (node node))
-    (setf (span node) span)
-    (if (emptyp span)
-        (setf (previous node) (previous (head span))
-              (next node) (next (tail span))
-              (head span) node
-              (tail span) node)
-        (setf (next node) (next (tail span))
-              (next (tail span)) node
-              (previous node) (tail span)
-              (tail span) node))))
-
-(defgeneric remove-node (node)
-  (:documentation "Extracts the NODE from its span and returns it.")
+(defgeneric extract-node (node)
+  (:documentation "Extract the NODE from its span and return it.")
   (:method ((node node))
     (let ((span (span node)))
       (when span
@@ -505,7 +507,43 @@ Note: the tail of the span can be in the middle of the NODE dll.")
       (setf (span node) nil)
       node)))
 
+(defgeneric span-prepend-node (span node)
+  (:documentation "Insert the NODE at the head of the SPAN and returns the NODE.
+PRE: node is not in a dll or a span.
+Note: the head of the span can be in the middle of the NODE dll.")
+  (:method ((span span) (node node))
+    (setf (span node) span)
+    (if (emptyp span)
+        (setf (previous node) (previous (head span))
+              (next node) (next (tail span))
+              (head span) node
+              (tail span) node)
+        (setf (previous node) (previous (head span))
+              (previous (head span)) node
+              (next node) (head span)
+              (head span) node))))
+
+(defgeneric span-append-node (span node)
+  (:documentation "Insert the NODE at the tail of the SPAN and returns the NODE.
+PRE: node is not in a dll or a span.
+Note: the tail of the span can be in the middle of the NODE dll.")
+  (:method ((span span) (node node))
+    (setf (span node) span)
+    (if (emptyp span)
+        (setf (previous node) (previous (head span))
+              (next node) (next (tail span))
+              (head span) node
+              (tail span) node)
+        (setf (next node) (next (tail span))
+              (next (tail span)) node
+              (previous node) (tail span)
+              (tail span) node))))
+
+
 (defgeneric insert-node-after (node previous)
+  (:documentation "Insert the NODE after the PREVIOUS node, in the same span.
+PRE: node is not in a dll or a span.
+Return NODE.")
   (:method ((node node) (previous node))
     (setf (span node) (span previous))
     (%insert-node-after node previous)
@@ -514,6 +552,9 @@ Note: the tail of the span can be in the middle of the NODE dll.")
     node))
 
 (defgeneric insert-node-before (node next)
+    (:documentation "Insert the NODE before the NEXT node, in the same span.
+PRE: node is not in a dll or a span.
+Return NODE.")
   (:method ((node node) (next node))
     (setf (span node) (span next))
     (%insert-node-before node next)
@@ -523,6 +564,7 @@ Note: the tail of the span can be in the middle of the NODE dll.")
 
 
 (defgeneric find-node-if (predicate head)
+  (:documentation "Searches a node such as (PREDICATE node) from HEAD to the end of the node DLL.")
   (:method (predicate (head node))
     (loop
       :for node = head :then (next node)
@@ -532,6 +574,9 @@ Note: the tail of the span can be in the middle of the NODE dll.")
         :do (return-from find-node-if node))))
 
 (defgeneric find-node (target start-node &key direction test key)
+    (:documentation "Searches the TARGET from START-NODE, in the given DIRECTION (member :aforward :backward)
+ such as (funcall test (funcall key target) (funcall key node)).
+Return the node.")
   (:method (target (start-node node) &key (direction :forward) (test (function eql)) (key (function identity)))
     (let ((target-key (funcall key target))
           (stepfun (if (eq direction :forward)
@@ -546,6 +591,10 @@ Note: the tail of the span can be in the middle of the NODE dll.")
 
 
 (defgeneric span-position-if (predicate span &key key start end)
+  (:documentation "Return the index of the first node such as
+\(funcall predicate (funcall key node)) in the SPAN, starting from the node index START
+\(default 0) to the node index END (default NIL designating the end of
+the SPAN).")
   (:method (predicate (span span) &key (key (function identity)) (start 0) end)
     (when (head span)
       (loop
@@ -562,12 +611,15 @@ Note: the tail of the span can be in the middle of the NODE dll.")
               (return-from span-position-if nil)))))))
 
 
-(defgeneric span-position (node span &key test key start end)
-  (:method ((node node) (span span) &key (test (function eql)) (key (function identity)) (start 0) end)
-    (let ((value (funcall key node)))
-      (span-position-if (lambda (node) (funcall test value (funcall key node)))
+(defgeneric span-position (target span &key test key start end)
+  (:documentation "Return the index of the NODE in the SPAN, such as
+\(funcall test (funcall key target) (funcall key node)) starting from
+the node index START default 0) to the node index END (default NIL
+designating the end of the SPAN).")
+  (:method ((target node) (span span) &key (test (function eql)) (key (function identity)) (start 0) end)
+    (let ((target-key (funcall key target)))
+      (span-position-if (lambda (node) (funcall test target-key (funcall key node)))
                         span :key key :start start :end end))))
-
 
 
 
