@@ -43,6 +43,11 @@
 ;;; We use the same coordinate systems, with floating-point numbers,
 ;;; in units of millimeter.
 
+
+(defmethod place (object (to ns:ns-point))
+    (setf (origin object) to)
+    object)
+
 ;;;------------------------------------------------------------
 ;;; Conversions between ns:ns-point, ns:ns-size, ns:ns-rect and
 ;;; point, size and rect.
@@ -208,6 +213,7 @@
 (defmethod place ((r ns:ns-rect) (to ns:ns-point))
   (setf (rect-origin r) to)
   r)
+
 
 
 (defmethod above ((r ns:ns-point) &optional (offset 0))

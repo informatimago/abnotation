@@ -115,10 +115,7 @@ expressed). ::
                  (point-y (origin object)))))
 
 (defgeneric place (object point)
-  (:documentation "Change the origin of the ``OBJECT`` to be the ``POINT``.")
-  (:method (object (to ns:ns-point))
-    (setf (origin object) to)
-    object))
+  (:documentation "Change the origin of the ``OBJECT`` to be the ``POINT``."))
 
 
 (defgeneric above (object &optional offset)
@@ -227,6 +224,10 @@ u2 = - det[v0,v1]/det[v1,v2]
   new-value)
 (defmethod bounds ((p point)) (rect 0.0 0.0 0.0 0.0))
 (defmethod frame ((p point)) (make-rect :origin p :width 0.0 :height 0.0))
+
+(defmethod  place (object (to point))
+  (setf (origin object) point)
+  object)
 
 ;;;---------------------------------------------------------------------
 ;;; SIZE

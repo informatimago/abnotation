@@ -242,7 +242,7 @@ C- spreading measures over to lines and lines to pages.
       ((last-segment-p segment)
        (- (end-time segment) (start-time measure)))
       (t
-       (measure-duration measure)))))
+       (duration measure)))))
 
 (defun tenue-height (segment)
   "height of a tenue line (in millimeter)."
@@ -433,7 +433,7 @@ C- spreading measures over to lines and lines to pages.
         )
     ;; compute measure widths:
     ;; (dolist (tempo (tempos partition))
-    ;;   (let* ((duration (measure-duration tempo))
+    ;;   (let* ((duration (duration tempo))
     ;;          (width (* measure-speed duration)))
     ;;     (dolist (measure (measures tempo))
     ;;       (setf (box-size measure) (size width (* 58/8 (staff-height partition))))

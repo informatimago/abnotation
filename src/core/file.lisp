@@ -41,11 +41,11 @@
    partition))
 |#
 
-(defun test/file ()
-  (let ((partition (create-partition *staves/bass15mb-trebble15ma*)))
-
-    (setf (tempo-and-notes partition) (abnotation-read-midi-file  #P"~/works/abnotation/abnotation/files/1-canal.mid"))
-    (layout-partition-from-tempos partition)))
+;; (defun test/file ()
+;;   (let ((partition (create-partition *staves/bass15mb-trebble15ma*)))
+;; 
+;;     (setf (tempo-and-notes partition) (abnotation-read-midi-file  #P"~/works/abnotation/abnotation/files/1-canal.mid"))
+;;     (layout-partition-from-tempos partition)))
 
 
 (defparameter *partition* nil)

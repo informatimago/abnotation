@@ -540,30 +540,37 @@ specified by the midi EVENT.
                           current-measure-duration)))
     (flet ((make-measure (duration mnumber start-time)
              (let ((measure (make-instance 'measure :number mnumber :start-time start-time :duration duration)))
+               (print (list 'measure mnumber start-time))
                (span-append-node measures measure)
                measure))
            (make-note (midi-note)
              (make-instance 'note
-                 :start-time (note-on-time midi-note)
-                 :duration (duration midi-note)
-                 :dynamic (initial-velocity midi-note)
-                 :pitch (key midi-note))))
+                            :start-time (note-on-time midi-note)
+                            :duration (duration midi-note)
+                            :dynamic (initial-velocity midi-note)
+                            :pitch (key midi-note))))
       (loop ; make each measure
-       ;; TODO: if a tempo change occurs in the middle of a measure, we should make it shorter and start over from the tempo change.
-        :with next-tempo-change = (car (first measure-durations))
-        :for mnumber :from 1
-        :for measure = (make-measure current-measure-duratiaon  mnumber start-time)
-        :for end-time = (end-time measure)
-        :while (< end-time total-duration)
-        :do (progn 
-              (loop ; fill a measure
-                :for note = (first notes)
-                :while (and note (< (note-on-time note) end-time))
-                :do (attach 'measure-contains-sounds measure (make-note (pop notes))))
-              (setf start-time end-time)
-              (when (and next-tempo-change (<= next-tempo-change start-time))
-                (setf current-measure-duration (cdr (pop measure-durations)))))))
+            ;; TODO: if a tempo change occurs in the middle of a measure, we should make it shorter and start over from the tempo change.
+            :with next-tempo-change = (car (first measure-durations))
+            :for mnumber :from 1
+            :for measure = (make-measure current-measure-duration  mnumber start-time)
+            :for end-time = (end-time measure)
+            :while (< end-time total-duration)
+            :do (progn 
+                  (loop ; fill a measure
+                        :for note = (first notes)
+                        :while (and note (< (note-on-time note) end-time))
+                        :do (span-append-node measure (make-note (pop notes))))
+                  (setf start-time end-time)
+                  (when (and next-tempo-change (<= next-tempo-change start-time))
+                    (setf current-measure-duration (cdr (pop measure-durations)))))))
     measures))
+
+;; (let ((measures (make-empty-span)))
+;;   (span-append-node measures (make-instance 'measure :number 1 :start-time 0 :duration 1))
+;;   (span-append-node measures (make-instance 'measure :number 2 :start-time 1 :duration 1))
+;;   (span-contents measures))
+
 
 
 ;; (create-tempos-and-measures-for-notes '((10.0 . 2.0))
@@ -592,14 +599,23 @@ specified by the midi EVENT.
          (total-duration    (coerce (note-off-time last-note) 'double-float))
          (page (tail partition))
          (line (tail page)))
-    (create-measures-for-notes measure-durations notes total-duration)
-    sequence))
+    (forward-slurp-span (join-spans line (create-measures-for-notes measure-durations notes total-duration)))
+    (extract-node (next (tail line)))
+    partition))
 
 
 
-;; (let ((partition (create-partition *staves/bass15mb-trebble15ma*)))
-;;  (setf (tempo-and-notes partition) (abnotation-read-midi-file  #P"~/works/abnotation/abnotation/files/1-canal.mid"))
-;;  partition)
+;; (defparameter *p*  (create-partition *staves/bass15mb-trebble15ma*))
+;; (append-midi-sequence *p* (abnotation-read-midi-file  #P"~/works/abnotation/abnotation/files/1-canal.mid"))
+;; 
+;;  (span-contents (tail (tail *p*)))
+
+
+
+
+
+
+
 
 
 

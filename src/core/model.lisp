@@ -616,16 +616,25 @@ Otherwise it's a - - - - tenue."))
   `(defmethod print-object ((object ,class) stream)
      (print-parseable-object (object stream :type t :identity t) ,@slots)))
 
+(define-print-object place-holder-node
+  ;; span
+  )
+
 (define-print-object image   box offset filename)
 (define-print-object text    box offset rtf)
-(define-print-object note    start-time duration dynamic pitch)
+(define-print-object note    start-time duration dynamic pitch
+  ;; next previous span
+  )
 (define-print-object cluster start-time duration dynamic notes)
-(define-print-object measure box number
-  head tail)
+(define-print-object measure box number start-time duration end-time
+  head tail ;; next previous span
+  )
 (define-print-object line    box offset number bands  
-  head tail)
+  head tail ;; next previous span
+  )
 (define-print-object page    box number
-  head tail)
+  head tail ;; next previous span
+  )
 (define-print-object ledger  box minimum-lane bottom-lane top-lane maximum-lane)
 (define-print-object staff   box clef)
 (define-print-object clef    box name trait pitch)
