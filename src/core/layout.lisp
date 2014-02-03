@@ -33,7 +33,6 @@
 ;;;;**************************************************************************
 (in-package "ABNOTATION.CORE")
 
-;; ((setf tempo-and-notes) (abnotation-sequence partition)):
 ;; [load midi] --> (list (or note tempo)) --> [splice-measure] --> (list tempo->measure->sound)
 ;;
 ;; (list tempo->measure->sound) --> [layout] --> (and boxes
@@ -53,7 +52,7 @@
 
 (defgeneric compute-box-size (element)
   (:documentation "Compute the size of the element.
-cluster <- head, accidentals, tenue, duration
+cluster <- tete, accidentals, tenue, duration
 measure <- tempo staff (line)
 line <- staff page
 page <- paper size
@@ -61,7 +60,7 @@ page <- paper size
 
 (defgeneric layout (element)
   (:documentation "Compute the position of the element relative to its container:
-sounds (notes or clusters) also create the associated elements (head, accidental, & segments).
+sounds (notes or clusters) also create the associated elements (tete, accidental, & segments).
 sound -> measure
 measure -> line
 line -> page
@@ -192,23 +191,23 @@ C- spreading measures over to lines and lines to pages.
 
 
 
-(defmethod compute-box-size ((head head))
-  (let* ((partition (partition (page (line (measure (sound head))))))
+(defmethod compute-box-size ((tete tete))
+  (let* ((partition (partition (page (line (measure (sound tete))))))
          (height    (lane-height partition))
          (excentricity 1.2))
-    (setf (box-size head) (size (* excentricity height) height))))
+    (setf (box-size tete) (size (* excentricity height) height))))
 
-(defmethod layout ((head head))
-  (let* ((measure     (measure (sound head)))
+(defmethod layout ((tete tete))
+  (let* ((measure     (measure (sound tete)))
          (partition   (partition (page (line measure))))
          (lane-height (lane-height partition))
-         (lane        (lane (pitch (sound head)))))
-    (setf (box-origin head)
-          (vector+ (point (- (start-time (sound head))
+         (lane        (lane (pitch (sound tete)))))
+    (setf (box-origin tete)
+          (vector+ (point (- (start-time (sound tete))
                              (start-time measure)
-                             (width (box head)))
+                             (width (box tete)))
                           (* 0.5 lane lane-height))
-                   (offset head)))))
+                   (offset tete)))))
 
 
 (defun lane-bottom (pitch partition)
@@ -312,7 +311,50 @@ C- spreading measures over to lines and lines to pages.
                              (height (box segment))))
                    (offset segment)))))
 
+;;--------
+;;
+;; Note: since sound (note and cluster) is not a graphic-element, but
+;;       a mere element, there's no layout :before method to
+;;       compute-box-size.
+;;
 
+(defmethod compute-box-size ((sound sound))
+  )
+
+(defmethod layout :after ((sound sound))
+  (compute-box-size sound))
+
+(defmethod layout ((sound sound))
+  ;; start-time --> tete & beam position
+  (beam-segments sound)
+  ;; duration --> beam segments
+  (beam-segments sound)
+  ;; dynamic --> dynamic segments
+  (dynamic-segments sound)
+  ;; /end-time vs. (start-time (next sound)) --> tenue
+  )
+
+(defmethod layout ((note note))
+  (call-next-method)
+  ;; pitch --> tete
+  (unless (tete note)
+    (setf  (tete note) (make-instance 'tete)))
+  (layout tete)
+  ;; pitch --> accidental (0-1)
+  (let ((accidental (accidental (pitch note))))
+    (unless (eql :natural accidental)
+      (unless (and (accidental note) (not))
+        (setf (accidental note) (make-instance 'accidental :character accidental)))
+      (layout accidental))))
+
+(defmethod layout ((cluster cluster))
+  (call-next-method)
+  ;; notes
+  (dolist (note (notes cluster))
+    (layout note)))
+
+;;
+;;--------
 
 (defmethod compute-box-size ((measure measure))
   (let* ((partition     (partition (page (line measure))))
@@ -327,7 +369,7 @@ C- spreading measures over to lines and lines to pages.
           (if (first-element-in-container-p measure)
               (point (measure-left-position line) 0)
               (point (right (box (previous measure))) 0)))
-    (dolist (sounds (sounds measure))
+    (dolist (sound (sounds measure))
       (layout sound))))
 
 
@@ -478,7 +520,7 @@ C- spreading measures over to lines and lines to pages.
                         (if (< (+ (height (box line)) lines-height)
                                page-height)
                             (progn
-                              (span-append-node page (remove-node line)) ; (setf (page line) nil) (attach 'page-contains page line)
+                              (span-append-node page (extract-node line)) ; (setf (page line) nil) (attach 'page-contains page line)
                               (compute-box-size line)
                               (incf lines-height (height (box line)))
                               (setf (bottom (box line)) (- page-height lines-height))
@@ -489,7 +531,7 @@ C- spreading measures over to lines and lines to pages.
                       ;; attach measure to line:
                       (setf (left (box measure)) measures-width)
                       (incf measures-width (width (box measure)))
-                      (span-append-node line (remove-node measure)) ; (setf (line measure) nil) (attach 'line-contains-vertically line measure)
+                      (span-append-node line (extract-node measure)) ; (setf (line measure) nil) (attach 'line-contains-vertically line measure)
                       (pop measures))))))))
 
 

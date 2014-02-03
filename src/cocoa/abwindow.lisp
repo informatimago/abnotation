@@ -141,6 +141,7 @@
                                               (scroll-view output-rect output-subview)
                                               (scroll-view partition-rect partition-subview))
                                         :divider-style :thick)))
+    [[[partition-subview enclosingScrollView] contentView] setCopiesOnScroll:NO]
     (setf (partition window)         partition
           (partition-subview window) partition-subview
           (output-subview window)    output-subview
@@ -177,26 +178,34 @@
 
 
 (defcommand find-file ()
-  (let ((path (select-file)))
-    (message "Find file ~S" path)
-    (handler-case
-        (let ((partition (create-partition *staves/bass15mb-trebble15ma*)))
-          (setf (tempo-and-notes partition) (abnotation-read-midi-file path))
-          (let ((window (create-abwindow *default-window-frame*
-                                         :title path
-                                         :partition partition)))
-            (push window *windows*)
-            [window makeKeyAndOrderFront:window]
-            (layout partition)))
-      (error (err)
-             (message "~A" err)))
-    path))
+    (let ((path (select-file)))
+      (message "Find file ~S" path)
+      (let ((partition (create-partition *staves/bass15mb-trebble15ma*)))
+        (append-midi-sequence partition  (abnotation-read-midi-file path))
+        (let ((window (create-abwindow *default-window-frame*
+                                       :title path
+                                       :partition partition)))
+          (push window *windows*)
+          [window makeKeyAndOrderFront:window]
+          (layout partition)))
+      path))
 
 (defcommand kill-buffer ()
   [*current-window* performClose:*current-window*])
 
 (global-set-key '((#\x :control) (#\f :control)) 'find-file)
 (global-set-key '((#\x :control) #\k) 'kill-buffer)
+
+(global-set-key '((#\v :alternate)) 'scroll-up)
+(global-set-key '((#\v :control))   'scroll-down)
+
+
+
+
+;; (global-set-key '((#\f :control :command))   'forward-page)
+;; (global-set-key '((#\b :control :command))   'backward-page)
+;; (global-set-key '((#\o :control :command))   'insert-page)
+
 
 ;; (inspect (global-keymap))
 

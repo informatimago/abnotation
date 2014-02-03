@@ -43,10 +43,10 @@
     (ask-user "Missing font"
               "The required font \"Maestro\" is not installed. Please install it and try again."
               :quit "Quit")
-    (throw 'grandes-gazongues 1)))
+    (throw :grandes-gazongues 1)))
 
 (defun main ()
-  (catch 'grandes-gazongues
+  (catch :grandes-gazongues
     (check-prerequisites)
     (setf *path-class* 'cocoa-bezier-path)
     (when *window*
@@ -54,6 +54,9 @@
     (setf *window*  (create-abwindow (make-rect :x 10 :y 100 :width 1000 :height 700)))
     [*window* makeKeyAndOrderFront:*window*]
     *window*))
+
+(setf *debug-on-error* t)
+
 
 ;; (format *window* "~{~A~%~}" (loop for i below 20 collect i))
 ;; [*window* orderOut:*window*]

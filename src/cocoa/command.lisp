@@ -138,7 +138,7 @@ OPTIONS: from one to tree key string options. The strings are used as
 - sélections [graphique (simple clic, shift-click, command-click), & bindings]
   + annotation (texte ou image)
   + note
-    * head
+    * tete
     * accidental
     * beam
     * dynamic
@@ -156,7 +156,7 @@ OPTIONS: from one to tree key string options. The strings are used as
 ;;   + ajout d'une annotation (image ou texte) (tous sauf annotations elles mêmes) [menu].
 ;;   + suppression de l'annotation [menu].
 ;;   + ajustement de la position (line, ledger, staff, clef, sound, beam,
-;;     dynamic, tenue, head, accidental, annotation) [click-and-drag, ou saisie offset (+/-9.99 mm)]
+;;     dynamic, tenue, tete, accidental, annotation) [click-and-drag, ou saisie offset (+/-9.99 mm)]
 ;;   + cut de l'objet [menu].
 ;;   + copy de l'objet [menu].
 ;;   + delete de l'objet [menu].
@@ -182,7 +182,7 @@ OPTIONS: from one to tree key string options. The strings are used as
 ;; 
 ;; - édition de notes:
 ;; 
-;;   + click-and-drag on the head to change the pitch and start of the
+;;   + click-and-drag on the tete to change the pitch and start of the
 ;;     note. (if multiple selection, transpose or offset all the
 ;;     selection). This may add or remove accidentals.
 ;; 

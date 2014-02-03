@@ -611,16 +611,6 @@ specified by the midi EVENT.
 ;;  (span-contents (tail (tail *p*)))
 
 
-
-
-
-
-
-
-
-
-
-
 ;; (abnotation-read-midi-file  #P"~/works/abnotation/abnotation/files/1-canal.mid")
 ;; (test/abnotation-read-midi-file  #P"~/works/abnotation/abnotation/files/1-canal.mid")
 

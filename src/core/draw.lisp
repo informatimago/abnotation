@@ -84,6 +84,7 @@
     (close-subpath p)
     (fill-path p)))
 
+
 (defmethod fill-rect ((r rect) &optional clip-rect)
   (declare (ignore clip-rect))
   (let* ((p      (create-path))
@@ -110,12 +111,19 @@
   (:method ((element measure)) :cyan)
   (:method ((element sound))   :orange))
 
+(defun box-and-absolute (box)
+  (list :rel box
+        :abs (transform-rect *transform*
+                             (rect-x box) (rect-y box) (rect-width box) (rect-height box))
+        :flp [[NSGraphicsContext currentContext] isFlipped]
+        :att [[NSGraphicsContext currentContext] attributes]
+        :tra *transform*))
 
 (defmethod draw :before ((element graphic-element) &optional clip-rect)
   (set-color (debug-color element))
   (if (eq :yellow (debug-color element))
       (let ((*thick* 0.5))
-        (format *trace-output* "Yellow box: ~S~%" (box element))
+        (format *trace-output* "Yellow box: ~S~%" (box-and-absolute (box element)))
         (draw (box element) clip-rect))
       (draw (box element) clip-rect)))
 
@@ -125,47 +133,54 @@
 
 
 (defmethod draw ((element image) &optional clip-rect)
-  (format *trace-output* "Drawing image ~S~%" (box element))
+  (format *trace-output* "Drawing image ~S ~S~%"
+          (debug-color element) (box-and-absolute (box element)))
   (with-bounds-and-clip-rect ((box element) clip-rect)
     ;; TODO: draw image in (box element)
     ))
 
 (defmethod draw ((element text) &optional clip-rect)
-  (format *trace-output* "Drawing text ~S~%" (box element))
+  (format *trace-output* "Drawing text ~S ~S~%"
+          (debug-color element) (box-and-absolute (box element)))
   (with-bounds-and-clip-rect ((box element) clip-rect)
     ;; TODO: draw rich text in (box element)
     ))
 
 (defconstant +degree+ (/ pi 180))
-(defmethod draw ((element head) &optional clip-rect)
+(defmethod draw ((element tete) &optional clip-rect)
   (declare (ignore clip-rect))
   (let ((box (box element)))
-    (format *trace-output* "Drawing head ~S~%" (box element))
+    (format *trace-output* "Drawing tete ~S ~S~%"
+            (debug-color element) (box-and-absolute (box element)))
     (fill-path (elliptical-arc (rect-center-x box) (rect-center-y box)
                                (width box) (height box)
                                (* 10 +degree+) 0.0d0 2pi 2 1.0d-6 *transform*))))
 
 
 (defmethod draw ((element accidental) &optional clip-rect)
-  (format *trace-output* "Drawing accidental ~S~%" (box element))
+  (format *trace-output* "Drawing accidental ~S ~S~%"
+          (debug-color element) (box-and-absolute (box element)))
   (with-bounds-and-clip-rect ((box element) clip-rect)
     (set-color :black)
     #| TODO: draw ♮♯♭ in box |#))
 
 (defmethod draw ((element tenue-segment) &optional clip-rect)
-  (format *trace-output* "Drawing tenue-segment ~S~%" (box element))
+  (format *trace-output* "Drawing tenue-segment ~S ~S~%"
+          (debug-color element) (box-and-absolute (box element)))
   (with-bounds-and-clip-rect ((box element) clip-rect)
     (set-color :black)
     #| TODO: draw tenue segment in box |#))
 
 (defmethod draw ((element dynamic-segment) &optional clip-rect)
-  (format *trace-output* "Drawing dynamic-segment ~S~%" (box element))
+  (format *trace-output* "Drawing dynamic-segment ~S ~S~%"
+          (debug-color element) (box-and-absolute (box element)))
   (with-bounds-and-clip-rect ((box element) clip-rect)
     (set-color :black)
     #| TODO: draw dynamic segment in box |#))
 
 (defmethod draw ((element beam-segment) &optional clip-rect)
-  (format *trace-output* "Drawing beam-segment ~S~%" (box element))
+  (format *trace-output* "Drawing beam-segment ~S ~S~%"
+          (debug-color element) (box-and-absolute (box element)))
   (with-bounds-and-clip-rect ((box element) clip-rect)
     (set-color :black)
     #| TODO: draw beam segment in box |#))
@@ -176,17 +191,20 @@
   nil)
 
 (defmethod draw ((ledger ledger) &optional clip-rect)
-  (format *trace-output* "Drawing ledger ~A-~A ~S~%" (minimum-lane ledger) (maximum-lane ledger) (box ledger))
+  (format *trace-output* "Drawing ledger ~A-~A ~S ~S~%"
+          (minimum-lane ledger) (maximum-lane ledger)
+          (debug-color ledger) (box ledger))
   (with-bounds-and-clip-rect ((box ledger) clip-rect)
     (set-color :black)
     (dolist (note (notes ledger))
       (when (on-line-p note)
-        ;; (draw-ledger-line (rect-inset (box (head note)) -1.0 0))
+        ;; (draw-ledger-line (rect-inset (box (tete note)) -1.0 0))
         ))))
 
 
 (defmethod draw ((clef clef) &optional clip-rect)
-  (format *trace-output* "Drawing clef ~A ~S~%" (name clef) (box clef))
+  (format *trace-output* "Drawing clef ~A ~S ~S~%" (name clef)
+          (debug-color clef) (box-and-absolute (box clef)))
   (let* ((partition (partition (page (line (staff clef)))))
          (height    (* (ecase (trait clef) ;; TODO: clean this horrible hack.
                          (4 -3)
@@ -200,8 +218,9 @@
         (draw-point 0 0 0.5)))))
 
 (defmethod draw ((staff staff) &optional clip-rect)
-  (format *trace-output* "Drawing staff ~A ~A-~A ~S~%"
-          (name (clef staff)) (minimum-lane staff) (maximum-lane staff) (box staff))
+  (format *trace-output* "Drawing staff ~A ~A-~A ~S ~S~%"
+          (name (clef staff)) (minimum-lane staff) (maximum-lane staff)
+          (debug-color staff) (box-and-absolute (box staff)))
   (unless (rect-empty-p (rect-intersection clip-rect
                                            (let ((r (box staff)))
                                              (rect 0 0 (rect-width r) (rect-height r)))))
@@ -218,14 +237,16 @@
 
 
 (defmethod draw ((measure measure) &optional clip-rect)
-  (format *trace-output* "Drawing measure ~A ~S~%" (number measure) (box measure))
+  (format *trace-output* "Drawing measure ~A ~S ~S~%" (number measure)
+          (debug-color measure) (box-and-absolute (box measure)))
   (with-bounds-and-clip-rect ((box measure) clip-rect)
     ;; TODO: (draw-measure-hat measure clip-rect)
     ;; TODO: (draw-measure-bar measure clip-rect)
     (draw (number-annotation measure) clip-rect)))
 
 (defmethod draw ((line line) &optional clip-rect)
-  (format *trace-output* "Drawing line ~A ~S~%" (number line) (box line))
+  (format *trace-output* "Drawing line ~A ~S ~S~%" (number line)
+          (debug-color line) (box-and-absolute (box line)))
   (format *trace-output* "  ~A band~:*~p~%" (length (bands line)))
   (with-bounds-and-clip-rect ((box line) clip-rect)
     (dolist (band (bands line))

@@ -70,19 +70,28 @@
 (defmethod set-font (font-name size)
   [[NSFont fontWithName:(to-objc font-name) size: (coordinate size)] set])
 
+(defmacro with-saved-graphic-state (&body body)
+  (let ((vcontext (gensym)))
+   `(let ((,vcontext [NSGraphicsContext currentContext]))
+      [,vcontext saveGraphicsState]
+      (unwind-protect
+           (progn ,@body)
+        [,vcontext restoreGraphicsState]))))
+
 (defmethod draw-string ((string string) (where point) &key attributes)
-  (if attributes
-    (let ((dictionary [NSMutableDictionary dictionary]))
-      [dictionary setObject:[NSFont fontWithName:(to-objc (getf attributes :font "Maestro"))
-                                    size:(coordinate (getf attributes :size 12.0))]
-                  forKey:(to-objc "NSFont")]
-      [(to-objc string) drawAtPoint:(to-objc where) withAttributes:dictionary])
-    
-    [(to-objc string) drawAtPoint:(to-objc where) withAttributes: [NSDictionary dictionary]]))
+  (with-saved-graphic-state
+      (if attributes
+          (let ((dictionary [NSMutableDictionary dictionary]))
+            [dictionary setObject:[NSFont fontWithName:(to-objc (getf attributes :font "Maestro"))
+                                          size:(coordinate (getf attributes :size 12.0))]
+                        forKey:(to-objc "NSFont")]
+            [(to-objc string) drawAtPoint:(to-objc where) withAttributes:dictionary])
+          [(to-objc string) drawAtPoint:(to-objc where) withAttributes: [NSDictionary dictionary]])))
 
 
 (defmethod draw-string ((string string) (where rect) &key (attributes [NSDictionary dictionary]))
-  [(to-objc string) drawInRect:(to-objc where) withAttributes:attributes])
+  (with-saved-graphic-state
+    [(to-objc string) drawInRect:(to-objc where) withAttributes:attributes]))
 
 
 (defmethod stroke-path ((path cocoa-bezier-path))

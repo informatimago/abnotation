@@ -293,7 +293,7 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defun rect-left     (r) (rect-x r))
 (defun rect-right    (r) (+ (rect-x r) (rect-width r)))
 (defun rect-bottom   (r) (rect-y r))
-(defun rect-top      (r) (+ (rect-x r) (rect-height r)))
+(defun rect-top      (r) (+ (rect-y r) (rect-height r)))
 (defun rect-center-x (r) (+ (rect-x r) (/ (rect-width r) 2)))
 (defun rect-center-y (r) (+ (rect-y r) (/ (rect-height r) 2)))
 (defun rect-origin   (r) (point (rect-x r) (rect-y r)))

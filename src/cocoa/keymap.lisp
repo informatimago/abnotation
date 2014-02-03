@@ -245,8 +245,16 @@ mapping key chords to commands.")))
   (keymap-binding (current-keymap) chord))
 
 
+(defvar *debug-on-error* nil "Non-nil means enter debugger if an error is signaled.")
+
 (defmethod call-interactively ((state input-state) command)
-  (funcall command))
+  (handler-bind
+      ((error (lambda (err)
+                (message "~A" err)
+                (when *debug-on-error*
+                  (invoke-debugger err))
+                (throw :petite-gazongue 0))))
+    (funcall command)))
 
 (defmethod process-key ((state input-state) chord)
   (let* ((keymap  (input-state-modal-keymap state))

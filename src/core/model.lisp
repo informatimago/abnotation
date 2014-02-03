@@ -156,15 +156,15 @@
           :multiplicity 0-*)))
 
 
-(defclass head (offsetable-element)
+(defclass tete (offsetable-element)
   ())
 
 (defclass accidental (offsetable-element)
-  ()
-  (:documentation "Dieze, bemol ou becare devant la head."))
+  ((accidental-character :initarg :character :accessor accidental-character))
+  (:documentation "Dieze, bemol ou becare devant la tete de note."))
 
 (define-association note-head
-  ((head :type head
+  ((tete :type tete
          :multiplicity #|1|# 0-1)
    (note :type note
          :multiplicity #|1|# 0-1)))
@@ -261,7 +261,7 @@ Otherwise it's a - - - - tenue."))
 
 
 (defclass measure (graphic-element numbered node span)
-  ((stat-time      :initarg :start-time     :accessor start-time     :initform 0)
+  ((start-time     :initarg :start-time     :accessor start-time     :initform 0)
    (duration       :initarg :duration       :accessor duration       :initform 1)
    (adjusted-width :initarg :adjusted-width :accessor adjusted-width :initform 0.0 :type coordinate)
    (front-kerning  :initarg :front-kerning  :accessor front-kerning  :initform 0.0 :type coordinate)))
@@ -316,7 +316,7 @@ Otherwise it's a - - - - tenue."))
 ;;    (sounds :type sound
 ;;            :multiplicity 0-*
 ;;            :ordered t))
-;;   (:documentation "A sound can span over several measures.  The head
+;;   (:documentation "A sound can span over several measures.  The tete
 ;; is on the first one, but the beam, dynamic and tenue can have several
 ;; segments, one on each successive measure."))
 
@@ -382,13 +382,27 @@ Otherwise it's a - - - - tenue."))
           :multiplicity #|1-*|# 0-*)))
 
 
-(defun lane (pitch)
+(defmethod lane ((pitch integer))
   (multiple-value-bind (octave note) (truncate (- pitch 20) 12)
     (+ (aref #(  0   0   1   1   2   2   3   4   4   5   5   6) note)
        (* octave 7))))
 
-;; Those four generic functions have methods for staff, ledger and
-;; clef.  The staff methods defer to the (clef staff).
+(defmethod accidental ((pitch integer))
+  (multiple-value-bind (octave note) (truncate (- pitch 20) 12)
+    (declare (ignore octave))
+    (aref  #(:flat :natural :flat :natural :natural :sharp :natural :flat :natural :natural
+             :sharp :natural) note)))
+
+;;        #(  ♭   ♮   ♭    ♮   ♮   ♯   ♮    ♭   ♮   ♮   ♯    ♮)
+;;        #(  0   0   1   1   2   2   3   4   4   5   5   6)
+;;                a       b   c       d       e   f       g
+;;                la      si  do      re      mi  fa      sol
+;; - armature: ♯ pour do et fa, ♭ pour les autres; pas de ♮ bécare.
+;;   Mais option pour: ♭𝅘𝅥♮𝅘𝅥  ou  ♯𝅘𝅥♮𝅘𝅥
+
+;; (loop :for pitch from 20 to 122
+;;       :collect (list (accidental pitch) (lane pitch)))
+
 
 (defgeneric maximum-lane (element) 
   (:documentation "The maximum pitch of a note on the ledger above a staff with the clef."))
@@ -590,31 +604,9 @@ Otherwise it's a - - - - tenue."))
 
 
 
-
-
-
-;; (defgeneric head (element)
-;;   (:method (element)
-;;     (loop
-;;       :for current = element :then previous
-;;       :for previous = (previous current)
-;;       :while previous
-;;       :finally (return current))))
-;; 
-;; (defgeneric tail (element)
-;;   (:method (element)
-;;     (loop
-;;       :for current = element :then next
-;;       :for next = (next current)
-;;       :while next
-;;       :finally (return current))))
-
-
-
-
 (defmacro define-print-object (class &rest slots)
-  `(defmethod print-object ((object ,class) stream)
-     (print-parseable-object (object stream :type t :identity t) ,@slots)))
+  `(defmethod print-object ((self ,class) stream)
+     (print-parseable-object (self stream :type t :identity t) ,@slots)))
 
 (define-print-object place-holder-node
   ;; span
@@ -623,10 +615,14 @@ Otherwise it's a - - - - tenue."))
 (define-print-object image   box offset filename)
 (define-print-object text    box offset rtf)
 (define-print-object note    start-time duration dynamic pitch
+  ;; tete accidental
   ;; next previous span
   )
 (define-print-object cluster start-time duration dynamic notes)
-(define-print-object measure box number start-time duration end-time
+(define-print-object measure box number
+  start-time
+  duration
+  (end-time (end-time self))
   head tail ;; next previous span
   )
 (define-print-object line    box offset number bands  
@@ -812,22 +808,38 @@ Otherwise it's a - - - - tenue."))
 
 (defmethod forward-sound ((cursor cursor))
   (if (sound cursor)
-      ()
-      )
-  )
-
-
+      ))
 
 
 
 (defmethod add-new-page ((partition partition))
-  )
+  (let ((page    (make-instance 'page :number (1+ (number (tail partition)))))
+        (line    (make-instance 'line :number 1))
+        (measure (make-instance 'measure :number 1)))
+    (dolist (band (create-bands (staff-set partition)))
+      (attach 'line-contains-horizontally line band))
+    (span-append-node partition page)
+    (span-append-node page line)
+    (span-append-node line measure)
+    (layout page)
+    page))
 
 (defmethod add-new-line ((page page))
-  )
+  (let ((line    (make-instance 'line :number  (1+ (number (tail page)))))
+        (measure (make-instance 'measure :number 1)))
+    (dolist (band (create-bands (staff-set (partition page))))
+      (attach 'line-contains-horizontally line band))
+    (span-append-node page line)
+    (span-append-node line measure)
+    (layout line)
+    line))
+
 
 (defmethod add-new-measure ((line line))
-  )
+  (let ((measure (make-instance 'measure :number (1+ (number (tail line))))))
+    (span-append-node line measure)
+    (layout measure)
+    measure))
 
 
 
@@ -836,7 +848,6 @@ Otherwise it's a - - - - tenue."))
 
 (defmethod add-note ((note note) (sound sound))
   )
-
 
 
 (defmethod insert-new-page-before ((page page))
@@ -849,6 +860,10 @@ Otherwise it's a - - - - tenue."))
   )
 
 
+#-(and) (progn
+       (layout (tail (tail (partition abnotation.cocoa::*window*))))
+       (add-new-line (tail (partition abnotation.cocoa::*window*)))
+       (add-new-measure (head  (tail (partition abnotation.cocoa::*window*)))))
 
 
 ;;;; THE END ;;;;
