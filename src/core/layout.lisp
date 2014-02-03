@@ -131,6 +131,18 @@ following measures ==> reassign notes to measures.
 C- spreading measures over to lines and lines to pages.
 ------------------------------------------------------------
 
+choice:
+
+- insert new lines until all surnumerous measures are placed and in
+  the end, move over measures from the following lines
+  --> the existing measures stay with their lines and their line annotations.
+  
+- insert measures in the existing lines, pushing the following
+  measures.
+
+
+And similarly for lines over pages.
+
 
 |#
 
