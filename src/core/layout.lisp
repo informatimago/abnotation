@@ -192,18 +192,18 @@ C- spreading measures over to lines and lines to pages.
 
 
 (defmethod compute-box-size ((tete tete))
-  (let* ((partition (partition (page (line (measure (sound tete))))))
+  (let* ((partition (partition (page (line (measure (note tete))))))
          (height    (lane-height partition))
          (excentricity 1.2))
     (setf (box-size tete) (size (* excentricity height) height))))
 
 (defmethod layout ((tete tete))
-  (let* ((measure     (measure (sound tete)))
+  (let* ((measure     (measure (note tete)))
          (partition   (partition (page (line measure))))
          (lane-height (lane-height partition))
-         (lane        (lane (pitch (sound tete)))))
+         (lane        (lane (pitch (note tete)))))
     (setf (box-origin tete)
-          (vector+ (point (- (start-time (sound tete))
+          (vector+ (point (- (start-time (note tete))
                              (start-time measure)
                              (width (box tete)))
                           (* 0.5 lane lane-height))
@@ -217,13 +217,13 @@ C- spreading measures over to lines and lines to pages.
     (* 0.5 lane lane-height)))
 
 (defmethod compute-box-size ((accidental accidental))
-  (let* ((partition (partition (page (line (measure (sound accidental))))))
+  (let* ((partition (partition (page (line (measure (note accidental))))))
          (height    (lane-height partition))
          (excentricity 1.2))
     (setf (box-size accidental) (size (* excentricity height) (* excentricity height)))))
 
 (defmethod layout ((accidental accidental))
-  (let* ((sound       (sound accidental))
+  (let* ((sound       (note accidental))
          (measure     (measure sound))
          (partition   (partition (page (line measure)))))
     (setf (box-origin accidental)
@@ -326,11 +326,11 @@ C- spreading measures over to lines and lines to pages.
 
 (defmethod layout ((sound sound))
   ;; start-time --> tete & beam position
-  (beam-segments sound)
+  ;; (beam-segments sound)
   ;; duration --> beam segments
-  (beam-segments sound)
+  ;; (beam-segments sound)
   ;; dynamic --> dynamic segments
-  (dynamic-segments sound)
+  ;; (dynamic-segments sound)
   ;; /end-time vs. (start-time (next sound)) --> tenue
   )
 
@@ -338,14 +338,14 @@ C- spreading measures over to lines and lines to pages.
   (call-next-method)
   ;; pitch --> tete
   (unless (tete note)
-    (setf  (tete note) (make-instance 'tete)))
-  (layout tete)
+    (attach 'note-head (make-instance 'tete) note))
+  (layout (tete note))
   ;; pitch --> accidental (0-1)
   (let ((accidental (accidental (pitch note))))
     (unless (eql :natural accidental)
       (unless (and (accidental note) (not))
-        (setf (accidental note) (make-instance 'accidental :character accidental)))
-      (layout accidental))))
+        (attach 'note-accidental (make-instance 'accidental :character accidental) note))
+      (layout (accidental note)))))
 
 (defmethod layout ((cluster cluster))
   (call-next-method)
@@ -410,8 +410,9 @@ C- spreading measures over to lines and lines to pages.
 (defmethod compute-box-size ((line line))
   (let* ((partition   (partition (page line)))
          (lane-height (/ (staff-height partition) 4))
-         (lanes       (- (maximum-lane (first (last (bands line))))
-                         (minimum-lane (first (bands line)))
+         (bands       (sort (copy-list (bands line)) (function <) :key (function minimum-lane)))
+         (lanes       (- (maximum-lane (first (last bands)))
+                         (minimum-lane (first bands))
                          -1))
          (height      (* 1/2 (1+ lanes) lane-height)))
     (unless (= 1 (number line))
