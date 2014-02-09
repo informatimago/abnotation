@@ -115,8 +115,8 @@
   (list :rel box
         :abs (transform-rect *transform*
                              (rect-x box) (rect-y box) (rect-width box) (rect-height box))
-        :flp [[NSGraphicsContext currentContext] isFlipped]
-        :att [[NSGraphicsContext currentContext] attributes]
+        ;; :flp [[NSGraphicsContext currentContext] isFlipped]
+        ;; :att [[NSGraphicsContext currentContext] attributes]
         :tra *transform*))
 
 (defmethod draw :before ((element graphic-element) &optional clip-rect)
