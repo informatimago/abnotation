@@ -1,17 +1,17 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               format.lisp
+;;;;FILE:               file.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    A format function to redirect to views.
+;;;;    Serialize and deserialize a partition.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2013-12-22 <PJB> Created.
+;;;;    2013-12-26 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -31,17 +31,40 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+(in-package "ABNOTATION.CORE")
 
-(in-package "ABNOTATION.IO")
 
 
-(defgeneric format (output control-string &rest arguments)
-  (:method ((output null) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments))
-  (:method ((output (eql t)) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments))
-  (:method ((output stream) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments)))
+(defparameter *partition* nil)
+;; (setf *partition*  (test/file))
+;; (mapcar (lambda (b) (list (minimum-lane b)
+;;                           (maximum-lane b)
+;;                           b))
+;;         (bands (first (lines (first (pages *partition*))))))
+
+
+(defun band-for-note (bands note)
+  (let ((lane (lane (pitch note))))
+    (loop
+     :for band :in bands
+     :when (<= (minimum-lane band) lane (maximum-lane band))
+     :do (return-from band-for-note band))
+    (error "No band for note ~S" note)))
+
+
+;; (let* ((note (first (sounds (first (measures (first (tempos *partition*)))))))
+;;       (band (band-for-note (bands (first (lines (first (pages *partition*))))) note)))
+;;   (values band
+;;           (- (lane (pitch note)) (minimum-lane band))
+;;           (- (lane (pitch note)) (bottom-lane band))))
+
+;; (staff :clef (clef :name :treble :line 2 :pitch 79 "#x30200394422D") "#x302003943A6D")
+;; 1
+;; 0
+;; 
+;; (pprint (test/file))
+
 
 
 ;;;; THE END ;;;;
+

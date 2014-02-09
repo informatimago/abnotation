@@ -614,15 +614,43 @@ move-to-point path element."
     (rect-expand rect (path-element-control-point-1 element))
     (rect-expand rect (path-element-control-point-2 element))))
 
-(defmethod surrounding-box              (path)
+(defmethod surrounding-box (path)
   (if (path-empty-p path)
     *null-rect*
     (let ((surrounding (rect (path-element-point (first (slot-value path 'elements))) (size 0 0))))
       (path-apply path (lambda (element) (expand-surrounding-box element surrounding)))
       surrounding)))
 
-(defmethod bounding-box              (path)
-  (not-implemented-yet))
+
+(defgeneric expand-bounding-box (element rect previous)
+  (:method ((element path-element) rect previous)
+           (declare (ignore previous))
+    rect)
+  (:method ((element path-element-move-to-point) rect previous)
+           (declare (ignore previous))
+    (rect-expand rect (path-element-point element)))
+
+  (:method ((element path-element-line-to-point) rect previous)
+           (declare (ignore previous))
+    (rect-expand rect (path-element-point element)))
+
+  (:method ((element path-element-quad-curve-to-point) rect previous)
+           ;; we need the previous point           
+    (rect-expand rect (path-element-point element))
+    (rect-expand rect (path-element-control-point element)))
+  
+  (:method ((element path-element-curve-to-point) rect previous)
+           ;; we need the previous point           
+    (rect-expand rect (path-element-point element))
+    (rect-expand rect (path-element-control-point-1 element))
+    (rect-expand rect (path-element-control-point-2 element))))
+
+(defmethod bounding-box (path)
+  (if (path-empty-p path)
+    *null-rect*
+    (let ((bounding (rect (path-element-point (first (slot-value path 'elements))) (size 0 0))))
+      (path-apply path (lambda (element) (expand-bounding-box element bounding (point 0 0))))
+      bounding)))
 
 (defmethod path-apply (path examiner-closure)
   (dolist (element (slot-value path 'elements) (values))

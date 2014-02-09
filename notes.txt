@@ -1,6 +1,9 @@
-.. comment: -*- mode:rst;coding:utf-8 -*-
+.. comment: -*- mode:rst;coding:utf-8 -*
 
+(setf (getenv "NSZombieEnabled") "YES")
+(setf (getenv "NSDeallocateZombies") "YES")
 
+https://developer.apple.com/library/mac/technotes/tn2124/_index.html#//apple_ref/doc/uid/DTS10003391-CH1-SECENABLE
 
 Abnotation
 ################################################################################

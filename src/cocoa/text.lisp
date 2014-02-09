@@ -1,17 +1,17 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               format.lisp
+;;;;FILE:               text.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    A format function to redirect to views.
+;;;;    Text stuff.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2013-12-22 <PJB> Created.
+;;;;    2013-12-29 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -31,17 +31,23 @@
 ;;;;    You should have received a copy of the GNU Affero General Public License
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
+(in-package :abnotation.cocoa)
 
-(in-package "ABNOTATION.IO")
+(defun ns-data-with-ns-string (string)
+  [NSData dataWithBytes:[string cStringUsingEncoding:#$NSUTF8StringEncoding]
+          length:[string lengthOfBytesUsingEncoding:#$NSUTF8StringEncoding]])
 
 
-(defgeneric format (output control-string &rest arguments)
-  (:method ((output null) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments))
-  (:method ((output (eql t)) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments))
-  (:method ((output stream) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments)))
+(defun box-for-rtf-text (text)
+  (get-nsrect [[[NSAttributedString alloc] initWithRTF:(ns-data-with-ns-string (to-objc text))
+                documentAttributes:oclo:*null*] 
+               boundingRectWithSize: (ns:make-ns-size 10000.0 10000.0)
+               options:0]))
+
+
+(defmethod compute-box-size ((element text))
+  (let ((r (box-for-rtf-text (rtf element))))
+    (setf (slot-value element 'box) (dot/inch->dot/mm r))))
 
 
 ;;;; THE END ;;;;

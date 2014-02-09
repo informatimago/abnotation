@@ -1,0 +1,22 @@
+
+There are two indexes:
+
+clim-index.ps.gz   - an index containing all occurences of keywords
+                     e.g.  command-name.............275, 275, 308
+clim-index-2.ps.gz - an index containing the definitions incl their type (Class, PresentationMethod etc.)
+                     e. g. command-name [Function]............275
+                           command-name [PresentationType]....292
+
+Hope it helps...
+
+
+Stefan
+
+;;; Stefan Hegny, Gruppe te&r,   (Verkehrssimulation)      
+;;; Forschungszentrum Informatik (FZI) an der Universitaet,
+;;; Haid-und-Neu-Str. 10--14, 
+;;; 76131 Karlsruhe           
+;;; ++721 -9654-347 (voc)
+;;; Mail: hegny@fzi.de
+;;; and    now    for    something    completely    different....
+ 

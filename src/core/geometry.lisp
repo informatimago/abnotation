@@ -46,10 +46,6 @@
 ;;; Representation of coordinates, points, sizes and rectangles.
 ;;;
 
-(defun xor (a b)
-  "Return A ⊻ B"
-  (or (and a (not b)) (and (not a) b)))
-
 
 ;;;---------------------------------------------------------------------
 ;;; Generic geometry
@@ -74,6 +70,53 @@
 (defgeneric left   (object))
 (defgeneric bottom (object))
 (defgeneric top    (object))
+(defgeneric width  (object))
+(defgeneric height (object))
+
+(defgeneric (setf right)  (new-value object))
+(defgeneric (setf left)   (new-value object))
+(defgeneric (setf bottom) (new-value object))
+(defgeneric (setf top)    (new-value object))
+(defgeneric (setf width)  (new-value object))
+(defgeneric (setf height) (new-value object))
+
+(defgeneric origin (object)
+  (:documentation "The point origin of the coordinates of the ``OBJECT``."))
+
+(defgeneric (setf origin) (new-value object)
+  (:documentation "Change the origin of the ``OBJECT``."))
+
+(defgeneric extent (object)
+  (:documentation "The size of the ``OBJECT``."))
+
+(defgeneric (setf extent) (new-value object)
+  (:documentation "Change the size of the ``OBJECT``."))
+
+(defgeneric bounds (object)
+  (:documentation "
+The rectangle surrounding the ``OBJECT``, in the coordinate system
+relative to the ``ORIGIN``.
+"))
+
+(defgeneric frame (object)
+  (:documentation "
+The rectangle surrounding the ``OBJECT``, in the coordinate system
+where the object is drawn (same coordinate system in which ``ORIGIN`` is
+expressed). ::
+
+    (frame object) == (rect-offset (bounds object)
+                                   (point-x (origin object))
+                                   (point-y (origin object)))
+
+")
+  (:method (object)
+    (rect-offset (bounds object)
+                 (point-x (origin object))
+                 (point-y (origin object)))))
+
+(defgeneric place (object point)
+  (:documentation "Change the origin of the ``OBJECT`` to be the ``POINT``."))
+
 
 (defgeneric above (object &optional offset)
   (:documentation "Returns a point that is above the OBJECT by OFFSET units.")
@@ -140,7 +183,8 @@ u2 = - det[v0,v1]/det[v1,v2]
 (deftype coordinate ()
   (or (and (find-package "NS") (find-symbol "CGFLOAT" "NS"))  ;; can be 32-bit or 64-bit float.
       'single-float))
-(setf *read-default-float-format* 'coordinate)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf *read-default-float-format* 'coordinate))
 (defun coordinate (value) (coerce value 'coordinate))
 (declaim (inline coordinate))
 
@@ -156,11 +200,34 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defun make-point (&key (x 0.0d0) (y 0.0d0))
   (%make-point :x (coordinate x) :y (coordinate y)))
 (defun point (x y) (make-point :x x :y y))
+(declaim (inline make-point point))
 
 (defmethod right  ((p point)) (point-x p))
 (defmethod left   ((p point)) (point-x p))
 (defmethod bottom ((p point)) (point-y p))
 (defmethod top    ((p point)) (point-y p))
+(defmethod width  ((p point)) 0.0)
+(defmethod height ((p point)) 0.0)
+(defmethod origin ((p point)) p)
+(defmethod extent ((p point)) (size 0.0 0.0))
+(defmethod (setf left) (new-value (p point))
+  (setf (point-x p) new-value))
+(defmethod (setf right) (new-value (p point))
+  (setf (point-x p) new-value))
+(defmethod (setf top) (new-value (p point))
+  (setf (point-y p) new-value))
+(defmethod (setf bottom) (new-value (p point))
+  (setf (point-y p) new-value))
+(defmethod (setf origin) (new-value (p point))
+  (setf (point-x p) (point-x new-value)
+        (point-y p) (point-y new-value))
+  new-value)
+(defmethod bounds ((p point)) (rect 0.0 0.0 0.0 0.0))
+(defmethod frame ((p point)) (make-rect :origin p :width 0.0 :height 0.0))
+
+(defmethod  place (object (to point))
+  (setf (origin object) point)
+  object)
 
 ;;;---------------------------------------------------------------------
 ;;; SIZE
@@ -173,7 +240,17 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defun make-size (&key (width 0.0d0) (height 0.0d0))
   (%make-size :width (coordinate width) :height (coordinate height)))
 (defun size (width height) (make-size :width width :height height))
+(declaim (inline make-size size))
 
+(defmethod width  ((s size)) (size-width  s))
+(defmethod height ((s size)) (size-height s))
+(defmethod extent ((s size)) s)
+(defmethod bounds ((s size)) (make-rect :x 0.0 :y 0.0 :size s))
+
+(defmethod (setf width) (new-value (s size))
+  (setf (size-width s) new-value))
+(defmethod (setf height) (new-value (s size))
+  (setf (size-height s) new-value))
 
 ;;;---------------------------------------------------------------------
 ;;; RECT
@@ -185,18 +262,6 @@ u2 = - det[v0,v1]/det[v1,v2]
   (width  (coordinate 0.0d0) :type coordinate)
   (height (coordinate 0.0d0) :type coordinate))
 
-(defun rect-left   (r) (rect-x r))
-(defun rect-right  (r) (+ (rect-x r) (rect-width r)))
-(defun rect-bottom (r) (rect-y r))
-(defun rect-top    (r) (+ (rect-x r) (rect-height r)))
-(defun rect-center-x (r) (+ (rect-x r) (/ (rect-width r) 2)))
-(defun rect-center-y (r) (+ (rect-y r) (/ (rect-height r) 2)))
-(declaim (inline rect-left rect-right rect-bottom rect-top rect-center-x rect-center-y))
-
-(defmethod right  ((r rect)) (rect-right  r))
-(defmethod left   ((r rect)) (rect-left   r))
-(defmethod bottom ((r rect)) (rect-bottom r))
-(defmethod top    ((r rect)) (rect-top    r))
 
 (defun make-rect (&key (x 0.0d0 xp) (y 0.0d0 yp) (width 0.0d0 widthp) (height 0.0d0 heightp)
                     ;; (left 0.0d0 leftp)
@@ -217,19 +282,77 @@ u2 = - det[v0,v1]/det[v1,v2]
                       :width (size-width size)   :height (size-height size))
           (%make-rect :x     (coordinate x)      :y      (coordinate y)
                       :width (coordinate width)  :height (coordinate height)))))
-(defun rect (x y width height) (make-rect :x x :y y :width width :height height))
+(defun rect (x y width height)
+  (%make-rect :x (coordinate x)
+              :y (coordinate y)
+              :width (coordinate width)
+              :height (coordinate height)))
+(declaim (inline make-rect rect))
 
-(defun rect-origin (rect)
-  (%make-point :x     (rect-x rect)     :y      (rect-y rect)))
-(defun rect-size   (rect)
-  (%make-size  :width (rect-width rect) :height (rect-height rect)))
 
+(defun rect-left     (r) (rect-x r))
+(defun rect-right    (r) (+ (rect-x r) (rect-width r)))
+(defun rect-bottom   (r) (rect-y r))
+(defun rect-top      (r) (+ (rect-y r) (rect-height r)))
+(defun rect-center-x (r) (+ (rect-x r) (/ (rect-width r) 2)))
+(defun rect-center-y (r) (+ (rect-y r) (/ (rect-height r) 2)))
+(defun rect-origin   (r) (point (rect-x r) (rect-y r)))
+(defun rect-size     (r) (size (rect-width r) (rect-height r)))
 (defun (setf rect-origin) (point rect)
   (setf (rect-x rect) (point-x point)
-        (rect-y rect) (point-y point)))
-(defun (setf rect-size)   (size  rect)
+        (rect-y rect) (point-y point))
+  point)
+(defun (setf rect-size) (size rect)
   (setf (rect-width  rect) (size-width  size)
-        (rect-height rect) (size-height size)))
+        (rect-height rect) (size-height size))
+  size)
+(declaim (inline rect-left rect-right rect-bottom rect-top rect-center-x rect-center-y
+                 rect-origin rect-size rect-to-list))
+
+(defmethod right  ((r rect)) (rect-right  r))
+(defmethod left   ((r rect)) (rect-left   r))
+(defmethod bottom ((r rect)) (rect-bottom r))
+(defmethod top    ((r rect)) (rect-top    r))
+(defmethod width  ((r rect)) (rect-width  r))
+(defmethod height ((r rect)) (rect-height r))
+(defmethod origin ((r rect)) (rect-origin r))
+(defmethod extent ((r rect)) (rect-size   r))
+
+(defmethod (setf left) (new-value (r rect))
+  (setf (rect-x r) (coordinate new-value)))
+(defmethod (setf bottom) (new-value (r rect))
+  (setf (rect-y r) (coordinate new-value)))
+
+(defmethod (setf right) (new-value (r rect))
+  (setf (rect-width r) (coordinate (- new-value (left r))))
+  new-value)
+(defmethod (setf top) (new-value (r rect))
+  (setf (rect-height r) (coordinate (- new-value (bottom r))))
+  new-value)
+
+(defmethod (setf width) (new-value (r rect))
+  (setf (rect-width r) (coordinate new-value)))
+(defmethod (setf height) (new-value (r rect))
+  (setf (rect-height r) (coordinate new-value)))
+
+(defmethod (setf origin) (new-value (r rect))
+  (setf (rect-x r) (point-x new-value)
+        (rect-y r) (point-y new-value))
+  new-value)
+
+(defmethod (setf extent) (new-value (r rect))
+  (setf (rect-width r) (size-width new-value)
+        (rect-height r) (size-height new-value))
+  new-value)
+
+(defmethod bounds ((r rect)) (rect 0.0 0.0 (width r) (height r)))
+(defmethod frame ((r rect)) r)
+(defmethod (setf frame) ((new-value rect) (r rect))
+  (setf (rect-x r) (rect-x new-value)
+        (rect-y r) (rect-y new-value)
+        (rect-width r) (rect-width new-value)
+        (rect-height r) (rect-height new-value))
+  new-value)
 
 (defun rect-to-list (rect)
   (list (rect-x rect)
@@ -237,22 +360,56 @@ u2 = - det[v0,v1]/det[v1,v2]
         (rect-width rect)
         (rect-height rect)))
 
+(defun rect-inset (r inset-x inset-y)
+  "Returns a rect like R but with the borders \"inset\" by inset-x horizontaly, and by inset-y vertically.
+If inset-x/y is positive the result is smaller, if it's negative, then the result is larger."
+  (rect  (+ (rect-x r) inset-x)
+         (+ (rect-y r) inset-y)
+         (- (rect-width r) inset-x inset-x)
+         (- (rect-height r) inset-y inset-y)))
 
 
 (defun rect-offset (r dx dy)
   "Returns a rect of same size as ``R`` but with an origin offset by ``DX`` and ``DY``."
-  (make-rect  (+ dx (rect-x r))
-              (+ dy (rect-y r))
-              (rect-width r)
-              (rect-height r)))
+  (rect  (+ dx (rect-x r))
+         (+ dy (rect-y r))
+         (rect-width r)
+         (rect-height r)))
 
 (defun rect-union (a b)
   "Returns the smallest rect that covers both the rects ``A`` and ``B``."
   (let ((x  (min (left a) (left b)))
         (y  (min (bottom a) (bottom b))))
-    (make-rect  x y
-                (- (max (right a) (right b)) x)
-                (- (max (top   a) (top   b)) y))))
+    (rect  x y
+           (- (max (right a) (right b)) x)
+           (- (max (top   a) (top   b)) y))))
+
+
+(defun rect-empty-p (r)
+  (or (minusp (width r))
+      (minusp (height r))))
+
+
+(defun rect-intersection (a b)
+  (if (or (< (right a) (left b))
+          (< (right b) (left a))
+          (< (top a) (bottom b))
+          (< (top b) (bottom a)))
+    (rect 0 0 -1 -1)
+    (let ((x (max (left a) (left b)))
+          (y (max (bottom a) (bottom b))))
+      (rect x y
+            (- (min (right a) (right b)) x)
+            (- (min (top a) (top b)) y)))))
+
+(defmethod left-side   (object &optional (thickness 1))
+  (rect (left  object) (bottom object) thickness (height object)))
+(defmethod right-side  (object &optional (thickness 1))
+  (rect (right object) (bottom object) thickness (height object)))
+(defmethod bottom-side (object &optional (thickness 1))
+  (rect (left  object) (bottom object) (width object) thickness))
+(defmethod top-side    (object &optional (thickness 1))
+  (rect (left  object) (top    object) (width object) thickness))
 
 
 (defun rect-expand (rect point)
@@ -281,7 +438,7 @@ u2 = - det[v0,v1]/det[v1,v2]
 (defun make-range (&key (location 0) (length 0))
   (%make-range :location (truncate location) :length (truncate length)))
 (defun range (location length) (make-range :location location :length length))
-
+(declaim (inline make-range range))
 
 
 ;;;---------------------------------------------------------------------
@@ -351,6 +508,10 @@ u2 = - det[v0,v1]/det[v1,v2]
 
 
 
+(defmethod distance-squared ((p point) (q point))
+  (+ (square (- (point-x p) (point-x q)))
+     (square (- (point-y p) (point-y q)))))
+
 ;;;---------------------------------------------------------------------
 ;;; SIZE as vectors
 ;;;---------------------------------------------------------------------
@@ -417,6 +578,75 @@ u2 = - det[v0,v1]/det[v1,v2]
          (POINT -1/2 -1/2)
          (POINT -1/2  1/2)
          (POINT -1/2  1/2)))))
+
+
+;;;---------------------------------------------------------------------
+
+(defun stack-objects (objects &key (direction :up) (align :left) (spacing 0))
+  "
+Stack up or down the ``OBJECTS`` based on the position of the first one.
+"
+  (when objects
+    (let* ((frame (frame (first objects)))
+           (x  (ecase align
+                 (:left   (rect-left     frame))
+                 (:right  (rect-right    frame))
+                 (:center (rect-center-x frame))))
+           (y  (ecase direction
+                 (:up   (rect-top    frame))
+                 (:down (rect-bottom frame)))))
+      (loop
+         :for object :in (rest objects)
+         :for frame = (frame object)
+         :do (when (eq direction :down)
+               (decf y (+ spacing (rect-height frame))))
+         :do (place object (ecase align
+                             (:left   (make-point :x x                              :y y))
+                             (:right  (make-point :x (- x (rect-width frame))       :y y))
+                             (:center (make-point :x (- x (/ (rect-width frame) 2)) :y y))))
+         :do (when (eq direction :up)
+               (incf y (+ spacing (rect-height frame)))))))
+  objects)
+
+(defun stack-up (objects &key (align :left) (spacing 0))
+  (stack-objects objects :direction :up :align align :spacing spacing))
+
+(defun pile-down (objects &key (align :left) (spacing 0))
+  (stack-objects objects :direction :down :align align :spacing spacing))
+
+;;;---------------------------------------------------------------------
+
+
+(defun test/tlbr/rect ()
+  (let ((r (rect 0 0 0 0)))
+    (setf (bottom r) 24)
+    (assert (= (bottom r) 24))
+    (setf (left r) 24)
+    (assert (= (left r) 24))
+    (setf (top r) 42)
+    (assert (= (top r) 42))
+    (setf (right r) 42)
+    (assert (= (right r) 42)))
+  :success)
+
+(test/tlbr/rect)
+
+
+
+(defmethod print-object ((p point) stream)
+  (format stream "(point ~,2F ~,2F)" (point-x p) (point-y p))
+  p)
+
+(defmethod print-object ((s size) stream)
+  (format stream "(size ~,2F ~,2F)" (size-width s) (size-height s))
+  s)
+
+(defmethod print-object ((r rect) stream)
+  (format stream "(rect ~,2F ~,2F ~,2F ~,2F)"
+          (rect-x r) (rect-y r)
+          (rect-width r) (rect-height r))
+  r)
+
 
 
 ;;;; THE END ;;;;

@@ -1,17 +1,17 @@
 ;;;; -*- mode:lisp;coding:utf-8 -*-
 ;;;;**************************************************************************
-;;;;FILE:               format.lisp
+;;;;FILE:               graphic.lisp
 ;;;;LANGUAGE:           Common-Lisp
 ;;;;SYSTEM:             Common-Lisp
 ;;;;USER-INTERFACE:     NONE
 ;;;;DESCRIPTION
 ;;;;    
-;;;;    A format function to redirect to views.
+;;;;    Defines graphic generic API.
 ;;;;    
 ;;;;AUTHORS
 ;;;;    <PJB> Pascal J. Bourguignon <pjb@informatimago.com>
 ;;;;MODIFICATIONS
-;;;;    2013-12-22 <PJB> Created.
+;;;;    2013-12-24 <PJB> Created.
 ;;;;BUGS
 ;;;;LEGAL
 ;;;;    AGPL3
@@ -32,16 +32,18 @@
 ;;;;    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;;**************************************************************************
 
-(in-package "ABNOTATION.IO")
+(in-package "ABNOTATION.CORE")
+
+(defgeneric set-color (color))
+(defgeneric set-font (font-name size))
+(defgeneric draw-string (string where &key &allow-other-keys))
+
+(defgeneric set-stroke-width (path width))
+(defgeneric stroke-path (path))
+(defgeneric fill-path (path))
 
 
-(defgeneric format (output control-string &rest arguments)
-  (:method ((output null) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments))
-  (:method ((output (eql t)) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments))
-  (:method ((output stream) control-string &rest arguments)
-    (apply (function cl:format) output control-string arguments)))
 
+(defgeneric draw-clef (clef where size))
 
 ;;;; THE END ;;;;
