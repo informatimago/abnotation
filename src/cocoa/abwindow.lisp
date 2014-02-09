@@ -181,6 +181,7 @@
     (let ((path (select-file)))
       (message "Find file ~S" path)
       (let ((partition (create-partition *staves/bass15mb-trebble15ma*)))
+        (extract-node (head (head (head partition))))
         (append-midi-sequence partition  (abnotation-read-midi-file path))
         (let ((window (create-abwindow *default-window-frame*
                                        :title path
