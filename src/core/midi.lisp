@@ -597,12 +597,11 @@ specified by the midi EVENT.
                                   :key (function note-on-time)))
          (last-note         (car (last notes)))
          (total-duration    (coerce (note-off-time last-note) 'double-float))
-         (page (tail partition))
-         (line (tail page)))
-    (forward-slurp-span (join-spans line (create-measures-for-notes measure-durations notes total-duration)))
-    (extract-node (next (tail line)))
+         (measures          (create-measures-for-notes measure-durations notes total-duration)))
+    (append-measures partition measures)
     partition))
-
+  
+  
 
 
 ;; (defparameter *p*  (create-partition *staves/bass15mb-trebble15ma*))

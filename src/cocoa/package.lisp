@@ -88,7 +88,7 @@
   (:shadowing-import-from "COM.INFORMATIMAGO.OBJCL.WRAPPER" "TO-LISP" "TO-OBJC")
   (:shadowing-import-from "ABNOTATION.IO" "FORMAT")
   (:export
-
+   "*DEBUG-ON-ERROR*"
    "*MINIBUFFER*"
    "*MESSAGE*"
    "*CURRENT-VIEW*"
