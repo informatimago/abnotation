@@ -548,4 +548,64 @@ And similarly for lines over pages.
                       (pop measures))))))))
 
 
+(defgeneric append-measures (target measures))
+(defmethod append-measures ((partition partition) measures)
+  (append-measures (tail partition) measures))
+(defmethod append-measures ((page page) measures)
+  (append-measures (tail page) measures))
+(defmethod append-measures ((line line) measures)
+  (let* ((page (span line))
+        (page-height 0)
+        (lines-height 0))
+    (labels ((new-line ()
+               (setf line (make-instance 'line :number (1+ (number line))))
+               (dolist (band (create-bands (staff-set partition)))
+                 (attach 'line-contains-horizontally line band)))
+             (new-page ()
+               (let ((new-page (make-instance 'page :number (1+ (number page)))))
+                 (insert-node-after new-page page)
+                 (setf page new-page))
+               (span-append-node page line) ;  (attach 'page-contains page line)
+               (compute-box-size line)
+               (compute-box-size page)
+               (setf page-height  (height (box page))
+                     lines-height (+ 20 #|title header|# (height (box line)))
+                     (bottom (box line)) (- page-height lines-height))
+               (format *trace-output* "bottom line = ~S =/= ~S~%"
+                       (coerce (- page-height lines-height) 'double-float)
+                       (bottom (box line)))))
+      (new-line)
+      (loop
+        :while measures
+        :initially (new-page)
+        :do (loop
+              :with line-width = (width (box line))
+              :with measures-width = 10 #|(width (clef line))|#
+              :while measures
+              :do (let ((measure (first measures)))
+                    (when (<= line-width (+ (width (box measure)) measures-width))
+                      (new-line)
+                      (if (< (+ (height (box line)) lines-height)
+                             page-height)
+                          (progn
+                            ;;;
+                            (span-append-node page (extract-node line)) ; (setf (page line) nil) (attach 'page-contains page line)
+                            (compute-box-size line)
+                            (incf lines-height (height (box line)))
+                            (setf (bottom (box line)) (- page-height lines-height))
+                            (format *trace-output* "bottom line = ~S =?= ~S~%"
+                                    (coerce (- page-height lines-height) 'double-float)
+                                    (bottom (box line))))
+                          (new-page)))
+                    ;; attach measure to line:
+                    (setf (left (box measure)) measures-width)
+                    (incf measures-width (width (box measure)))
+                    (span-append-node line (extract-node measure)) ; (setf (line measure) nil) (attach 'line-contains-vertically line measure)
+                    (pop measures))))))  
+  (forward-slurp-span (join-spans line))
+  (extract-node (next (tail line))))
+
+
+
+
 ;;;; THE END ;;;;
