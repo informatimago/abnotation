@@ -559,7 +559,7 @@ And similarly for lines over pages.
         (lines-height 0))
     (labels ((new-line ()
                (setf line (make-instance 'line :number (1+ (number line))))
-               (dolist (band (create-bands (staff-set partition)))
+               (dolist (band (create-bands (staff-set *partition*)))
                  (attach 'line-contains-horizontally line band)))
              (new-page ()
                (let ((new-page (make-instance 'page :number (1+ (number page)))))
