@@ -1,6 +1,9 @@
 -*- mode:org; coding:utf-8 -*-
 * TODO [/] ABNotation Project                                            :ab:
-** TODO [/] lecture d'une séquence Midi représentant un morceau de musique. 
+** TODO [#C] discuter des besoins d'algorithmes (patches) nouveaux?      
+** TODO [#C] evolution user interface (colors, zoom, bindings)?          
+** TODO [/] lecture d'une séquence Midi
+ représentant un morceau de musique. 
 *** IN-PROGRESS Read the midi file into an internal structure
 **** DONE Read the midi file
 **** TODO define the internal structure representing the MIDI file contents.
@@ -11,11 +14,12 @@
 - spread the notes over the staves.
 - add the abnotes to the staves.
 
-** TODO [/] affichage de la partition correspondante selon la notation AB en mode prévisualisation.
+** TODO [/] mode d'affichage de la partition
+selon la notation AB en mode prévisualisation.
 ** TODO [/] impression de la partition (sur feuilles A4 ou A3).
 ** TODO [/] affichage de la séquence Midi sous forme textuelle
 comme liste de nombres/valeurs : (hauteur duration (h1 h2…) duration …).
 
-** TODO [/] l'utilisateur peut ajuster la mise en page de la partition.
-** TODO [/] l'utilisateur peut éditer la partition
+** TODO [/] U. ajuste la mise en page de la partition.
+** TODO [/] U. édite la partition
 *** TODO transposition d'une note ou d'un groupe de notes.
