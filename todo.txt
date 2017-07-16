@@ -1,9 +1,9 @@
 -*- mode:org; coding:utf-8 -*-
 * TODO [/] ABNotation Project                                            :ab:
-** TODO [#C] discuter des besoins d'algorithmes (patches) nouveaux?      
-** TODO [#C] evolution user interface (colors, zoom, bindings)?          
+** TODO [#C] discuter des besoins d'algorithmes (patches) nouveaux?
+** TODO [#C] evolution user interface (colors, zoom, bindings)?
 ** TODO [/] lecture d'une séquence Midi
- représentant un morceau de musique. 
+ représentant un morceau de musique.
 *** IN-PROGRESS Read the midi file into an internal structure
 **** DONE Read the midi file
 **** TODO define the internal structure representing the MIDI file contents.
