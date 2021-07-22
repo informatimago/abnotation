@@ -1,16 +1,19 @@
-.. comment: -*- mode:rst;coding:utf-8 -*
+# -*- mode:org;coding:utf-8 -*
 
+#+BEGIN_CODE
 (setf (getenv "NSZombieEnabled") "YES")
 (setf (getenv "NSDeallocateZombies") "YES")
+#+END_CODE
 
 https://developer.apple.com/library/mac/technotes/tn2124/_index.html#//apple_ref/doc/uid/DTS10003391-CH1-SECENABLE
 
-Abnotation
-################################################################################
+#+BEGIN_QUOTE
+<cranium> re: music engraving in Lisp, I think https://opusmodus.com/ should be mentioned in this.
+<cranium> Also there's been a reddit thread summarizing other prior work: https://www.reddit.com/r/Common_Lisp/comments/lmjt6v/music_notations_in_cl/
+#+END_QUOTE
 
-
-Spécifications
-================================================================================
+* Abnotation
+** Spécifications
 
 
 Principales fonctionalités
@@ -30,11 +33,7 @@ Principales fonctionalités
 
     - transposition d'une note ou d'un groupe de notes.
 
-
-
-Notation AB
-================================================================================
-
+** Notation AB
 
 Éléments graphiques:
 
@@ -42,22 +41,17 @@ Notation AB
 - Numéro de système de portées dans la page à gauche de la première portée dans un carré (de 1 à N).
 - Numéro de mesure dans la portée au dessus de la marque de début de mesure (de 1 à N).
 
-
-
 Impression
 
 - Mise en page en format A4 ou A5, paysage ou portrait.
-
-
-
 
 - option: variation de longueur des mesures pour une même durée de
   référence.
 
 
+- Réglage longueur mesure:
 
-- Réglage longueur mesure: ::
-
+#+BEGIN_EXAMPLE
         1      2      3      4      5
         ┌──────┬──────┬──────┬──────┬───────┐
 
@@ -76,6 +70,7 @@ Impression
         (sur page imprimée) ou par ajustement graphiqe d'une mesure
         quelconque, longueur d'une ou de plusieurs mesures
         sélectionneées en mm ou par ajustement graphique.
+#+END_EXAMPLE
 
 - Pour tous les réglages d'espace: soit en mm, soit par ajustement
   graphique d'un élément sélectionné (ou ensemble d'éléments)
@@ -86,7 +81,7 @@ Impression
 - Insertion texte et image
 
 - choix du nombre de portées par ligne, avec les clefs: (𝄞 𝄢 𝄞𝄢 𝄞𝄸𝄞𝄢 𝄞𝄢𝄢𝄹 𝄞𝄸𝄞𝄢𝄢𝄹)
-  (sol fa sol+fa sol15ma+sol+fa sol+fa+fa15mb sol15ma+sol+fa+fa15mb)  ::
+  (sol fa sol+fa sol15ma+sol+fa sol+fa+fa15mb sol15ma+sol+fa+fa15mb)
   La note la plus basse est do1.
 
 - hauteur d'une portée: 3, 5 ou 7 mm (imprimée).
@@ -101,8 +96,9 @@ Impression
   Si nécessaire, alonger la mesure précédente.
 
 
-- intensités: symboles avec choix entre continu ou discontinu: ::
+- intensités: symboles avec choix entre continu ou discontinu:
 
+#+BEGIN_EXAMPLE
         𝆏𝆏𝆏 𝆏𝆏 𝆏  𝆐𝆑  𝆐𝆑  𝆑  𝆑𝆑  𝆑𝆑𝆑        𝆒   𝆓
         1  2  3  4   5  6  7  8      si progression
                                     linéaire détectée
@@ -121,26 +117,20 @@ Impression
 
         𝅘𝅥  𝅘𝅥   𝅘𝅥
         └───────┘
+#+END_EXAMPLE
 
 
-
-.. comment
+#+BEGIN_CODE
     (coerce (mapcar 'cdr (remove-if-not (lambda (x) (prefixp "MUSICAL" (car x))) (ucs-names)))
             'string)
 
       "🎼🎹🎵𝇝𝇜𝇛𝇚𝇙𝇘𝇗𝇖𝇕𝇔𝇓𝇒𝇑𝇐𝇏𝇎𝇍𝇌𝇋𝇊𝇉𝇈𝇇𝇆𝇅𝇄𝇃𝇂𝇁𝆺𝅥𝅯𝆹𝅥𝅯𝆺𝅥𝅮𝆹𝅥𝅮𝆺𝅥𝆹𝅥𝆺𝆹𝆸𝆷𝆶𝆵𝆴𝆳𝆲𝆱𝆰𝆯𝆮𝆭𝆬𝆫𝆪𝆩𝆨𝆧𝆦𝆥𝆤𝆣𝆢𝆡𝆠𝆟𝆞𝆝𝆜𝆛𝆚𝆙𝆘𝆗𝆖𝆕𝆔𝆓𝆒𝆑𝆐𝆏𝆎𝆍𝆌𝆋𝆊𝆉𝆈𝆇𝆆𝆅𝆄𝆃𝆂𝆁𝆀𝅿𝅾𝅽𝅼𝅻𝅺𝅹𝅸𝅷𝅶𝅵𝅴𝅳𝅲𝅱𝅰𝅯𝅮𝅭𝅬𝅫𝅪𝅩𝅨𝅧𝅦𝅥𝅘𝅥𝅲𝅘𝅥𝅱𝅘𝅥𝅰𝅘𝅥𝅯𝅘𝅥𝅮𝅘𝅥𝅗𝅥𝅝𝅜𝅛𝅚𝅙𝅘𝅗𝅖𝅕𝅔𝅓𝅒𝅑𝅐𝅏𝅎𝅍𝅌𝅋𝅊𝅉𝅈𝅇𝅆𝅅𝅄𝅃𝅂𝅁𝅀𝄿𝄾𝄽𝄼𝄻𝄺𝄹𝄸𝄷𝄶𝄵𝄴𝄳𝄲𝄱𝄰𝄯𝄮𝄭𝄬𝄫𝄪𝄩𝄦𝄥𝄤𝄣𝄢𝄡𝄠𝄟𝄞𝄝𝄜𝄛𝄚𝄙𝄘𝄗𝄖𝄕𝄔𝄓𝄒𝄑𝄐𝄏𝄎𝄍𝄌𝄋𝄊𝄉𝄈𝄇𝄆𝄅𝄄𝄃𝄂𝄁𝄀"
+#+END_CODE
 
+* Gsharp
+** Dictionaire
 
-
-Gsharp
-################################################################################
-
-Dictionaire
-================================================================================
-
-::
-
-
+#+BEGIN_EXAMPLE
                              système de portées : ensemble de portées liées par des accolades.
 
     staff (stave)          = portée
@@ -155,14 +145,11 @@ Dictionaire
     bass clef              = clef de fa
 
     bar                    = mesure
-
+#+END_EXAMPLE
 
 octaviation: 8va = +octave ; 8va bassa = -octave
 
-
-
-Files
-================================================================================
+** Files
 
 packages
 
@@ -263,14 +250,9 @@ Mxml/commands
     Music XML file format.
 
 
+** Schematic class diagram
 
-
-Schematic class diagram
-================================================================================
-
-::
-
-
+#+BEGIN_EXAMPLE
                                                                        key-signature
                                                                             |
                                     +-----------------------------1 clef    |         time-signature
@@ -299,20 +281,19 @@ Schematic class diagram
                                                                            |
                                                                            *
                                                                           note
-                                                                              
-                                                                              
-              tuning                                                          
-                ^                                                             
-                |                                                             
-                +---------+                                                   
-                |         |                                                   
-              12-edo   regular-temperament                                    
-                                                                              
 
-Class hierarchy
-================================================================================
-::
 
+              tuning
+                ^
+                |
+                +---------+
+                |         |
+              12-edo   regular-temperament
+#+END_EXAMPLE
+
+** Class hierarchy
+
+#+BEGIN_EXAMPLE
     gsharp-object ()
     name-mixin ()
     rhythmic-element (element)
@@ -352,43 +333,31 @@ Class hierarchy
     measure-total-cost (total-cost)
 
     x-y-width-mixin ()
+#+END_EXAMPLE
+
+* Questions :noexport:
+
+A confirmer:
+
+- pas de 'measures' (set of parallel 'bars').
+
+(cependant, on peut avoir 1-3 portées pour les instruments à large gamme).
 
 
-.. comment:
-
-    Questions
-    ################################################################################
+- 6/100 seconde pour un M, environ 5 mm, ça fait (* (/ 180.0 5) 0.06) -> 2.16 seconde par ligne.
+Moins si on rallonge les mesures.
 
 
-    A confirmer:
-
-    - pas de 'measures' (set of parallel 'bars').
-
-      (cependant, on peut avoir 1-3 portées pour les instruments à large gamme).
-
-
-    - 6/100 seconde pour un M, environ 5 mm, ça fait (* (/ 180.0 5) 0.06) -> 2.16 seconde par ligne.
-      Moins si on rallonge les mesures.
-
-
-    - fichier midi typique (pas musique métrée)?
+- fichier midi typique (pas musique métrée)?
 
 
 
-    - note portée (avec un trait horizontal dessus)?
+- note portée (avec un trait horizontal dessus)?
 
+* Miscellaneous
+** Conversion cvs mcclim repository to git
 
-
-
-
-Miscellaneous
-################################################################################
-
-Conversion cvs mcclim repository to git
-================================================================================
-
-::
-
+#+BEGIN_CODE
     cd src
     flex cvsclone.l && gcc -Wall -O2 lex.yy.c -o cvsclone
     ./cvsclone -d  :pserver:anonymous@common-lisp.net:/project/mcclim/cvsroot mcclim-CVS
@@ -397,30 +366,28 @@ Conversion cvs mcclim repository to git
     git --bare cvsimport -d:local:/home/pjb/works/gsharp/src/mcclim -v -k -m -i -o master .
 
     https://github.com/$u/mcclim
+#+END_CODE
 
 
 Finally, we're using a clone of https://github.com/jmorrison/mcclim.git
 
-::
+#+BEGIN_CODE
    (ql:quickload :clim-examples)
+#+END_CODE
 
-References
-================================================================================
+** References
 
-::
-
+#+BEGIN_EXAMPLE
     midi standard        http://www.midi.org/techspecs/
     midi status          http://www.midimountain.com/midi/midi_status.htm
     midi control change  http://nickfever.com/402/production-tips-and-resources/midi-cc-list/
     Unicode:             http://www.marathon-studios.com/unicode/categories/So/Other_Symbol
                          http://www.unicode.org/charts/PDF/U1D100.pdf
+#+END_EXAMPLE
 
-Warnings
-================================================================================
+** Warnings
 
-
-::
-
+#+BEGIN_EXAMPLE
     ;Compiler warnings for "home:works;gsharp;src;gsharp;gui.lisp.newest" :
     ;   In (esa-buffer:frame-make-buffer-from-stream (gsharp:gsharp t)) inside an anonymous lambda form: Undefined function gsharp-midi-load:midi-stream-p
     ;   In (esa-buffer:frame-make-buffer-from-stream (gsharp:gsharp t)) inside an anonymous lambda form: Undefined function gsharp-midi-load:read-buffer-from-midi-stream
@@ -448,12 +415,5 @@ Warnings
     ;   In gsharp-buffer::buffer-selection: Undefined function gsharp-buffer::buffer-back-selection
     ;Compiler warnings for "home:works;gsharp;src;mcclim;Drei;syntax.lisp.newest" :
     ;   In (drei-syntax:update-lex (drei-syntax:incremental-lexer t t)) inside an anonymous lambda form: Undefined function drei-syntax::low-mark
+#+END_EXAMPLE
 
-
-
-
-.. comment:
-   ---------------------------------------------------------------
-                            -------------
-                                  -
-                                  .
